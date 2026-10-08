@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Ajouter en pause, pour démarrer plus tard",
   "Ajouter les téléchargements": "Ajouter les téléchargements",
   "Ajouter {count} tâche": "Ajouter {count} tâche",
-  "Ajouter {count} tâches": "Ajouter {count} tâches",
+  "Ajouter {count} tâches": {
+    "one": "Ajouter {count} tâche",
+    "other": "Ajouter {count} tâches"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analyse de l’URL {current} sur {total}…",
   "Analyse en cours…": "Analyse en cours…",
   "Analyse {current} / {total}…": "Analyse {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "o",
   "sur": "sur",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.",
-  "{count} incidents consignés": "{count} incidents consignés",
+  "{count} incidents consignés": {
+    "one": "{count} incident consigné",
+    "other": "{count} incidents consignés"
+  },
   "{count} tâche": "{count} tâche",
-  "{count} tâches": "{count} tâches",
+  "{count} tâches": {
+    "one": "{count} tâche",
+    "other": "{count} tâches"
+  },
   "{size} disponibles": "{size} disponibles",
   "· une par ligne": "· une par ligne",
   "À suivre": "À suivre",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Dossier parent",
   "＋ Ajouter mes premières URL": "＋ Ajouter mes premières URL",
   "＋ Nouveau dossier": "＋ Nouveau dossier",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Besoin d’autoriser un dossier ?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Besoin d’autoriser un dossier ?",
+  "{count} fichiers": {
+    "one": "{count} fichier",
+    "other": "{count} fichiers"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} fichier",
+    "other": "{completed} / {count} fichiers"
+  },
+  "{count} fichiers privés exclus": "Fichiers privés exclus: {count}",
+  "Route invalide.": "Route invalide.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station nécessite un compte administrateur DSM.",
+  "Taille de requête invalide.": "Taille de requête invalide.",
+  "Content-Type application/json requis.": "Content-Type application/json requis.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Réponse du service indisponible. Réessayez dans quelques instants.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.",
+  "Transfert interrompu avant la fin du fichier.": "Transfert interrompu avant la fin du fichier.",
+  "Incomplete disk write; transfer will resume from disk.": "Écriture disque incomplète ; le transfert reprendra depuis le fichier partiel.",
+  "Réponse HTTP inattendue : {status}": "Réponse HTTP inattendue : {status}"
 }

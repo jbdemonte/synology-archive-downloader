@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Lisää keskeytetty aloittaaksesi myöhemmin",
   "Ajouter les téléchargements": "Lisää latauksia",
   "Ajouter {count} tâche": "Lisää {count} tehtävä",
-  "Ajouter {count} tâches": "Lisää {count} tehtävää",
+  "Ajouter {count} tâches": {
+    "one": "Lisää {count} tehtävä",
+    "other": "Lisää {count} tehtävää"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analysoidaan URL-osoite {current} / {total}…",
   "Analyse en cours…": "Analysoidaan…",
   "Analyse {current} / {total}…": "Analysoidaan {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "of",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Epäonnistuneet tiedostot: {count}. Laajenna kansiot nähdäksesi niiden tilan ja valitse sitten Yritä uudelleen.",
-  "{count} incidents consignés": "{count} kirjattua tapahtumaa",
+  "{count} incidents consignés": {
+    "one": "{count} kirjattu tapahtuma",
+    "other": "{count} kirjattua tapahtumaa"
+  },
   "{count} tâche": "{count} tehtävä",
-  "{count} tâches": "{count} tehtäviä",
+  "{count} tâches": {
+    "one": "{count} tehtävä",
+    "other": "{count} tehtävää"
+  },
   "{size} disponibles": "{size} saatavilla",
   "· une par ligne": "· yksi per rivi",
   "À suivre": "Seuraavaksi",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Pääkansio",
   "＋ Ajouter mes premières URL": "＋ Lisää ensimmäiset URL-osoitteeni",
   "＋ Nouveau dossier": "＋ Uusi kansio",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Tarvitsetko kansion valtuutuksen?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Tarvitsetko kansion valtuutuksen?",
+  "{count} fichiers": {
+    "one": "{count} tiedosto",
+    "other": "{count} tiedostoa"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} tiedosto",
+    "other": "{completed} / {count} tiedostoa"
+  },
+  "{count} fichiers privés exclus": "Ohitetut yksityiset tiedostot: {count}",
+  "Route invalide.": "Virheellinen reitti.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-istunto on vanhentunut. Kirjaudu DSM:ään uudelleen ja avaa Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station edellyttää DSM-järjestelmänvalvojan tiliä.",
+  "Taille de requête invalide.": "Virheellinen pyynnön koko.",
+  "Content-Type application/json requis.": "Content-Type application/json vaaditaan.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Palvelun vastausta ei ole saatavilla. Yritä pian uudelleen.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station ei ole käynnissä. Avaa Pakettikeskus.",
+  "Transfert interrompu avant la fin du fichier.": "Siirto keskeytyi ennen tiedoston loppua.",
+  "Incomplete disk write; transfer will resume from disk.": "Levylle kirjoitus jäi kesken; siirto jatkuu osittaisesta tiedostosta.",
+  "Réponse HTTP inattendue : {status}": "Odottamaton HTTP-vastaus: {status}"
 }

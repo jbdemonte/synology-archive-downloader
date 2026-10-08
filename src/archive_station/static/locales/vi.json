@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ Thư mục gốc",
   "＋ Ajouter mes premières URL": "＋ Thêm URL đầu tiên của tôi",
   "＋ Nouveau dossier": "＋ Thư mục mới",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Cần ủy quyền cho một thư mục?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Cần ủy quyền cho một thư mục?",
+  "{count} fichiers": "{count} tệp",
+  "{completed} / {count} fichiers": "{completed} / {count} tệp",
+  "{count} fichiers privés exclus": "Tệp riêng tư đã loại trừ: {count}",
+  "Route invalide.": "Đường dẫn không hợp lệ.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Phiên DSM đã hết hạn. Đăng nhập lại vào DSM rồi mở lại Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station yêu cầu tài khoản quản trị viên DSM.",
+  "Taille de requête invalide.": "Kích thước yêu cầu không hợp lệ.",
+  "Content-Type application/json requis.": "Cần có Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Không nhận được phản hồi từ dịch vụ. Vui lòng thử lại sau ít phút.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station chưa chạy. Mở Trung tâm gói.",
+  "Transfert interrompu avant la fin du fichier.": "Truyền bị gián đoạn trước khi hết tệp.",
+  "Incomplete disk write; transfer will resume from disk.": "Ghi đĩa chưa hoàn tất; quá trình truyền sẽ tiếp tục từ tệp một phần.",
+  "Réponse HTTP inattendue : {status}": "Phản hồi HTTP không mong đợi: {status}"
 }

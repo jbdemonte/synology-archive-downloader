@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ 상위 폴더",
   "＋ Ajouter mes premières URL": "+ 내 첫 번째 URL 추가",
   "＋ Nouveau dossier": "+ 새 폴더",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 폴더를 인증해야 합니까?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 폴더를 인증해야 합니까?",
+  "{count} fichiers": "{count} 파일",
+  "{completed} / {count} fichiers": "{completed} / {count} 파일",
+  "{count} fichiers privés exclus": "제외된 비공개 파일: {count}",
+  "Route invalide.": "잘못된 경로입니다.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM 세션이 만료되었습니다. DSM에 다시 로그인한 후 Archive Station을 여세요.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station에는 DSM 관리자 계정이 필요합니다.",
+  "Taille de requête invalide.": "잘못된 요청 크기입니다.",
+  "Content-Type application/json requis.": "Content-Type application/json이 필요합니다.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "서비스 응답을 받을 수 없습니다. 잠시 후 다시 시도하세요.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station이 실행 중이 아닙니다. 패키지 센터를 여세요.",
+  "Transfert interrompu avant la fin du fichier.": "파일이 끝나기 전에 전송이 중단되었습니다.",
+  "Incomplete disk write; transfer will resume from disk.": "디스크 쓰기가 완료되지 않았습니다. 부분 파일부터 전송을 재개합니다.",
+  "Réponse HTTP inattendue : {status}": "예기치 않은 HTTP 응답: {status}"
 }

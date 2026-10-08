@@ -3,7 +3,7 @@
     "step_title": "Archive Station",
     "items": [
       {
-        "desc": "Archive Station utilise votre session administrateur DSM, sans mot de passe supplémentaire. Un dossier partagé ArchiveStation sera créé. La destination reste configurable dans les paramètres, après attribution des permissions DSM."
+        "desc": "Archive Station uses your DSM administrator session, with no additional password. An ArchiveStation shared folder will be created. You can choose a different destination in Settings after granting the DSM folder permissions."
       }
     ]
   }

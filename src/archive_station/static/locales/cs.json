@@ -25,7 +25,12 @@
   "Ajouter en pause, pour démarrer plus tard": "Přidat pozastaveno, chcete-li začít později",
   "Ajouter les téléchargements": "Přidat stažené soubory",
   "Ajouter {count} tâche": "Přidat {count} úkol",
-  "Ajouter {count} tâches": "Přidat {count} úkolů",
+  "Ajouter {count} tâches": {
+    "one": "Přidat {count} úkol",
+    "few": "Přidat {count} úkoly",
+    "many": "Přidat {count} úkolu",
+    "other": "Přidat {count} úkolů"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analýza URL {current} z {total}…",
   "Analyse en cours…": "Analýza…",
   "Analyse {current} / {total}…": "Analýza {current} / {total}…",
@@ -269,7 +274,12 @@
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Neúspěšné soubory: {count}. Rozbalením složek zobrazte jejich stav a poté vyberte Opakovat.",
   "{count} incidents consignés": "Zaznamenané incidenty: {count}",
   "{count} tâche": "{count} úkol",
-  "{count} tâches": "{count} úkolů",
+  "{count} tâches": {
+    "one": "{count} úkol",
+    "few": "{count} úkoly",
+    "many": "{count} úkolu",
+    "other": "{count} úkolů"
+  },
   "{size} disponibles": "{size} k dispozici",
   "· une par ligne": "· jeden na řádek",
   "À suivre": "Následující",
@@ -283,5 +293,28 @@
   "↑ Dossier parent": "↑ Nadřazená složka",
   "＋ Ajouter mes premières URL": "＋ Přidat mé první adresy URL",
   "＋ Nouveau dossier": "＋ Nová složka",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Potřebujete autorizovat složku?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Potřebujete autorizovat složku?",
+  "{count} fichiers": {
+    "one": "{count} soubor",
+    "few": "{count} soubory",
+    "many": "{count} souboru",
+    "other": "{count} souborů"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} soubor",
+    "few": "{completed} / {count} soubory",
+    "many": "{completed} / {count} souboru",
+    "other": "{completed} / {count} souborů"
+  },
+  "{count} fichiers privés exclus": "Vynechané soukromé soubory: {count}",
+  "Route invalide.": "Neplatná cesta požadavku.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Relace DSM vypršela. Přihlaste se znovu do DSM a otevřete Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station vyžaduje účet správce DSM.",
+  "Taille de requête invalide.": "Neplatná velikost požadavku.",
+  "Content-Type application/json requis.": "Je vyžadován Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Odpověď služby není dostupná. Zkuste to za chvíli znovu.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station není spuštěn. Otevřete Centrum balíčků.",
+  "Transfert interrompu avant la fin du fichier.": "Přenos byl přerušen před koncem souboru.",
+  "Incomplete disk write; transfer will resume from disk.": "Neúplný zápis na disk; přenos bude pokračovat z částečného souboru.",
+  "Réponse HTTP inattendue : {status}": "Neočekávaná odpověď HTTP: {status}"
 }

@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Lägg till pausat för att börja senare",
   "Ajouter les téléchargements": "Lägg till nedladdningar",
   "Ajouter {count} tâche": "Lägg till {count} uppgift",
-  "Ajouter {count} tâches": "Lägg till {count} uppgifter",
+  "Ajouter {count} tâches": {
+    "one": "Lägg till {count} uppgift",
+    "other": "Lägg till {count} uppgifter"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analyserar URL {current} av {total}...",
   "Analyse en cours…": "Analyserar...",
   "Analyse {current} / {total}…": "Analyserar {current} / {total}...",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "av",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Mislyckade filer: {count}. Expandera mapparna för att se deras status och välj sedan Försök igen.",
-  "{count} incidents consignés": "{count} registrerade incidenter",
+  "{count} incidents consignés": {
+    "one": "{count} registrerad incident",
+    "other": "{count} registrerade incidenter"
+  },
   "{count} tâche": "{count} uppgift",
-  "{count} tâches": "{count} uppgifter",
+  "{count} tâches": {
+    "one": "{count} uppgift",
+    "other": "{count} uppgifter"
+  },
   "{size} disponibles": "{size} tillgänglig",
   "· une par ligne": "· en per rad",
   "À suivre": "Härnäst",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Föräldramapp",
   "＋ Ajouter mes premières URL": "＋ Lägg till mina första webbadresser",
   "＋ Nouveau dossier": "＋ Ny mapp",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Behöver du auktorisera en mapp?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Behöver du auktorisera en mapp?",
+  "{count} fichiers": {
+    "one": "{count} fil",
+    "other": "{count} filer"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} fil",
+    "other": "{completed} / {count} filer"
+  },
+  "{count} fichiers privés exclus": "Uteslutna privata filer: {count}",
+  "Route invalide.": "Ogiltig sökväg.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-sessionen har gått ut. Logga in i DSM igen och öppna Archive Station på nytt.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station kräver ett DSM-administratörskonto.",
+  "Taille de requête invalide.": "Ogiltig begäransstorlek.",
+  "Content-Type application/json requis.": "Content-Type application/json krävs.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Tjänstens svar är inte tillgängligt. Försök igen om en stund.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station körs inte. Öppna Paketcenter.",
+  "Transfert interrompu avant la fin du fichier.": "Överföringen avbröts före filens slut.",
+  "Incomplete disk write; transfer will resume from disk.": "Ofullständig diskskrivning; överföringen återupptas från den partiella filen.",
+  "Réponse HTTP inattendue : {status}": "Oväntat HTTP-svar: {status}"
 }

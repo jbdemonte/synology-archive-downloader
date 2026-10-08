@@ -45,6 +45,11 @@ function bytes(n) {
   );
   return `${(n / 1024 ** unit).toLocaleString(ArchiveI18n.locale, { maximumFractionDigits: unit ? 1 : 0 })} ${[t("o"), t("Kio"), t("Mio"), t("Gio"), t("Tio")][unit]}`;
 }
+function fileCount(count, completed) {
+  return completed === undefined
+    ? t("{count} fichiers", { count })
+    : t("{completed} / {count} fichiers", { completed, count });
+}
 function eta(job) {
   if (
     state.policy?.allowed === false ||
@@ -323,7 +328,7 @@ function fileRow(job, row, depth, showPath = false) {
       ? row.path.slice(0, row.path.lastIndexOf("/"))
       : "";
   const detail = folder
-    ? `${number(row.completed_files)} / ${number(row.file_count)} ${esc(t("fichiers"))}`
+    ? `${esc(fileCount(row.file_count, row.completed_files))}`
     : esc(parent);
   return `<tr class="child-row ${status === "downloading" ? "live-file" : ""}" data-job="${esc(job.id)}" data-file-path="${esc(row.path)}"><td><div class="tree-name" style="padding-left:${depth * 19}px">${toggle}<span class="tree-icon ${folder ? "" : "item-icon"}">${folder ? "▰" : "▤"}</span><div class="name-text"><span title="${esc(row.path)}">${esc(row.name)}</span>${detail ? `<small title="${esc(parent)}">${detail}</small>` : ""}</div></div></td><td>${bytes(row.size)}</td><td>${progress({ ...row, status }, row.size)}</td><td class="speed">${row.speed && !["paused", "cancelled"].includes(job.status) ? bytes(row.speed) + "/s" : "—"}</td><td>${badge(status, row.error)}${!folder && row.id && row.status === "queued" ? `<button class="file-priority" data-priority-file="${row.id}" data-priority-job="${esc(job.id)}" data-priority="${row.priority ? 0 : 1}" aria-pressed="${!!row.priority}" title="${esc(t("En premier"))}">${row.priority ? "★" : "☆"}</button>` : ""}</td></tr>`;
 }
@@ -345,11 +350,11 @@ function activityRows(job, data) {
     const rows = data[field],
       total = data.counts[status];
     if (!total && field !== "active") continue;
-    const count =
-      rows.length === total
-        ? number(total)
-        : `${number(rows.length)} / ${number(total)}`;
-    html += `<tr class="activity-heading ${field}"><td colspan="5"><strong>${esc(t(label))}</strong><span>${count} ${esc(t("fichiers"))}</span></td></tr>`;
+    const count = fileCount(
+      total,
+      rows.length === total ? undefined : rows.length,
+    );
+    html += `<tr class="activity-heading ${field}"><td colspan="5"><strong>${esc(t(label))}</strong><span>${esc(count)}</span></td></tr>`;
     html += rows.length
       ? rows.map((row) => fileRow(job, flatFile(row), 1, true)).join("")
       : `<tr class="file-empty"><td colspan="5">${esc(t("Aucun fichier en cours."))}</td></tr>`;
@@ -449,10 +454,7 @@ function render() {
     visible.length < 2 || !!state.selected || !!state.checked.size;
   $("empty").hidden = state.jobs.length > 0;
   $("no-results").hidden = !state.jobs.length || !!visible.length;
-  $("list-count").textContent = t(
-    visible.length === 1 ? "{count} tâche" : "{count} tâches",
-    { count: number(visible.length) },
-  );
+  $("list-count").textContent = t("{count} tâches", { count: visible.length });
   const focusedView = document.activeElement?.dataset.fileView;
   const focusedJob = document.activeElement?.dataset.viewJob;
   const focusedReport = document.activeElement?.dataset.reportJob;
@@ -460,7 +462,7 @@ function render() {
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
-      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>${reportButton(job)}<div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div>${sourceLink(job)}</div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
+      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>${reportButton(job)}<div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${esc(fileCount(job.file_count, job.completed_files))} · ${esc(job.title)}</small></div>${sourceLink(job)}</div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
   if (focusedReport)
@@ -560,12 +562,12 @@ function renderDetail() {
     job.hold_reason === "disk"
       ? t("Espace disque insuffisant.")
       : job.failed_files
-        ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
+        ? `${fileCount(job.failed_files)} · ${t("À vérifier")} → ${t("Réessayer")}`
         : "";
 }
 function reportButton(job) {
   const count = job.incident_count || 0;
-  const label = `${t("Lire le rapport")}${count ? ` · ${t("{count} incidents consignés", { count: number(count) })}` : ""}`;
+  const label = `${t("Lire le rapport")}${count ? ` · ${t("{count} incidents consignés", { count })}` : ""}`;
   return `<button type="button" class="task-report ${count ? "has-incidents" : ""}" data-report-job="${esc(job.id)}" title="${esc(label)}" aria-label="${esc(label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg>${count ? '<span aria-hidden="true">!</span>' : ""}</button>`;
 }
 function sourceLink(job) {
@@ -982,7 +984,7 @@ function renderRefreshSummary() {
   $("refresh-apply").disabled =
     refreshBusy || active || !refreshPlan?.selected_count;
   $("refresh-summary").textContent = refreshPlan
-    ? `${t("Nouveaux")} : ${refreshPlan.added_count} · ${t("Modifiés")} : ${refreshPlan.changed_count} · ${t("Absents conservés")} : ${refreshPlan.absent_count} — ${refreshPlan.selected_count} / ${refreshPlan.file_count} ${t("fichiers")} · ${bytes(refreshPlan.selected_size)}`
+    ? `${t("Nouveaux")} : ${refreshPlan.added_count} · ${t("Modifiés")} : ${refreshPlan.changed_count} · ${t("Absents conservés")} : ${refreshPlan.absent_count} — ${fileCount(refreshPlan.file_count, refreshPlan.selected_count)} · ${bytes(refreshPlan.selected_size)}`
     : "";
 }
 $("refresh-manifest").onclick = async () => {
@@ -1135,7 +1137,9 @@ $("add-form").onsubmit = async (event) => {
     ),
   ];
   if (!urls.length || urls.length > 20) {
-    $("add-error").textContent = "Saisissez entre 1 et 20 URL, une par ligne.";
+    $("add-error").textContent = t(
+      "Saisissez entre 1 et 20 URL, une par ligne.",
+    );
     return;
   }
   const options = {
@@ -1186,12 +1190,9 @@ $("add-form").onsubmit = async (event) => {
     }
     $("add-error").textContent = failures.join("\n");
     $("create-button").hidden = !state.plans.length;
-    $("create-button").textContent = t(
-      state.plans.length === 1
-        ? "Ajouter {count} tâche"
-        : "Ajouter {count} tâches",
-      { count: number(state.plans.length) },
-    );
+    $("create-button").textContent = t("Ajouter {count} tâches", {
+      count: state.plans.length,
+    });
     $("inspect-button").hidden = !!state.plans.length;
   } finally {
     finishInspection(inspection);
@@ -1234,7 +1235,7 @@ function renderPreviews() {
   $("preview-list").innerHTML = state.plans
     .map(
       (plan) =>
-        `<div class="preview-item"><strong>▰ ${esc(plan.identifier)}</strong><p>${number(plan.selected_count ?? plan.file_count)} / ${number(plan.file_count)} ${esc(t("fichiers"))} · ${bytes(plan.selected_size ?? plan.total_size)}${plan.unknown_sizes ? t(" + tailles inconnues") : ""}</p>${plan.private_files ? `<p>${number(plan.private_files)} ${esc(t("fichiers privés exclus"))}</p>` : ""}<p><code>↳ ${esc(plan.sample?.[0])}${plan.file_count > 1 ? "…" : ""}</code></p>${plan.plan_id ? `<button type="button" data-select-plan="${esc(plan.plan_id)}" ${state.inspection ? "disabled" : ""}>${esc(t("Choisir les fichiers…"))}</button>` : ""}</div>`,
+        `<div class="preview-item"><strong>▰ ${esc(plan.identifier)}</strong><p>${esc(fileCount(plan.file_count, plan.selected_count ?? plan.file_count))} · ${bytes(plan.selected_size ?? plan.total_size)}${plan.unknown_sizes ? t(" + tailles inconnues") : ""}</p>${plan.private_files ? `<p>${esc(t("{count} fichiers privés exclus", { count: plan.private_files }))}</p>` : ""}<p><code>↳ ${esc(plan.sample?.[0])}${plan.file_count > 1 ? "…" : ""}</code></p>${plan.plan_id ? `<button type="button" data-select-plan="${esc(plan.plan_id)}" ${state.inspection ? "disabled" : ""}>${esc(t("Choisir les fichiers…"))}</button>` : ""}</div>`,
     )
     .join("");
 }
@@ -1285,7 +1286,7 @@ async function loadSelection(change) {
     $("selection-path").textContent =
       selectionPrefix || selectionPlan.identifier;
     $("selection-total").textContent =
-      `${number(data.selected_count)} / ${number(data.file_count)} ${t("fichiers")} · ${bytes(data.selected_size)}${data.unknown_sizes ? " +" : ""}`;
+      `${fileCount(data.file_count, data.selected_count)} · ${bytes(data.selected_size)}${data.unknown_sizes ? " +" : ""}`;
     $("selection-up").disabled = !selectionPrefix;
     $("selection-prev").disabled = !selectionOffset;
     $("selection-next").disabled = selectionOffset + 100 >= data.total;

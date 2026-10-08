@@ -1,3 +1,4 @@
+import ast
 import json
 import re
 import unittest
@@ -19,14 +20,21 @@ class LocaleTests(unittest.TestCase):
             with self.subTest(language=language):
                 catalog = json.loads((STATIC / "locales" / f"{language}.json").read_text())
                 self.assertEqual(set(catalog), set(source))
-                for key, text in catalog.items():
-                    self.assertTrue(text.strip(), (language, key))
-                    self.assertEqual(
-                        sorted(re.findall(r"\{\w+\}", key)),
-                        sorted(re.findall(r"\{\w+\}", text)),
-                        (language, key),
-                    )
-                    self.assertNotRegex(text, r"__\d+__|\d{4}\|", (language, key))
+                for key, value in catalog.items():
+                    if isinstance(value, dict):
+                        self.assertIn("other", value, (language, key))
+                        self.assertLessEqual(
+                            set(value), {"zero", "one", "two", "few", "many", "other"}
+                        )
+                    for text in value.values() if isinstance(value, dict) else [value]:
+                        self.assertIsInstance(text, str, (language, key))
+                        self.assertTrue(text.strip(), (language, key))
+                        self.assertEqual(
+                            sorted(re.findall(r"\{\w+\}", key)),
+                            sorted(re.findall(r"\{\w+\}", text)),
+                            (language, key),
+                        )
+                        self.assertNotRegex(text, r"__\d+__|\d{4}\|", (language, key))
 
     def test_static_and_dynamic_message_ids_exist(self):
         source = json.loads((STATIC / "locales/fr.json").read_text())
@@ -36,3 +44,25 @@ class LocaleTests(unittest.TestCase):
         javascript = (STATIC / "app.js").read_text()
         for key in re.findall(r'\bt\(\s*("(?:[^"\\]|\\.)*")', javascript):
             self.assertIn(json.loads(key), source)
+
+    def test_gateway_and_transfer_diagnostics_have_catalog_entries(self):
+        catalog = json.loads((STATIC / "locales/fr.json").read_text())
+        gateway = STATIC.parents[2] / "packaging/synology/ui/gateway.cgi"
+        for node in ast.walk(ast.parse(gateway.read_text())):
+            if isinstance(node, ast.Dict):
+                for key, value in zip(node.keys, node.values, strict=True):
+                    if (
+                        isinstance(key, ast.Constant)
+                        and key.value == "error"
+                        and isinstance(value, ast.Constant)
+                    ):
+                        self.assertIn(value.value, catalog)
+        engine = STATIC.parent / "engine.py"
+        for node in ast.walk(ast.parse(engine.read_text())):
+            if (
+                isinstance(node, ast.Raise)
+                and isinstance(node.exc, ast.Call)
+                and node.exc.args
+                and isinstance(node.exc.args[0], ast.Constant)
+            ):
+                self.assertIn(node.exc.args[0].value, catalog)

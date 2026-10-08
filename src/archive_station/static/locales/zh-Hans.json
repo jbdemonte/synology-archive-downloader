@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ 父文件夹",
   "＋ Ajouter mes premières URL": "＋ 添加我的第一个 URL",
   "＋ Nouveau dossier": "＋ 新建文件夹",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 需要授权文件夹？"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 需要授权文件夹？",
+  "{count} fichiers": "{count} 个文件",
+  "{completed} / {count} fichiers": "{completed} / {count} 个文件",
+  "{count} fichiers privés exclus": "已排除的私有文件: {count}",
+  "Route invalide.": "无效的路由。",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM 会话已过期。请重新登录 DSM，然后重新打开 Archive Station。",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station 需要 DSM 管理员账户。",
+  "Taille de requête invalide.": "请求大小无效。",
+  "Content-Type application/json requis.": "需要 Content-Type application/json。",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "无法获取服务响应。请稍后重试。",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station 未运行。请打开套件中心。",
+  "Transfert interrompu avant la fin du fichier.": "文件传输在完成前中断。",
+  "Incomplete disk write; transfer will resume from disk.": "磁盘写入不完整，将从部分文件继续传输。",
+  "Réponse HTTP inattendue : {status}": "意外的 HTTP 响应： {status}"
 }

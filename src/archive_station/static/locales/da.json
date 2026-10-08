@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Tilføj sat på pause, for at starte senere",
   "Ajouter les téléchargements": "Tilføj downloads",
   "Ajouter {count} tâche": "Tilføj {count} opgave",
-  "Ajouter {count} tâches": "Tilføj {count} opgaver",
+  "Ajouter {count} tâches": {
+    "one": "Tilføj {count} opgave",
+    "other": "Tilføj {count} opgaver"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analyserer URL {current} af {total}...",
   "Analyse en cours…": "Analyser...",
   "Analyse {current} / {total}…": "Analyserer {current} / {total}...",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "af",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Mislykkede filer: {count}. Udvid mapperne for at se deres status, og vælg derefter Prøv igen.",
-  "{count} incidents consignés": "{count} registrerede hændelser",
+  "{count} incidents consignés": {
+    "one": "{count} registreret hændelse",
+    "other": "{count} registrerede hændelser"
+  },
   "{count} tâche": "{count} opgave",
-  "{count} tâches": "{count} opgaver",
+  "{count} tâches": {
+    "one": "{count} opgave",
+    "other": "{count} opgaver"
+  },
   "{size} disponibles": "{size} tilgængelig",
   "· une par ligne": "· en pr. linje",
   "À suivre": "Næste",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Overordnet mappe",
   "＋ Ajouter mes premières URL": "＋ Tilføj mine første URL'er",
   "＋ Nouveau dossier": "＋ Ny mappe",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Skal du godkende en mappe?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Skal du godkende en mappe?",
+  "{count} fichiers": {
+    "one": "{count} fil",
+    "other": "{count} filer"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} fil",
+    "other": "{completed} / {count} filer"
+  },
+  "{count} fichiers privés exclus": "Udeladte private filer: {count}",
+  "Route invalide.": "Ugyldig rute.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-sessionen er udløbet. Log ind på DSM igen, og åbn Archive Station igen.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station kræver en DSM-administratorkonto.",
+  "Taille de requête invalide.": "Ugyldig anmodningsstørrelse.",
+  "Content-Type application/json requis.": "Content-Type application/json er påkrævet.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Tjenestens svar er ikke tilgængeligt. Prøv igen om lidt.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station kører ikke. Åbn Pakkecenter.",
+  "Transfert interrompu avant la fin du fichier.": "Overførsel afbrudt før filens slutning.",
+  "Incomplete disk write; transfer will resume from disk.": "Ufuldstændig diskskrivning; overførslen genoptages fra den delvise fil.",
+  "Réponse HTTP inattendue : {status}": "Uventet HTTP-svar: {status}"
 }

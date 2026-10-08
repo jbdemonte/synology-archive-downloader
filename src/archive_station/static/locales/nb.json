@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Legg til midlertidig stoppet for å starte senere",
   "Ajouter les téléchargements": "Legg til nedlastinger",
   "Ajouter {count} tâche": "Legg til {count} oppgave",
-  "Ajouter {count} tâches": "Legg til {count} oppgaver",
+  "Ajouter {count} tâches": {
+    "one": "Legg til {count} oppgave",
+    "other": "Legg til {count} oppgaver"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analyser URL {current} av {total}...",
   "Analyse en cours…": "Analyser...",
   "Analyse {current} / {total}…": "Analyserer {current} / {total}...",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "av",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Mislykkede filer: {count}. Utvid mappene for å se statusen deres, og velg deretter Prøv på nytt.",
-  "{count} incidents consignés": "{count} registrerte hendelser",
+  "{count} incidents consignés": {
+    "one": "{count} registrert hendelse",
+    "other": "{count} registrerte hendelser"
+  },
   "{count} tâche": "{count} oppgave",
-  "{count} tâches": "{count} oppgaver",
+  "{count} tâches": {
+    "one": "{count} oppgave",
+    "other": "{count} oppgaver"
+  },
   "{size} disponibles": "{size} tilgjengelig",
   "· une par ligne": "· én per linje",
   "À suivre": "Neste",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Overordnet mappe",
   "＋ Ajouter mes premières URL": "＋ Legg til mine første nettadresser",
   "＋ Nouveau dossier": "＋ Ny mappe",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Trenger du å autorisere en mappe?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Trenger du å autorisere en mappe?",
+  "{count} fichiers": {
+    "one": "{count} fil",
+    "other": "{count} filer"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} fil",
+    "other": "{completed} / {count} filer"
+  },
+  "{count} fichiers privés exclus": "Utelatte private filer: {count}",
+  "Route invalide.": "Ugyldig rute.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-økten er utløpt. Logg inn på DSM igjen og åpne Archive Station på nytt.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station krever en DSM-administratorkonto.",
+  "Taille de requête invalide.": "Ugyldig forespørselsstørrelse.",
+  "Content-Type application/json requis.": "Content-Type application/json er påkrevd.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Tjenestens svar er utilgjengelig. Prøv igjen om litt.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station kjører ikke. Åpne Pakkesenter.",
+  "Transfert interrompu avant la fin du fichier.": "Overføring avbrutt før slutten av filen.",
+  "Incomplete disk write; transfer will resume from disk.": "Ufullstendig diskskriving; overføringen fortsetter fra den delvise filen.",
+  "Réponse HTTP inattendue : {status}": "Uventet HTTP-svar: {status}"
 }

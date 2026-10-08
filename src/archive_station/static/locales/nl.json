@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Toevoegen gepauzeerd, om later te beginnen",
   "Ajouter les téléchargements": "Downloads toevoegen",
   "Ajouter {count} tâche": "Voeg {count} taak toe",
-  "Ajouter {count} tâches": "Voeg {count} taken toe",
+  "Ajouter {count} tâches": {
+    "one": "Voeg {count} taak",
+    "other": "Voeg {count} taken"
+  },
   "Analyse de l’URL {current} sur {total}…": "URL {current} van {total}… analyseren",
   "Analyse en cours…": "Analyseren…",
   "Analyse {current} / {total}…": "Analyseren van {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "van",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Mislukte bestanden: {count}. Vouw de mappen uit om hun status te zien en selecteer vervolgens Opnieuw proberen.",
-  "{count} incidents consignés": "{count} vastgelegde incidenten",
+  "{count} incidents consignés": {
+    "one": "{count} vastgelegd incident",
+    "other": "{count} vastgelegde incidenten"
+  },
   "{count} tâche": "{count} taak",
-  "{count} tâches": "{count} taken",
+  "{count} tâches": {
+    "one": "{count} taak",
+    "other": "{count} taken"
+  },
   "{size} disponibles": "{size} beschikbaar",
   "· une par ligne": "· één per regel",
   "À suivre": "Hierna",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Bovenliggende map",
   "＋ Ajouter mes premières URL": "＋ Mijn eerste URL's toevoegen",
   "＋ Nouveau dossier": "＋ Nieuwe map",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Wilt u een map autoriseren?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Wilt u een map autoriseren?",
+  "{count} fichiers": {
+    "one": "{count} bestand",
+    "other": "{count} bestanden"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} bestand",
+    "other": "{completed} / {count} bestanden"
+  },
+  "{count} fichiers privés exclus": "Uitgesloten privébestanden: {count}",
+  "Route invalide.": "Ongeldige route.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-sessie verlopen. Meld u opnieuw aan bij DSM en open Archive Station opnieuw.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station vereist een DSM-beheerdersaccount.",
+  "Taille de requête invalide.": "Ongeldige aanvraaggrootte.",
+  "Content-Type application/json requis.": "Content-Type application/json is vereist.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Antwoord van de service niet beschikbaar. Probeer het zo opnieuw.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station is niet actief. Open Package Center.",
+  "Transfert interrompu avant la fin du fichier.": "Overdracht onderbroken vóór het einde van het bestand.",
+  "Incomplete disk write; transfer will resume from disk.": "Onvolledige schrijfactie; de overdracht wordt hervat vanaf het gedeeltelijke bestand.",
+  "Réponse HTTP inattendue : {status}": "Onverwachte HTTP-reactie: {status}"
 }

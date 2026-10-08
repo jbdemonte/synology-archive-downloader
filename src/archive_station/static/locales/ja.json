@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ 親フォルダー",
   "＋ Ajouter mes premières URL": "＋ 最初の URL を追加",
   "＋ Nouveau dossier": "＋ 新しいフォルダー",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 フォルダーを認証する必要がありますか?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 フォルダーを認証する必要がありますか?",
+  "{count} fichiers": "{count} ファイル",
+  "{completed} / {count} fichiers": "{completed} / {count} ファイル",
+  "{count} fichiers privés exclus": "除外された非公開ファイル: {count}",
+  "Route invalide.": "無効なルートです。",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSMセッションの有効期限が切れました。DSMに再ログインしてArchive Stationを開いてください。",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive StationにはDSM管理者アカウントが必要です。",
+  "Taille de requête invalide.": "リクエストサイズが無効です。",
+  "Content-Type application/json requis.": "Content-Type application/jsonが必要です。",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "サービスの応答を取得できません。しばらくしてから再試行してください。",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Stationが起動していません。パッケージセンターを開いてください。",
+  "Transfert interrompu avant la fin du fichier.": "ファイルの終わりに達する前に転送が中断されました。",
+  "Incomplete disk write; transfer will resume from disk.": "ディスクへの書き込みが不完全です。部分ファイルから転送を再開します。",
+  "Réponse HTTP inattendue : {status}": "予期しない HTTP 応答: {status}"
 }

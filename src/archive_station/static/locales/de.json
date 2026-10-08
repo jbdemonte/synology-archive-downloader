@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Hinzufügen angehalten, um später zu beginnen",
   "Ajouter les téléchargements": "Downloads hinzufügen",
   "Ajouter {count} tâche": "{count} Aufgabe hinzufügen",
-  "Ajouter {count} tâches": "Füge {count} Aufgaben hinzu",
+  "Ajouter {count} tâches": {
+    "one": "{count} Aufgabe",
+    "other": "{count} Aufgaben"
+  },
   "Analyse de l’URL {current} sur {total}…": "URL {current} von {total} wird analysiert…",
   "Analyse en cours…": "Analysieren…",
   "Analyse {current} / {total}…": "Analyse von {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "von",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Fehlgeschlagene Dateien: {count}. Erweitern Sie die Ordner, um ihren Status anzuzeigen, und wählen Sie dann Wiederholen aus.",
-  "{count} incidents consignés": "{count} protokollierte Vorfälle",
+  "{count} incidents consignés": {
+    "one": "{count} protokollierter Vorfall",
+    "other": "{count} protokollierte Vorfälle"
+  },
   "{count} tâche": "{count} Aufgabe",
-  "{count} tâches": "{count} Aufgaben",
+  "{count} tâches": {
+    "one": "{count} Aufgabe",
+    "other": "{count} Aufgaben"
+  },
   "{size} disponibles": "{size} verfügbar",
   "· une par ligne": "· eine pro Zeile",
   "À suivre": "Als Nächstes",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Übergeordneter Ordner",
   "＋ Ajouter mes premières URL": "＋ Meine ersten URLs hinzufügen",
   "＋ Nouveau dossier": "＋ Neuer Ordner",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Müssen Sie einen Ordner autorisieren?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Müssen Sie einen Ordner autorisieren?",
+  "{count} fichiers": {
+    "one": "{count} Datei",
+    "other": "{count} Dateien"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} Datei",
+    "other": "{completed} / {count} Dateien"
+  },
+  "{count} fichiers privés exclus": "Ausgeschlossene private Dateien: {count}",
+  "Route invalide.": "Ungültige Route.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM-Sitzung abgelaufen. Melden Sie sich erneut bei DSM an und öffnen Sie Archive Station wieder.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station benötigt ein DSM-Administratorkonto.",
+  "Taille de requête invalide.": "Ungültige Anfragegröße.",
+  "Content-Type application/json requis.": "Content-Type application/json ist erforderlich.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Dienst antwortet nicht. Versuchen Sie es in Kürze erneut.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station läuft nicht. Öffnen Sie das Paket-Zentrum.",
+  "Transfert interrompu avant la fin du fichier.": "Übertragung vor dem Dateiende unterbrochen.",
+  "Incomplete disk write; transfer will resume from disk.": "Unvollständiger Schreibvorgang; die Übertragung wird anhand der Teildatei fortgesetzt.",
+  "Réponse HTTP inattendue : {status}": "Unerwartete HTTP-Antwort: {status}"
 }

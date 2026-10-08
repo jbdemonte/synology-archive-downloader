@@ -6,7 +6,7 @@
   "0 = illimitée · 1 024 Kio/s ≈ 1 Mio/s": "0 = unlimited · 1024 KiB/s ≈ 1 MiB/s",
   "0 o": "0 B",
   "0 o/s": "0 B/s",
-  "0 tâche": "0 task",
+  "0 tâche": "0 tasks",
   "Absents conservés": "Absent files kept",
   "Accordez": "Grant",
   "Accès au dossier refusé. Vérifiez les permissions de l’utilisateur système ArchiveStation dans DSM.": "Folder access denied. Check the ArchiveStation system user permissions in DSM.",
@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Add paused, to start later",
   "Ajouter les téléchargements": "Add downloads",
   "Ajouter {count} tâche": "Add {count} task",
-  "Ajouter {count} tâches": "Add {count} tasks",
+  "Ajouter {count} tâches": {
+    "one": "Add {count} task",
+    "other": "Add {count} tasks"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analyzing URL {current} of {total}…",
   "Analyse en cours…": "Analyzing…",
   "Analyse {current} / {total}…": "Analyzing {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "of",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Failed files: {count}. Expand the folders to see their status, then select Retry.",
-  "{count} incidents consignés": "{count} recorded incidents",
+  "{count} incidents consignés": {
+    "one": "{count} recorded incident",
+    "other": "{count} recorded incidents"
+  },
   "{count} tâche": "{count} task",
-  "{count} tâches": "{count} tasks",
+  "{count} tâches": {
+    "one": "{count} task",
+    "other": "{count} tasks"
+  },
   "{size} disponibles": "{size} available",
   "· une par ligne": "· one per line",
   "À suivre": "Up next",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Parent folder",
   "＋ Ajouter mes premières URL": "＋ Add my first URLs",
   "＋ Nouveau dossier": "＋ New folder",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Need to authorize a folder?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Need to authorize a folder?",
+  "{count} fichiers": {
+    "one": "{count} file",
+    "other": "{count} files"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} file",
+    "other": "{completed} / {count} files"
+  },
+  "{count} fichiers privés exclus": "Excluded private files: {count}",
+  "Route invalide.": "Invalid route.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "DSM session expired. Sign in to DSM again, then reopen Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station requires a DSM administrator account.",
+  "Taille de requête invalide.": "Invalid request size.",
+  "Content-Type application/json requis.": "Content-Type application/json is required.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Service response unavailable. Try again shortly.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station is not running. Open Package Center.",
+  "Transfert interrompu avant la fin du fichier.": "Transfer interrupted before the end of the file.",
+  "Incomplete disk write; transfer will resume from disk.": "Incomplete disk write; transfer will resume from disk.",
+  "Réponse HTTP inattendue : {status}": "Unexpected HTTP response: {status}"
 }

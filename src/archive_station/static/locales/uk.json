@@ -25,7 +25,12 @@
   "Ajouter en pause, pour démarrer plus tard": "Додати призупинено, щоб почати пізніше",
   "Ajouter les téléchargements": "Додати завантаження",
   "Ajouter {count} tâche": "Додати {count} завдання",
-  "Ajouter {count} tâches": "Додати {count} завдань",
+  "Ajouter {count} tâches": {
+    "one": "Додати {count} завдання",
+    "few": "Додати {count} завдання",
+    "many": "Додати {count} завдань",
+    "other": "Додати {count} завдання"
+  },
   "Analyse de l’URL {current} sur {total}…": "Аналіз URL {current} з {total}…",
   "Analyse en cours…": "Аналіз…",
   "Analyse {current} / {total}…": "Аналіз {current} / {total}…",
@@ -269,7 +274,12 @@
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Помилка файлів: {count}. Розгорніть папки, щоб побачити їхній статус, а потім виберіть Повторити.",
   "{count} incidents consignés": "Зареєстровано подій: {count}",
   "{count} tâche": "{count} завдання",
-  "{count} tâches": "{count} завдань",
+  "{count} tâches": {
+    "one": "{count} завдання",
+    "few": "{count} завдання",
+    "many": "{count} завдань",
+    "other": "{count} завдання"
+  },
   "{size} disponibles": "{size} в наявності",
   "· une par ligne": "· по одному на рядок",
   "À suivre": "Наступні",
@@ -283,5 +293,28 @@
   "↑ Dossier parent": "↑ Батьківська папка",
   "＋ Ajouter mes premières URL": "＋ Додати мої перші URL-адреси",
   "＋ Nouveau dossier": "＋ Нова папка",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Потрібно авторизувати папку?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Потрібно авторизувати папку?",
+  "{count} fichiers": {
+    "one": "{count} файл",
+    "few": "{count} файли",
+    "many": "{count} файлів",
+    "other": "{count} файлу"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} файл",
+    "few": "{completed} / {count} файли",
+    "many": "{completed} / {count} файлів",
+    "other": "{completed} / {count} файлу"
+  },
+  "{count} fichiers privés exclus": "Виключені приватні файли: {count}",
+  "Route invalide.": "Неприпустимий маршрут.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Сеанс DSM завершився. Увійдіть до DSM знову та відкрийте Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station потребує облікового запису адміністратора DSM.",
+  "Taille de requête invalide.": "Неприпустимий розмір запиту.",
+  "Content-Type application/json requis.": "Потрібен Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Відповідь служби недоступна. Спробуйте ще раз трохи пізніше.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station не запущено. Відкрийте Центр пакетів.",
+  "Transfert interrompu avant la fin du fichier.": "Передачу перервано до кінця файлу.",
+  "Incomplete disk write; transfer will resume from disk.": "Неповний запис на диск; передача продовжиться з часткового файлу.",
+  "Réponse HTTP inattendue : {status}": "Неочікувана відповідь HTTP: {status}"
 }

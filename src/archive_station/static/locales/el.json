@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Προσθήκη σε παύση, για να ξεκινήσει αργότερα",
   "Ajouter les téléchargements": "Προσθήκη λήψεων",
   "Ajouter {count} tâche": "Προσθήκη {count} εργασίας",
-  "Ajouter {count} tâches": "Προσθήκη {count} εργασιών",
+  "Ajouter {count} tâches": {
+    "one": "Προσθήκη {count} εργασία",
+    "other": "Προσθήκη {count} εργασίες"
+  },
   "Analyse de l’URL {current} sur {total}…": "Ανάλυση URL {current} από {total}…",
   "Analyse en cours…": "Ανάλυση…",
   "Analyse {current} / {total}…": "Ανάλυση {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "του",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Αποτυχία αρχεία: {count}. Αναπτύξτε τους φακέλους για να δείτε την κατάστασή τους και, στη συνέχεια, επιλέξτε Επανάληψη.",
-  "{count} incidents consignés": "{count} καταγεγραμμένα συμβάντα",
+  "{count} incidents consignés": {
+    "one": "{count} καταγεγραμμένο συμβάν",
+    "other": "{count} καταγεγραμμένα συμβάντα"
+  },
   "{count} tâche": "{count} εργασία",
-  "{count} tâches": "{count} εργασίες",
+  "{count} tâches": {
+    "one": "{count} εργασία",
+    "other": "{count} εργασίες"
+  },
   "{size} disponibles": "{size} διαθέσιμο",
   "· une par ligne": "· ένα ανά γραμμή",
   "À suivre": "Επόμενα",
@@ -283,5 +292,24 @@
   "↑ Dossier parent": "↑ Γονικός φάκελος",
   "＋ Ajouter mes premières URL": "＋ Προσθήκη των πρώτων μου διευθύνσεων URL",
   "＋ Nouveau dossier": "＋ Νέος φάκελος",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Θέλετε να εξουσιοδοτήσετε έναν φάκελο;"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Θέλετε να εξουσιοδοτήσετε έναν φάκελο;",
+  "{count} fichiers": {
+    "one": "{count} αρχείο",
+    "other": "{count} αρχεία"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} αρχείο",
+    "other": "{completed} / {count} αρχεία"
+  },
+  "{count} fichiers privés exclus": "Εξαιρούμενα ιδιωτικά αρχεία: {count}",
+  "Route invalide.": "Μη έγκυρη διαδρομή.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Η συνεδρία DSM έληξε. Συνδεθείτε ξανά στο DSM και ανοίξτε το Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Το Archive Station απαιτεί λογαριασμό διαχειριστή DSM.",
+  "Taille de requête invalide.": "Μη έγκυρο μέγεθος αιτήματος.",
+  "Content-Type application/json requis.": "Απαιτείται Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Η απόκριση της υπηρεσίας δεν είναι διαθέσιμη. Δοκιμάστε ξανά σε λίγο.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Το Archive Station δεν εκτελείται. Ανοίξτε το Κέντρο πακέτων.",
+  "Transfert interrompu avant la fin du fichier.": "Η μεταφορά διακόπηκε πριν από το τέλος του αρχείου.",
+  "Incomplete disk write; transfer will resume from disk.": "Ελλιπής εγγραφή στον δίσκο· η μεταφορά θα συνεχιστεί από το μερικό αρχείο.",
+  "Réponse HTTP inattendue : {status}": "Απροσδόκητη απόκριση HTTP: {status}"
 }

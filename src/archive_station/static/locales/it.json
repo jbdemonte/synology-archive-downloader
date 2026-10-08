@@ -25,7 +25,10 @@
   "Ajouter en pause, pour démarrer plus tard": "Aggiungi in pausa, per iniziare più tardi",
   "Ajouter les téléchargements": "Aggiungi download",
   "Ajouter {count} tâche": "Aggiungi {count} attività",
-  "Ajouter {count} tâches": "Aggiungi {count} attività",
+  "Ajouter {count} tâches": {
+    "one": "Aggiungi {count} compito",
+    "other": "Aggiungi {count} compiti"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analisi dell'URL {current} di {total}…",
   "Analyse en cours…": "Analisi in corso...",
   "Analyse {current} / {total}…": "Analisi in corso {current} / {total}…",
@@ -267,9 +270,15 @@
   "o": "B",
   "sur": "di",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "File non riusciti: {count}. Espandi le cartelle per visualizzarne lo stato, quindi seleziona Riprova.",
-  "{count} incidents consignés": "{count} incidenti registrati",
+  "{count} incidents consignés": {
+    "one": "{count} incidente registrato",
+    "other": "{count} incidenti registrati"
+  },
   "{count} tâche": "{count} compito",
-  "{count} tâches": "{count} compiti",
+  "{count} tâches": {
+    "one": "{count} compito",
+    "other": "{count} compiti"
+  },
   "{size} disponibles": "{size} disponibile",
   "· une par ligne": "· uno per riga",
   "À suivre": "A seguire",
@@ -283,5 +292,18 @@
   "↑ Dossier parent": "↑ Cartella principale",
   "＋ Ajouter mes premières URL": "＋ Aggiungi i miei primi URL",
   "＋ Nouveau dossier": "＋ Nuova cartella",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Hai bisogno di autorizzare una cartella?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Hai bisogno di autorizzare una cartella?",
+  "{count} fichiers": "{count} file",
+  "{completed} / {count} fichiers": "{completed} / {count} file",
+  "{count} fichiers privés exclus": "File privati esclusi: {count}",
+  "Route invalide.": "Percorso non valido.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Sessione DSM scaduta. Accedere nuovamente a DSM e riaprire Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station richiede un account amministratore DSM.",
+  "Taille de requête invalide.": "Dimensione della richiesta non valida.",
+  "Content-Type application/json requis.": "È richiesto Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Risposta del servizio non disponibile. Riprovare tra poco.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station non è in esecuzione. Aprire Centro pacchetti.",
+  "Transfert interrompu avant la fin du fichier.": "Trasferimento interrotto prima della fine del file.",
+  "Incomplete disk write; transfer will resume from disk.": "Scrittura su disco incompleta; il trasferimento riprenderà dal file parziale.",
+  "Réponse HTTP inattendue : {status}": "Risposta HTTP imprevista: {status}"
 }

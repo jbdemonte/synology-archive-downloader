@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ โฟลเดอร์หลัก",
   "＋ Ajouter mes premières URL": "＋ เพิ่ม URL แรกของฉัน",
   "＋ Nouveau dossier": "＋ โฟลเดอร์ใหม่",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 ต้องการอนุญาตโฟลเดอร์หรือไม่?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 ต้องการอนุญาตโฟลเดอร์หรือไม่?",
+  "{count} fichiers": "{count} ไฟล์",
+  "{completed} / {count} fichiers": "{completed} / {count} ไฟล์",
+  "{count} fichiers privés exclus": "ไฟล์ส่วนตัวที่ไม่รวม: {count}",
+  "Route invalide.": "เส้นทางไม่ถูกต้อง",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "เซสชัน DSM หมดอายุ ลงชื่อเข้าใช้ DSM อีกครั้ง แล้วเปิด Archive Station ใหม่",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station ต้องใช้บัญชีผู้ดูแลระบบ DSM",
+  "Taille de requête invalide.": "ขนาดคำขอไม่ถูกต้อง",
+  "Content-Type application/json requis.": "ต้องใช้ Content-Type application/json",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "ไม่สามารถรับคำตอบจากบริการได้ โปรดลองอีกครั้งในอีกสักครู่",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station ไม่ได้ทำงาน เปิดศูนย์แพ็กเกจ",
+  "Transfert interrompu avant la fin du fichier.": "การถ่ายโอนถูกขัดจังหวะก่อนสิ้นสุดไฟล์",
+  "Incomplete disk write; transfer will resume from disk.": "เขียนดิสก์ไม่สมบูรณ์ การถ่ายโอนจะดำเนินต่อจากไฟล์บางส่วน",
+  "Réponse HTTP inattendue : {status}": "การตอบสนอง HTTP ที่ไม่คาดคิด: {status}"
 }

@@ -25,7 +25,7 @@
   "Ajouter en pause, pour démarrer plus tard": "Tambahkan jeda, untuk memulai nanti",
   "Ajouter les téléchargements": "Tambahkan unduhan",
   "Ajouter {count} tâche": "Tambahkan tugas {count}",
-  "Ajouter {count} tâches": "Tambahkan {count} tugas",
+  "Ajouter {count} tâches": "Tambahkan tugas {count}",
   "Analyse de l’URL {current} sur {total}…": "Menganalisis URL {current} dari {total}…",
   "Analyse en cours…": "Menganalisis…",
   "Analyse {current} / {total}…": "Menganalisis {current} / {total}…",
@@ -283,5 +283,18 @@
   "↑ Dossier parent": "↑ Folder induk",
   "＋ Ajouter mes premières URL": "＋ Tambahkan URL pertama saya",
   "＋ Nouveau dossier": "＋ Folder baru",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Perlu mengotorisasi folder?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Perlu mengotorisasi folder?",
+  "{count} fichiers": "{count} berkas",
+  "{completed} / {count} fichiers": "{completed} / {count} berkas",
+  "{count} fichiers privés exclus": "Berkas privat yang dikecualikan: {count}",
+  "Route invalide.": "Rute tidak valid.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Sesi DSM berakhir. Masuk kembali ke DSM, lalu buka lagi Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station memerlukan akun administrator DSM.",
+  "Taille de requête invalide.": "Ukuran permintaan tidak valid.",
+  "Content-Type application/json requis.": "Content-Type application/json diperlukan.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Respons layanan tidak tersedia. Coba lagi sebentar lagi.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station tidak berjalan. Buka Pusat Paket.",
+  "Transfert interrompu avant la fin du fichier.": "Transfer terputus sebelum akhir berkas.",
+  "Incomplete disk write; transfer will resume from disk.": "Penulisan disk belum selesai; transfer akan dilanjutkan dari berkas parsial.",
+  "Réponse HTTP inattendue : {status}": "Respon HTTP tak terduga: {status}"
 }

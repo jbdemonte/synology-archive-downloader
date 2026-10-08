@@ -25,7 +25,12 @@
   "Ajouter en pause, pour démarrer plus tard": "Добавить на паузу, чтобы начать позже",
   "Ajouter les téléchargements": "Добавить загрузки",
   "Ajouter {count} tâche": "Добавить {count} задачу",
-  "Ajouter {count} tâches": "Добавить {count} задач",
+  "Ajouter {count} tâches": {
+    "one": "Добавить {count} задачу",
+    "few": "Добавить {count} задачи",
+    "many": "Добавить {count} задач",
+    "other": "Добавить {count} задачи"
+  },
   "Analyse de l’URL {current} sur {total}…": "Анализ URL {current} из {total}…",
   "Analyse en cours…": "Анализ…",
   "Analyse {current} / {total}…": "Анализ {current} / {total}…",
@@ -269,7 +274,12 @@
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Ошибочные файлы: {count}. Разверните папки, чтобы увидеть их статус, затем выберите «Повторить».",
   "{count} incidents consignés": "Зарегистрировано событий: {count}",
   "{count} tâche": "{count} задача",
-  "{count} tâches": "{count} задач",
+  "{count} tâches": {
+    "one": "{count} задача",
+    "few": "{count} задачи",
+    "many": "{count} задач",
+    "other": "{count} задачи"
+  },
   "{size} disponibles": "{size} доступен",
   "· une par ligne": "· по одному в строке",
   "À suivre": "Следующие",
@@ -283,5 +293,28 @@
   "↑ Dossier parent": "↑ Родительская папка",
   "＋ Ajouter mes premières URL": "＋ Добавить мои первые URL-адреса",
   "＋ Nouveau dossier": "+ Новая папка",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Нужно авторизовать папку?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Нужно авторизовать папку?",
+  "{count} fichiers": {
+    "one": "{count} файл",
+    "few": "{count} файла",
+    "many": "{count} файлов",
+    "other": "{count} файла"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} файл",
+    "few": "{completed} / {count} файла",
+    "many": "{completed} / {count} файлов",
+    "other": "{completed} / {count} файла"
+  },
+  "{count} fichiers privés exclus": "Исключённые закрытые файлы: {count}",
+  "Route invalide.": "Недопустимый маршрут.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Сеанс DSM истёк. Войдите в DSM снова и откройте Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station требует учётную запись администратора DSM.",
+  "Taille de requête invalide.": "Недопустимый размер запроса.",
+  "Content-Type application/json requis.": "Требуется Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Ответ службы недоступен. Повторите попытку чуть позже.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station не запущен. Откройте Центр пакетов.",
+  "Transfert interrompu avant la fin du fichier.": "Передача прервана до конца файла.",
+  "Incomplete disk write; transfer will resume from disk.": "Неполная запись на диск; передача продолжится из частичного файла.",
+  "Réponse HTTP inattendue : {status}": "Неожиданный HTTP-ответ: {status}"
 }

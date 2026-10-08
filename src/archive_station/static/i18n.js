@@ -61,6 +61,7 @@ const ArchiveI18n = (() => {
   };
   const version = new URL(document.currentScript.src).search;
   const cache = new Map();
+  let plurals = new Intl.PluralRules("en");
   let locale = "en",
     dictionary = {},
     english = {},
@@ -91,11 +92,22 @@ const ArchiveI18n = (() => {
     );
   }
   function t(message, values = {}) {
-    const text =
-      dictionary[message] ?? english[message] ?? String(message ?? "");
-    return text.replace(/\{(\w+)\}/g, (token, name) =>
-      String(values[name] ?? token),
-    );
+    const http = /^Réponse HTTP inattendue : (\d+)$/.exec(String(message));
+    if (http) {
+      message = "Réponse HTTP inattendue : {status}";
+      values = { status: http[1] };
+    }
+    let text = dictionary[message] ?? english[message] ?? String(message ?? "");
+    if (typeof text === "object") {
+      const category = plurals.select(Number(values.count ?? 0));
+      text = text[category] ?? text.other;
+    }
+    return text.replace(/\{(\w+)\}/g, (token, name) => {
+      const value = values[name] ?? token;
+      return typeof value === "number"
+        ? value.toLocaleString(locale)
+        : String(value);
+    });
   }
   function translateDocument() {
     document.documentElement.lang = locale;
@@ -143,6 +155,7 @@ const ArchiveI18n = (() => {
     english = base;
     dictionary = selected;
     locale = next;
+    plurals = new Intl.PluralRules(locale);
     translateDocument();
     return true;
   }

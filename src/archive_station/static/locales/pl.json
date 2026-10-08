@@ -25,7 +25,12 @@
   "Ajouter en pause, pour démarrer plus tard": "Dodaj wstrzymane, aby rozpocząć później",
   "Ajouter les téléchargements": "Dodaj pliki do pobrania",
   "Ajouter {count} tâche": "Dodaj {count} zadanie",
-  "Ajouter {count} tâches": "Dodaj {count} zadań",
+  "Ajouter {count} tâches": {
+    "one": "Dodaj {count} zadanie",
+    "few": "Dodaj {count} zadania",
+    "many": "Dodaj {count} zadań",
+    "other": "Dodaj {count} zadania"
+  },
   "Analyse de l’URL {current} sur {total}…": "Analizuję adres URL {current} z {total}…",
   "Analyse en cours…": "Analizuję…",
   "Analyse {current} / {total}…": "Analiza {current} / {total}…",
@@ -269,7 +274,12 @@
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Niepowodzenie plików: {count}. Rozwiń foldery, aby zobaczyć ich stan, a następnie wybierz opcję Spróbuj ponownie.",
   "{count} incidents consignés": "Zarejestrowane incydenty: {count}",
   "{count} tâche": "{count} zadanie",
-  "{count} tâches": "{count} zadań",
+  "{count} tâches": {
+    "one": "{count} zadanie",
+    "few": "{count} zadania",
+    "many": "{count} zadań",
+    "other": "{count} zadania"
+  },
   "{size} disponibles": "{size} dostępne",
   "· une par ligne": "· po jednym na linię",
   "À suivre": "Następne",
@@ -283,5 +293,28 @@
   "↑ Dossier parent": "↑ Folder nadrzędny",
   "＋ Ajouter mes premières URL": "+ Dodaj moje pierwsze adresy URL",
   "＋ Nouveau dossier": "+ Nowy folder",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Chcesz autoryzować folder?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Chcesz autoryzować folder?",
+  "{count} fichiers": {
+    "one": "{count} plik",
+    "few": "{count} pliki",
+    "many": "{count} plików",
+    "other": "{count} pliku"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} plik",
+    "few": "{completed} / {count} pliki",
+    "many": "{completed} / {count} plików",
+    "other": "{completed} / {count} pliku"
+  },
+  "{count} fichiers privés exclus": "Pominięte pliki prywatne: {count}",
+  "Route invalide.": "Nieprawidłowa ścieżka żądania.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Sesja DSM wygasła. Zaloguj się ponownie do DSM i otwórz Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station wymaga konta administratora DSM.",
+  "Taille de requête invalide.": "Nieprawidłowy rozmiar żądania.",
+  "Content-Type application/json requis.": "Wymagany jest Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Odpowiedź usługi jest niedostępna. Spróbuj ponownie za chwilę.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station nie działa. Otwórz Centrum pakietów.",
+  "Transfert interrompu avant la fin du fichier.": "Transfer przerwany przed końcem pliku.",
+  "Incomplete disk write; transfer will resume from disk.": "Niepełny zapis na dysku; transfer zostanie wznowiony z pliku częściowego.",
+  "Réponse HTTP inattendue : {status}": "Nieoczekiwana odpowiedź HTTP: {status}"
 }

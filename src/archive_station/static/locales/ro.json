@@ -25,7 +25,11 @@
   "Ajouter en pause, pour démarrer plus tard": "Adăugați întrerupt, pentru a începe mai târziu",
   "Ajouter les téléchargements": "Adăugați descărcări",
   "Ajouter {count} tâche": "Adăugați sarcina {count}",
-  "Ajouter {count} tâches": "Adăugați {count} sarcini",
+  "Ajouter {count} tâches": {
+    "one": "Adăugați sarcina {count} sarcină",
+    "other": "Adăugați sarcina {count} de sarcini",
+    "few": "Adăugați sarcina {count} sarcini"
+  },
   "Analyse de l’URL {current} sur {total}…": "Se analizează adresa URL {current} din {total}…",
   "Analyse en cours…": "Se analizează...",
   "Analyse {current} / {total}…": "Se analizează {current} / {total}…",
@@ -267,9 +271,17 @@
   "o": "B",
   "sur": "din",
   "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.": "Fișiere eșuate: {count}. Extindeți folderele pentru a vedea starea lor, apoi selectați Reîncercați.",
-  "{count} incidents consignés": "{count} incidente înregistrate",
+  "{count} incidents consignés": {
+    "one": "{count} incident înregistrat",
+    "other": "{count} de incidente înregistrate",
+    "few": "{count} incidente înregistrate"
+  },
   "{count} tâche": "{count} sarcină",
-  "{count} tâches": "{count} sarcini",
+  "{count} tâches": {
+    "one": "{count} sarcină",
+    "other": "{count} de sarcini",
+    "few": "{count} sarcini"
+  },
   "{size} disponibles": "{size} disponibil",
   "· une par ligne": "· unul pe linie",
   "À suivre": "Urmează",
@@ -283,5 +295,26 @@
   "↑ Dossier parent": "↑ Dosarul părinte",
   "＋ Ajouter mes premières URL": "＋ Adăugați primele mele adrese URL",
   "＋ Nouveau dossier": "＋ Dosar nou",
-  "🔒 Besoin d’autoriser un dossier ?": "🔒 Trebuie să autorizați un folder?"
+  "🔒 Besoin d’autoriser un dossier ?": "🔒 Trebuie să autorizați un folder?",
+  "{count} fichiers": {
+    "one": "{count} fișier",
+    "other": "{count} de fișiere",
+    "few": "{count} fișiere"
+  },
+  "{completed} / {count} fichiers": {
+    "one": "{completed} / {count} fișier",
+    "other": "{completed} / {count} de fișiere",
+    "few": "{completed} / {count} fișiere"
+  },
+  "{count} fichiers privés exclus": "Fișiere private excluse: {count}",
+  "Route invalide.": "Rută nevalidă.",
+  "Session DSM expirée. Reconnectez-vous à DSM, puis rouvrez Archive Station.": "Sesiunea DSM a expirat. Autentificați-vă din nou în DSM și redeschideți Archive Station.",
+  "Archive Station nécessite un compte administrateur DSM.": "Archive Station necesită un cont de administrator DSM.",
+  "Taille de requête invalide.": "Dimensiune nevalidă a cererii.",
+  "Content-Type application/json requis.": "Este necesar Content-Type application/json.",
+  "Réponse du service indisponible. Réessayez dans quelques instants.": "Răspunsul serviciului nu este disponibil. Reîncercați în câteva momente.",
+  "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station nu rulează. Deschideți Centrul de pachete.",
+  "Transfert interrompu avant la fin du fichier.": "Transfer întrerupt înainte de sfârșitul fișierului.",
+  "Incomplete disk write; transfer will resume from disk.": "Scriere incompletă pe disc; transferul va fi reluat din fișierul parțial.",
+  "Réponse HTTP inattendue : {status}": "Răspuns HTTP neașteptat: {status}"
 }
