@@ -1554,3 +1554,18 @@ dialog > form {
   color: #8b6800;
   margin-left: 3px;
 }
+
+.job-check {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin: 0 6px 0 0;
+  vertical-align: middle;
+}
+#global-action {
+  width: auto;
+  max-width: 190px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 12px;
+}

@@ -257,6 +257,8 @@ class WebApp:
                     source_url=body.get("url", "").strip(),
                 )
             return response({"id": job_id, "identifier": identifier}, 201)
+        if path == "/api/jobs/bulk" and method == "POST":
+            return response(self.store.bulk(body.get("action"), body.get("ids")))
         if path == "/api/jobs" and method == "GET":
             return response({"jobs": self.store.jobs(), "policy": policy(self.settings.get())})
         parts = path.strip("/").split("/")

@@ -246,6 +246,46 @@ class Store:
                 self.estimates.reset(job_id)
                 self.estimates.start(job_id)
 
+    def bulk(self, action, ids=None):
+        global_actions = {
+            "pause_all": ("pause", {"queued", "running"}),
+            "resume_all": ("resume", {"paused"}),
+            "remove_completed": ("remove", {"completed"}),
+        }
+        with self.lock:
+            if action in global_actions:
+                action, states = global_actions[action]
+                ids = [
+                    row["id"]
+                    for row in self.db.execute("SELECT id,status FROM jobs")
+                    if row["status"] in states
+                ]
+            elif action not in {"pause", "resume", "retry", "cancel", "remove"}:
+                raise ValueError("Action inconnue.")
+            elif (
+                not isinstance(ids, list)
+                or len(ids) > 500
+                or any(not isinstance(item, str) for item in ids)
+            ):
+                raise ValueError("Invalid task selection")
+            updated, skipped = [], []
+            for job_id in dict.fromkeys(ids):
+                job = self.db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+                if (
+                    not job
+                    or (action == "pause" and job["status"] not in {"queued", "running"})
+                    or (action in {"resume", "retry"} and job["status"] == "completed")
+                    or (action == "cancel" and job["status"] in {"completed", "cancelled"})
+                ):
+                    skipped.append(job_id)
+                    continue
+                try:
+                    self.action(job_id, action)
+                    updated.append(job_id)
+                except ValueError:
+                    skipped.append(job_id)
+            return {"updated": updated, "skipped": skipped}
+
     def pause_for_space(self, job_id):
         with self.lock, self.db:
             self.db.execute(

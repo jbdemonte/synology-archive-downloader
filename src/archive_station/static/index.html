@@ -215,6 +215,24 @@
                 ⌫ <span><span data-i18n="Retirer">Retirer</span></span>
               </button>
             </div>
+            <select
+              id="global-action"
+              aria-label="Actions globales"
+              data-i18n-aria-label="Actions globales"
+            >
+              <option value="" data-i18n="Actions globales">
+                Actions globales
+              </option>
+              <option value="pause_all" data-i18n="Tout mettre en pause">
+                Tout mettre en pause
+              </option>
+              <option value="resume_all" data-i18n="Tout reprendre">
+                Tout reprendre
+              </option>
+              <option value="remove_completed" data-i18n="Retirer les terminés">
+                Retirer les terminés
+              </option>
+            </select>
             <label class="search"
               ><span>⌕</span
               ><input
@@ -246,6 +264,13 @@
               <thead>
                 <tr>
                   <th class="name-column">
+                    <input
+                      type="checkbox"
+                      id="select-visible"
+                      class="job-check"
+                      aria-label="Tout sélectionner"
+                      data-i18n-aria-label="Tout sélectionner"
+                    />
                     <span data-i18n="Nom / arborescence"
                       >Nom / arborescence</span
                     >
@@ -919,6 +944,7 @@
         </h2>
       </div>
       <div class="dialog-body">
+        <p id="cancel-target-count"></p>
         <p>
           <span
             data-i18n="Tous les transferts de cette URL seront arrêtés. Les fichiers déjà reçus et les transferts partiels seront conservés."
@@ -977,6 +1003,7 @@
         </h2>
       </div>
       <div class="dialog-body">
+        <p id="remove-target-count"></p>
         <p>
           <span
             data-i18n="La tâche sera retirée de la liste. Les fichiers téléchargés et les transferts partiels seront conservés sur le NAS."

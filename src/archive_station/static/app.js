@@ -4,6 +4,7 @@ const $ = (id) => document.getElementById(id);
 const state = {
   jobs: [],
   selected: null,
+  checked: new Set(),
   filter: "all",
   search: "",
   settings: null,
@@ -395,11 +396,19 @@ function render() {
     (j) => j.status === "error" || j.failed_files,
   ).length;
   const visible = state.jobs.filter(matches);
+  state.checked = new Set(
+    [...state.checked].filter((id) => visible.some((job) => job.id === id)),
+  );
+  $("select-visible").checked =
+    !!visible.length && state.checked.size === visible.length;
+  $("select-visible").indeterminate =
+    state.checked.size > 0 && state.checked.size < visible.length;
   // A single visible archive is an unambiguous action target. Never keep an
   // invisible task selected when the user changes the filter or search.
   if (!visible.some((job) => job.id === state.selected))
     state.selected = visible.length === 1 ? visible[0].id : null;
-  $("selection-hint").hidden = visible.length < 2 || !!state.selected;
+  $("selection-hint").hidden =
+    visible.length < 2 || !!state.selected || !!state.checked.size;
   $("empty").hidden = state.jobs.length > 0;
   $("no-results").hidden = !state.jobs.length || !!visible.length;
   $("list-count").textContent = t(
@@ -411,7 +420,7 @@ function render() {
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
-      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
+      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
   if (focusedView) {
@@ -425,18 +434,60 @@ function render() {
   }
   renderDetail();
 }
+function selectedJobs() {
+  return state.jobs.filter(
+    (job) =>
+      matches(job) &&
+      (state.checked.size
+        ? state.checked.has(job.id)
+        : job.id === state.selected),
+  );
+}
+$("select-visible").onchange = () => {
+  state.checked = new Set(
+    $("select-visible").checked
+      ? state.jobs.filter(matches).map((job) => job.id)
+      : [],
+  );
+  if (!state.checked.size) state.selected = null;
+  render();
+};
+async function bulkAction(action, ids) {
+  const result = await api("/api/jobs/bulk", { action, ids });
+  await refresh();
+  toast(
+    `✓ ${t("{count} tâches", { count: result.updated.length })}${result.skipped.length ? ` · ${t("Ignorées")} : ${result.skipped.length}` : ""}`,
+  );
+}
+$("global-action").onchange = async () => {
+  const action = $("global-action").value;
+  $("global-action").value = "";
+  if (!action) return;
+  try {
+    await bulkAction(action);
+  } catch (error) {
+    toast(error.message);
+  }
+};
 function renderDetail() {
   const job = state.jobs.find((j) => j.id === state.selected);
-  $("detail").hidden = !job;
+  $("detail").hidden = !job || state.checked.size > 1;
+  const selected = selectedJobs();
   $("repair").disabled =
     !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
-  $("pause").disabled = !job || !["queued", "running"].includes(job.status);
-  $("resume").disabled =
-    !job || !["paused", "cancelled", "error"].includes(job.status);
-  $("retry").disabled = !job || !job.failed_files;
-  $("cancel").disabled =
-    !job || ["completed", "cancelled"].includes(job.status);
-  $("remove").disabled = !job || ["queued", "running"].includes(job.status);
+  $("pause").disabled = !selected.some((j) =>
+    ["queued", "running"].includes(j.status),
+  );
+  $("resume").disabled = !selected.some((j) =>
+    ["paused", "cancelled", "error"].includes(j.status),
+  );
+  $("retry").disabled = !selected.some((j) => j.failed_files);
+  $("cancel").disabled = !selected.some(
+    (j) => !["completed", "cancelled"].includes(j.status),
+  );
+  $("remove").disabled = !selected.some(
+    (j) => !["queued", "running"].includes(j.status) && !j.active_files,
+  );
   if (!job) return;
   $("detail-name").textContent = job.title;
   if (document.activeElement !== $("job-priority"))
@@ -628,6 +679,16 @@ $("search").oninput = () => {
   render();
 };
 $("download-rows").onclick = async (event) => {
+  const check = event.target.closest("[data-select-job]");
+  if (check) {
+    if (check.checked) state.checked.add(check.dataset.selectJob);
+    else state.checked.delete(check.dataset.selectJob);
+    state.selected = check.checked
+      ? check.dataset.selectJob
+      : [...state.checked][0] || null;
+    render();
+    return;
+  }
   const priority = event.target.closest("[data-priority-file]");
   if (priority) {
     try {
@@ -692,17 +753,30 @@ $("download-rows").onkeydown = (event) => {
 };
 for (const action of ["pause", "resume", "retry"])
   $(action).onclick = async () => {
-    if (!state.selected) return;
+    if (!selectedJobs().length) return;
     try {
-      await api(`/api/jobs/${state.selected}/${action}`, {});
+      const ids = selectedJobs()
+        .filter((job) =>
+          action === "pause"
+            ? ["queued", "running"].includes(job.status)
+            : action === "resume"
+              ? ["paused", "cancelled", "error"].includes(job.status)
+              : job.failed_files,
+        )
+        .map((job) => job.id);
+      if (ids.length === 1) await api(`/api/jobs/${ids[0]}/${action}`, {});
+      else await bulkAction(action, ids);
       await refresh();
-      toast(
-        {
-          pause: t("Mise en pause demandée. Les octets reçus sont conservés."),
-          resume: t("Reprise du téléchargement."),
-          retry: t("Les fichiers en erreur ont été remis en attente."),
-        }[action],
-      );
+      if (ids.length === 1)
+        toast(
+          {
+            pause: t(
+              "Mise en pause demandée. Les octets reçus sont conservés.",
+            ),
+            resume: t("Reprise du téléchargement."),
+            retry: t("Les fichiers en erreur ont été remis en attente."),
+          }[action],
+        );
     } catch (error) {
       toast(error.message);
     }
@@ -724,26 +798,46 @@ $("repair-confirm").onclick = async () => {
     $("repair-confirm").disabled = false;
   }
 };
-$("cancel").onclick = () => $("cancel-dialog").showModal();
+let cancelTargets = [];
+$("cancel").onclick = () => {
+  cancelTargets = selectedJobs().map((job) => job.id);
+  $("cancel-target-count").textContent = t("{count} tâches", {
+    count: cancelTargets.length,
+  });
+  $("cancel-dialog").showModal();
+};
 $("cancel-confirm").onclick = async () => {
   try {
-    await api(`/api/jobs/${state.selected}/cancel`, {});
+    if (cancelTargets.length === 1)
+      await api(`/api/jobs/${cancelTargets[0]}/cancel`, {});
+    else await bulkAction("cancel", cancelTargets);
     $("cancel-dialog").close();
     await refresh();
-    toast(t("Téléchargement annulé. Les fichiers reçus sont conservés."));
+    if (cancelTargets.length === 1)
+      toast(t("Téléchargement annulé. Les fichiers reçus sont conservés."));
   } catch (error) {
     $("cancel-dialog").close();
     toast(error.message);
   }
 };
-$("remove").onclick = () => $("remove-dialog").showModal();
+let removeTargets = [];
+$("remove").onclick = () => {
+  removeTargets = selectedJobs().map((job) => job.id);
+  $("remove-target-count").textContent = t("{count} tâches", {
+    count: removeTargets.length,
+  });
+  $("remove-dialog").showModal();
+};
 $("remove-confirm").onclick = async () => {
   try {
-    await api(`/api/jobs/${state.selected}/remove`, {});
+    if (removeTargets.length === 1)
+      await api(`/api/jobs/${removeTargets[0]}/remove`, {});
+    else await bulkAction("remove", removeTargets);
     $("remove-dialog").close();
     state.selected = null;
     await refresh();
-    toast(t("Tâche retirée. Les fichiers ont été conservés."));
+    if (removeTargets.length === 1)
+      toast(t("Tâche retirée. Les fichiers ont été conservés."));
   } catch (error) {
     $("remove-dialog").close();
     toast(error.message);
