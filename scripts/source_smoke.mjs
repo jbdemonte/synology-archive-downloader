@@ -40,17 +40,9 @@ try {
     assert.ok(page.url().startsWith(base));
     await popup.close();
   }
-  await page.locator(`[data-job="${jobs[1].id}"] strong`).click();
-  const [popup] = await Promise.all([
-    page.waitForEvent("popup"),
-    page.locator("#detail-source").click(),
-  ]);
-  await popup.waitForLoadState("domcontentloaded");
-  assert.equal(popup.url(), "https://archive.org/details/demo-two");
-  await popup.close();
   assert.equal(page.context().pages().length, 1);
   console.log(
-    "Source links passed: each archive and the selected task open the correct details page in a separate tab.",
+    "Source links passed: each archive opens the correct details page in a separate tab.",
   );
 } finally {
   for (const job of jobs)

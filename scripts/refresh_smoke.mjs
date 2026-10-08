@@ -13,6 +13,7 @@ try {
     })
   ).json();
   await page.goto(base);
+  await page.locator(`[data-menu-job="${id}"]`).click();
   await page.locator("#refresh-manifest").click();
   await page
     .locator("#refresh-summary")

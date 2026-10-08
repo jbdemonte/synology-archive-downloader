@@ -48,7 +48,7 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-5-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-6-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -90,9 +90,9 @@ The item identifier determines its directory name; nested paths from Archive.org
 
 ## Follow large archives
 
-The first running task opens automatically. Select an archive row to enable Pause, Resume and the other task controls. When only one archive is visible, it is selected automatically; otherwise a hint above the list explains how to activate the controls. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
+The first running task opens automatically. Select an archive row, or tick several, to enable Pause, Resume and the other toolbar actions. When only one archive is visible, it is selected automatically; otherwise a hint above the list explains how to activate the controls. The **⋯** button at the end of a row opens that archive's own actions: its destination and **Open in File Station**, priority and queue order, **Refresh file list**, **Verify and complete** and **Read report**. A disk-space hold or failed files are noted under the row's status. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
 
-Click the **external-link icon** on an archive row to open that item's `archive.org/details/…` page in a new browser tab. The **Source** link in the selected task's details opens the same page. Downloads keep running in DSM.
+Click the **external-link icon** on an archive row to open that item's `archive.org/details/…` page in a new browser tab. Downloads keep running in DSM.
 
 <details>
 <summary>Browse the folder hierarchy</summary>
@@ -123,7 +123,7 @@ Removing a task preserves complete and partial files. Re-adding its URL reuses v
 
 ## Reports and error history
 
-Click the **document icon** on a task, or **Read report** in its details, to open an up-to-date plain-text report inside Archive Station. Use **Refresh** to reload it; long reports have page controls.
+Click the **document icon** on a task, or **Read report** in its **⋯** menu, to open an up-to-date plain-text report inside Archive Station. Use **Refresh** to reload it; long reports have page controls.
 
 The icon turns **amber** when incidents have been recorded, including incidents that were later resolved. The report lists the affected file, first and last occurrence, diagnostic message, occurrence count, last attempt number and resolution date. Identical errors are grouped per file. Retries, successful completion and service restarts preserve this history; low-disk-space pauses are recorded too.
 
@@ -156,7 +156,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.2.0-5  # Override the package version
+make build VERSION=0.2.0-6  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

@@ -180,7 +180,7 @@ try {
   await page.goto(base + "/desktop-test");
   const app = page.frameLocator('iframe[title="Archive Station"]');
   await app.getByRole("heading", { name: "Transferts" }).waitFor();
-  await app.locator(".job-row").first().click();
+  await app.locator("[data-menu-job]").first().click();
   await app.locator("#open-folder").click();
   await page.waitForFunction(() => fileStationLaunches.length === 1);
   assert.deepEqual(await page.evaluate(() => fileStationLaunches), [
@@ -437,6 +437,7 @@ try {
   await page.reload();
   await app.getByRole("heading", { name: "Transfers", exact: true }).waitFor();
   await app.locator("#settings-open").click();
+  await app.locator("#settings-dialog").waitFor({ state: "visible" });
   assert.equal(await app.locator("#setting-language").inputValue(), "en");
   await app.locator("#setting-language").selectOption("auto");
   await app.locator('#settings-form button[type="submit"]').click();

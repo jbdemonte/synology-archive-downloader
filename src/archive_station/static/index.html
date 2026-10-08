@@ -382,69 +382,6 @@
             >
           </div>
         </section>
-        <details id="detail" class="detail" open hidden>
-          <summary class="detail-title">
-            <strong id="detail-name"></strong><span id="detail-eta"></span>
-          </summary>
-          <div class="detail-grid">
-            <div>
-              <small><span data-i18n="Destination">Destination</span></small
-              ><code id="detail-destination"></code
-              ><button
-                id="open-folder"
-                type="button"
-                data-i18n="Ouvrir dans File Station"
-                hidden
-              >
-                Ouvrir dans File Station
-              </button>
-            </div>
-            <div>
-              <small><span data-i18n="Source">Source</span></small
-              ><a
-                id="detail-source"
-                target="_blank"
-                rel="noopener noreferrer"
-              ></a>
-            </div>
-          </div>
-          <div class="detail-actions">
-            <label for="job-priority" data-i18n="Priorité">Priorité</label
-            ><select id="job-priority">
-              <option value="1" data-i18n="Haute">Haute</option>
-              <option value="0" data-i18n="Normale">Normale</option>
-              <option value="-1" data-i18n="Basse">Basse</option></select
-            ><button
-              id="queue-up"
-              type="button"
-              data-i18n-title="Monter dans la file"
-              title="Monter dans la file"
-            >
-              ↑</button
-            ><button
-              id="queue-down"
-              type="button"
-              data-i18n-title="Descendre dans la file"
-              title="Descendre dans la file"
-            >
-              ↓
-            </button>
-            <button
-              id="refresh-manifest"
-              type="button"
-              data-i18n="Actualiser la liste"
-            >
-              Actualiser la liste
-            </button>
-            <button id="repair" type="button" data-i18n="Vérifier et compléter">
-              Vérifier et compléter
-            </button>
-            <button id="read-report" type="button" data-i18n="Lire le rapport">
-              Lire le rapport
-            </button>
-          </div>
-          <p id="detail-errors" class="error"></p>
-        </details>
         <footer class="page-footer">
           <span
             ><span
@@ -457,6 +394,98 @@
       </main>
     </div>
     <div id="toast" class="toast" role="status" hidden></div>
+    <div
+      id="task-menu"
+      class="task-menu"
+      role="menu"
+      aria-label="Autres actions"
+      data-i18n-aria-label="Autres actions"
+      hidden
+    >
+      <div class="menu-destination" role="none">
+        <small data-i18n="Destination">Destination</small
+        ><code id="menu-destination"></code>
+      </div>
+      <button
+        id="open-folder"
+        type="button"
+        role="menuitem"
+        data-i18n="Ouvrir dans File Station"
+      >
+        Ouvrir dans File Station
+      </button>
+      <hr role="separator" />
+      <div role="group" aria-label="Priorité" data-i18n-aria-label="Priorité">
+        <small class="menu-label" role="none" data-i18n="Priorité"
+          >Priorité</small
+        >
+        <button
+          type="button"
+          role="menuitemradio"
+          data-job-priority="1"
+          data-i18n="Haute"
+        >
+          Haute
+        </button>
+        <button
+          type="button"
+          role="menuitemradio"
+          data-job-priority="0"
+          data-i18n="Normale"
+        >
+          Normale
+        </button>
+        <button
+          type="button"
+          role="menuitemradio"
+          data-job-priority="-1"
+          data-i18n="Basse"
+        >
+          Basse
+        </button>
+      </div>
+      <button
+        id="queue-up"
+        type="button"
+        role="menuitem"
+        data-i18n="Monter dans la file"
+      >
+        Monter dans la file
+      </button>
+      <button
+        id="queue-down"
+        type="button"
+        role="menuitem"
+        data-i18n="Descendre dans la file"
+      >
+        Descendre dans la file
+      </button>
+      <hr role="separator" />
+      <button
+        id="refresh-manifest"
+        type="button"
+        role="menuitem"
+        data-i18n="Actualiser la liste"
+      >
+        Actualiser la liste
+      </button>
+      <button
+        id="repair"
+        type="button"
+        role="menuitem"
+        data-i18n="Vérifier et compléter"
+      >
+        Vérifier et compléter
+      </button>
+      <button
+        id="read-report"
+        type="button"
+        role="menuitem"
+        data-i18n="Lire le rapport"
+      >
+        Lire le rapport
+      </button>
+    </div>
     <dialog id="add-dialog">
       <form id="add-form">
         <div class="dialog-header">

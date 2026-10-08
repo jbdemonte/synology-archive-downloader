@@ -19,8 +19,8 @@ try {
       ).id,
     );
   await page.goto(base);
-  await page.locator(`.job-row[data-job="${ids[1]}"]`).click();
-  await page.locator("#job-priority").selectOption("1");
+  await page.locator(`[data-menu-job="${ids[1]}"]`).click();
+  await page.locator('[data-job-priority="1"]').click();
   await page.waitForFunction(
     (id) => document.querySelector(".job-row").dataset.job === id,
     ids[1],
@@ -30,11 +30,13 @@ try {
       .priority,
     1,
   );
-  await page.locator("#job-priority").selectOption("0");
+  await page.locator(`[data-menu-job="${ids[1]}"]`).click();
+  await page.locator('[data-job-priority="0"]').click();
   await page.waitForFunction(
     (id) => document.querySelector(".job-row").dataset.job === id,
     ids[0],
   );
+  await page.locator(`[data-menu-job="${ids[1]}"]`).click();
   await page.locator("#queue-up").click();
   await page.waitForFunction(
     (id) => document.querySelector(".job-row").dataset.job === id,

@@ -1,6 +1,6 @@
 # Queue management and archive maintenance
 
-These controls are available in **Settings** and the selected task’s details panel. The details panel folds on short windows to leave room for the file list; expand the task title to access its controls.
+These controls are available in **Settings** and in each task’s **⋯** menu, at the end of its row.
 
 ## Receive DSM desktop notifications
 
@@ -44,7 +44,7 @@ Pause and wait for active workers to stop before applying a metadata refresh or 
 
 ## Read the report and error history
 
-Click the document icon on an archive row, or **Read report** in its details, to read an up-to-date report inside Archive Station. The same report is written to `ArchiveStation-report-<task-id>.txt` in the archive folder. Long reports are paginated in the reader; the text file contains the entire history.
+Click the document icon on an archive row, or **Read report** in its **⋯** menu, to read an up-to-date report inside Archive Station. The same report is written to `ArchiveStation-report-<task-id>.txt` in the archive folder. Long reports are paginated in the reader; the text file contains the entire history.
 
 The icon turns amber when incidents have been recorded, including incidents that were later resolved. The history lists the affected file, first and last occurrence, count, latest attempt number, diagnostic message and resolution date. Repeated identical errors are grouped per file. A successful transfer resolves its recorded errors; retrying, restarting or repairing does not erase them. Low-space pauses are also recorded.
 

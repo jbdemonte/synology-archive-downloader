@@ -99,7 +99,7 @@ try {
   );
   await page.locator("#report-dialog [data-close]").first().click();
   await page.setViewportSize({ width: 1100, height: 650 });
-  await page.locator("#detail summary").click();
+  await page.locator(`[data-menu-job="${id}"]`).click();
   await page.locator("#read-report").click();
   await page
     .locator("#report-text")

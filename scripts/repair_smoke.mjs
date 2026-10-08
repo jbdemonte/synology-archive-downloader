@@ -13,6 +13,7 @@ try {
     })
   ).json();
   await page.goto(base);
+  await page.locator(`[data-menu-job="${id}"]`).click();
   await page.locator("#repair").click();
   await page.locator("#repair-confirm").click();
   await page.locator("#repair-dialog").waitFor({ state: "hidden" });
@@ -20,7 +21,9 @@ try {
     await page.request.get(base + `/api/jobs/${id}/files`)
   ).json();
   assert.ok(files.every((f) => f.repair === 1 && f.status === "queued"));
+  await page.locator(`[data-menu-job="${id}"]`).click();
   await page.waitForFunction(() => document.querySelector("#repair").disabled);
+  await page.keyboard.press("Escape");
   await page.request.post(base + `/api/jobs/${id}/pause`, { data: {} });
   await page.request.post(base + `/api/jobs/${id}/remove`, { data: {} });
   console.log(

@@ -250,6 +250,7 @@ function showLogin() {
   $("startup-screen").hidden = true;
   $("login-screen").hidden = false;
   $("application").hidden = true;
+  closeMenu();
   document.querySelectorAll("dialog[open]").forEach((d) => d.close());
   $("local-login").hidden = authMode !== "password";
   $("dsm-retry").hidden = authMode !== "dsm";
@@ -459,10 +460,11 @@ function render() {
   const focusedJob = document.activeElement?.dataset.viewJob;
   const focusedReport = document.activeElement?.dataset.reportJob;
   const focusedSource = document.activeElement?.dataset.sourceJob;
+  const focusedMenu = document.activeElement?.dataset.menuJob;
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
-      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>${reportButton(job)}<div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${esc(fileCount(job.file_count, job.completed_files))} · ${esc(job.title)}</small></div>${sourceLink(job)}</div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
+      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>${reportButton(job)}<div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${esc(fileCount(job.file_count, job.completed_files))} · ${esc(job.title)}</small></div>${sourceLink(job)}${menuButton(job)}</div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}${statusNote(job)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
   if (focusedReport)
@@ -473,6 +475,10 @@ function render() {
     [...$("download-rows").querySelectorAll("[data-source-job]")]
       .find((link) => link.dataset.sourceJob === focusedSource)
       ?.focus({ preventScroll: true });
+  if (focusedMenu)
+    [...$("download-rows").querySelectorAll("[data-menu-job]")]
+      .find((button) => button.dataset.menuJob === focusedMenu)
+      ?.focus({ preventScroll: true });
   if (focusedView) {
     [...$("download-rows").querySelectorAll("[data-file-view]")]
       .find(
@@ -482,13 +488,8 @@ function render() {
       )
       ?.focus({ preventScroll: true });
   }
-  renderDetail();
+  renderActions();
 }
-const compactDetails = window.matchMedia("(max-height: 560px)");
-if (compactDetails.matches) $("detail").open = false;
-compactDetails.addEventListener("change", (event) => {
-  if (event.matches) $("detail").open = false;
-});
 function selectedJobs() {
   return state.jobs.filter(
     (job) =>
@@ -524,16 +525,10 @@ $("global-action").onchange = async () => {
     toast(error.message);
   }
 };
-function renderDetail() {
+function renderActions() {
   renderRefreshSummary();
-  const job = state.jobs.find((j) => j.id === state.selected);
-  $("detail").hidden = !job || state.checked.size > 1;
+  renderMenu();
   const selected = selectedJobs();
-  $("open-folder").hidden = !embedded || !job;
-  $("refresh-manifest").disabled = !job;
-  $("read-report").disabled = !job;
-  $("repair").disabled =
-    !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
   $("pause").disabled = !selected.some((j) =>
     ["queued", "running"].includes(j.status),
   );
@@ -547,24 +542,128 @@ function renderDetail() {
   $("remove").disabled = !selected.some(
     (j) => !["queued", "running"].includes(j.status) && !j.active_files,
   );
-  if (!job) return;
-  $("detail-name").textContent = job.title;
-  if (document.activeElement !== $("job-priority"))
-    $("job-priority").value = job.priority || 0;
-  $("detail-eta").textContent = eta(job);
-  $("detail-eta").title = etaHint(job);
-  $("detail-destination").textContent = `${job.destination}/${job.identifier}/`;
-  $("detail-source").textContent = `archive.org/details/${job.identifier}`;
-  $("detail-source").href =
-    `https://archive.org/details/${encodeURIComponent(job.identifier)}`;
-  $("detail-source").title = t("Ouvrir sur Archive.org");
-  $("detail-errors").textContent =
+}
+function statusNote(job) {
+  const note =
     job.hold_reason === "disk"
       ? t("Espace disque insuffisant.")
-      : job.failed_files
-        ? `${fileCount(job.failed_files)} · ${t("À vérifier")} → ${t("Réessayer")}`
-        : "";
+      : !job.failed_files
+        ? ""
+        : job.status === "error"
+          ? fileCount(job.failed_files)
+          : `${t("À vérifier")} : ${fileCount(job.failed_files)}`;
+  return note ? `<small class="status-note">${esc(note)}</small>` : "";
 }
+function menuButton(job) {
+  const label = `${t("Autres actions")} · ${job.identifier}`;
+  return `<button type="button" class="task-more" data-menu-job="${esc(job.id)}" aria-haspopup="menu" aria-expanded="${menuJob === job.id}" title="${esc(t("Autres actions"))}" aria-label="${esc(label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></button>`;
+}
+// One floating menu outside the table: rows are rebuilt on every poll, so a
+// menu inside a row would close itself every 1.5 seconds.
+let menuJob = null;
+let menuScrollPosition = null;
+const tableScroll = document.querySelector(".table-scroll");
+function menuAnchor() {
+  return [...$("download-rows").querySelectorAll("[data-menu-job]")].find(
+    (button) => button.dataset.menuJob === menuJob,
+  );
+}
+function menuItems() {
+  return [...$("task-menu").querySelectorAll("button")].filter(
+    (button) => !button.hidden && !button.disabled,
+  );
+}
+function renderMenu() {
+  if (!menuJob) return;
+  const job = state.jobs.find((j) => j.id === menuJob);
+  const anchor = menuAnchor();
+  if (!job || !anchor) return closeMenu();
+  $("menu-destination").textContent = `${job.destination}/${job.identifier}/`;
+  $("open-folder").hidden = !embedded;
+  $("repair").disabled =
+    ["queued", "running"].includes(job.status) || job.active_files > 0;
+  for (const item of $("task-menu").querySelectorAll("[data-job-priority]"))
+    item.setAttribute(
+      "aria-checked",
+      String(Number(item.dataset.jobPriority) === (job.priority || 0)),
+    );
+  const menu = $("task-menu"),
+    box = anchor.getBoundingClientRect();
+  const below = box.bottom + 4 + menu.offsetHeight <= innerHeight - 8;
+  menu.style.left = `${Math.max(8, Math.min(box.right - menu.offsetWidth, innerWidth - menu.offsetWidth - 8))}px`;
+  menu.style.top = `${below ? box.bottom + 4 : Math.max(8, box.top - menu.offsetHeight - 4)}px`;
+}
+function openMenu(jobId, focusFirst) {
+  closeMenu();
+  menuJob = jobId;
+  $("task-menu").hidden = false;
+  $("task-menu").scrollTop = 0;
+  menuScrollPosition = {
+    top: tableScroll.scrollTop,
+    left: tableScroll.scrollLeft,
+  };
+  menuAnchor()?.setAttribute("aria-expanded", "true");
+  renderMenu();
+  if (focusFirst) menuItems()[0]?.focus();
+}
+function closeMenu(restoreFocus = false) {
+  if (!menuJob) return;
+  const anchor = menuAnchor();
+  menuJob = null;
+  $("task-menu").hidden = true;
+  anchor?.setAttribute("aria-expanded", "false");
+  if (restoreFocus) anchor?.focus();
+}
+function menuAction(handler) {
+  return () => {
+    const jobId = menuJob;
+    closeMenu(true);
+    if (jobId) handler(jobId);
+  };
+}
+$("task-menu").addEventListener("keydown", (event) => {
+  const items = menuItems(),
+    index = items.indexOf(document.activeElement);
+  if (event.key === "Escape" || event.key === "Tab") {
+    event.preventDefault();
+    closeMenu(true);
+  } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+    event.preventDefault();
+    const step = event.key === "ArrowUp" ? -1 : 1;
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? items.length - 1
+          : (index + step + items.length) % items.length;
+    items[next]?.focus();
+  }
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest("#task-menu, [data-menu-job]")) closeMenu();
+});
+document.addEventListener("keydown", (event) => {
+  // Mouse opening leaves focus on the row button, outside the menu.
+  if (menuJob && event.key === "Escape") {
+    event.preventDefault();
+    closeMenu(true);
+  }
+});
+addEventListener("resize", () => closeMenu());
+tableScroll.addEventListener(
+  "scroll",
+  () => {
+    // Focusing a partially visible row may queue a scroll event before opening.
+    // Only dismiss for movement that actually happened after the menu opened.
+    if (
+      menuJob &&
+      (tableScroll.scrollTop !== menuScrollPosition.top ||
+        tableScroll.scrollLeft !== menuScrollPosition.left)
+    )
+      closeMenu();
+  },
+  { passive: true },
+);
 function reportButton(job) {
   const count = job.incident_count || 0;
   const label = `${t("Lire le rapport")}${count ? ` · ${t("{count} incidents consignés", { count })}` : ""}`;
@@ -622,7 +721,7 @@ function openReport(jobId) {
   $("report-dialog").showModal();
   loadReport();
 }
-$("read-report").onclick = () => openReport(state.selected);
+$("read-report").onclick = menuAction(openReport);
 $("report-refresh").onclick = () => loadReport(reportView?.offset || 0);
 $("report-prev").onclick = () =>
   loadReport(Math.max(0, reportView.offset - 200));
@@ -631,10 +730,7 @@ $("report-dialog").addEventListener("close", () => {
   reportView?.controller?.abort();
   reportView = null;
 });
-$("open-folder").onclick = async () => {
-  const jobId = state.selected;
-  if (!jobId) return;
-  $("open-folder").disabled = true;
+$("open-folder").onclick = menuAction(async (jobId) => {
   try {
     const destination = await api(`/api/jobs/${jobId}/location`);
     const desktop = window.parent.SYNO?.SDS;
@@ -645,23 +741,26 @@ $("open-folder").onclick = async () => {
     });
   } catch (error) {
     toast(error.message);
-  } finally {
-    $("open-folder").disabled = false;
   }
-};
-async function setPriority(change) {
-  if (!state.selected) return;
+});
+async function setPriority(jobId, change) {
   try {
-    await api(`/api/jobs/${state.selected}/priority`, change);
+    await api(`/api/jobs/${jobId}/priority`, change);
     await refresh();
   } catch (error) {
     toast(error.message);
   }
 }
-$("job-priority").onchange = () =>
-  setPriority({ priority: Number($("job-priority").value) });
-$("queue-up").onclick = () => setPriority({ move: "up" });
-$("queue-down").onclick = () => setPriority({ move: "down" });
+for (const item of $("task-menu").querySelectorAll("[data-job-priority]"))
+  item.onclick = menuAction((jobId) =>
+    setPriority(jobId, { priority: Number(item.dataset.jobPriority) }),
+  );
+$("queue-up").onclick = menuAction((jobId) =>
+  setPriority(jobId, { move: "up" }),
+);
+$("queue-down").onclick = menuAction((jobId) =>
+  setPriority(jobId, { move: "down" }),
+);
 async function loadBranch(jobId, prefix, offset = 0) {
   const view = fileView(jobId);
   if (prefix && view !== "tree") return;
@@ -860,6 +959,13 @@ $("download-rows").onclick = async (event) => {
     openReport(report.dataset.reportJob);
     return;
   }
+  const more = event.target.closest("[data-menu-job]");
+  if (more) {
+    // A keyboard activation (detail 0) moves focus into the menu.
+    if (menuJob === more.dataset.menuJob) closeMenu();
+    else openMenu(more.dataset.menuJob, event.detail === 0);
+    return;
+  }
   const check = event.target.closest("[data-select-job]");
   if (check) {
     if (check.checked) state.checked.add(check.dataset.selectJob);
@@ -987,9 +1093,8 @@ function renderRefreshSummary() {
     ? `${t("Nouveaux")} : ${refreshPlan.added_count} · ${t("Modifiés")} : ${refreshPlan.changed_count} · ${t("Absents conservés")} : ${refreshPlan.absent_count} — ${fileCount(refreshPlan.file_count, refreshPlan.selected_count)} · ${bytes(refreshPlan.selected_size)}`
     : "";
 }
-$("refresh-manifest").onclick = async () => {
-  const jobId = state.selected,
-    sequence = ++refreshSequence;
+$("refresh-manifest").onclick = menuAction(async (jobId) => {
+  const sequence = ++refreshSequence;
   refreshPlan = null;
   refreshBusy = true;
   $("refresh-error").textContent = "";
@@ -1009,7 +1114,7 @@ $("refresh-manifest").onclick = async () => {
       renderRefreshSummary();
     }
   }
-};
+});
 $("refresh-dialog").addEventListener("close", () => {
   refreshSequence++;
 });
@@ -1043,10 +1148,10 @@ $("refresh-apply").onclick = async () => {
   }
 };
 let repairTarget = null;
-$("repair").onclick = () => {
-  repairTarget = state.selected;
+$("repair").onclick = menuAction((jobId) => {
+  repairTarget = jobId;
   $("repair-dialog").showModal();
-};
+});
 $("repair-confirm").onclick = async () => {
   $("repair-confirm").disabled = true;
   try {

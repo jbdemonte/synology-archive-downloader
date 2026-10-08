@@ -877,44 +877,6 @@ main > * {
   font-size: 10px;
   border-top: 1px solid var(--line);
 }
-.detail {
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  margin-top: 0;
-  background: #fff;
-  padding: 11px 14px;
-  max-height: 22vh;
-  overflow: auto;
-}
-.detail-title {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 9px;
-}
-.detail-title strong {
-  font-size: 12px;
-}
-.detail-title span {
-  color: #9aa7b2;
-  font-size: 11px;
-}
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.detail-grid small {
-  display: block;
-  color: #98a5b1;
-  font-size: 10px;
-  margin-bottom: 6px;
-}
-.detail-grid code,
-.detail-grid a {
-  font-size: 10px;
-  overflow-wrap: anywhere;
-}
 .page-footer {
   display: flex;
   justify-content: space-between;
@@ -1387,7 +1349,6 @@ dialog > form {
   .list-footer > span:last-child {
     display: none;
   }
-  .detail-grid,
   .two-columns {
     grid-template-columns: 1fr;
   }
@@ -1465,9 +1426,6 @@ dialog > form {
   .storage-meter {
     margin: 10px 0 8px;
   }
-  .detail {
-    max-height: 19vh;
-  }
   .empty {
     padding: 14px;
   }
@@ -1528,26 +1486,6 @@ dialog > form {
   margin: 0;
 }
 
-.detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-.detail-actions label {
-  margin: 0;
-  font-size: 12px;
-}
-.detail-actions select {
-  width: auto;
-  min-width: 115px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-.detail-actions button {
-  padding: 5px 10px;
-}
 .file-priority {
   padding: 2px 5px;
   border: 0;
@@ -1595,34 +1533,6 @@ dialog > form {
 .history-axis {
   display: flex;
   justify-content: space-between;
-}
-
-#open-folder {
-  padding: 4px 8px;
-  margin-top: 5px;
-  font-size: 11px;
-}
-
-summary.detail-title {
-  cursor: pointer;
-  list-style: none;
-  align-items: center;
-}
-summary.detail-title::before {
-  content: "▸";
-  color: #8193a6;
-}
-.detail[open] summary.detail-title::before {
-  transform: rotate(90deg);
-}
-.detail:not([open]) summary.detail-title {
-  margin-bottom: 0;
-}
-.detail-title strong {
-  flex: 1;
-}
-#detail-errors:empty {
-  display: none;
 }
 
 .task-report {
@@ -1681,6 +1591,95 @@ summary.detail-title::before {
   stroke-width: 1.7;
   stroke-linejoin: round;
   stroke-linecap: round;
+}
+.task-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #4988bb;
+}
+.task-more:hover,
+.task-more[aria-expanded="true"] {
+  background: #e3f1ff;
+}
+.task-more svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.status-note {
+  display: block;
+  margin-top: 4px;
+  color: #986600;
+  font-size: 10px;
+}
+.task-menu {
+  position: fixed;
+  z-index: 30;
+  min-width: min(230px, calc(100vw - 16px));
+  max-width: min(360px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgb(30 50 70 / 18%);
+}
+.task-menu button {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #354453;
+  font-weight: 400;
+  text-align: left;
+}
+.task-menu button:hover:not(:disabled),
+.task-menu button:focus-visible {
+  background: #eef5fc;
+  outline: none;
+}
+.task-menu [role="menuitemradio"]::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  color: var(--blue);
+}
+.task-menu [role="menuitemradio"][aria-checked="true"]::before {
+  content: "✓";
+}
+.task-menu hr {
+  margin: 5px 2px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.menu-destination {
+  padding: 6px 10px 4px;
+}
+.menu-destination small,
+.menu-label {
+  display: block;
+  margin-bottom: 3px;
+  color: #98a5b1;
+  font-size: 10px;
+}
+.menu-label {
+  padding: 4px 10px 2px;
+}
+.menu-destination code {
+  font-size: 10px;
+  overflow-wrap: anywhere;
 }
 #report-dialog {
   width: min(960px, calc(100vw - 32px));
