@@ -33,3 +33,13 @@ class PriorityTests(Base):
             self.store.prioritize(job, priority=1, file_id=active["id"])
         with self.assertRaises(ValueError):
             self.store.prioritize(job, priority=100)
+
+    def test_backoff_skips_unavailable_files_and_jobs_without_changing_priority(self):
+        first = self.add()
+        second = self.add(identifier="second")
+        row = self.store.claim()
+        self.store.update(row["id"], status="queued", available_at=10**12)
+        self.assertEqual(self.store.claim()["job_id"], second)
+        self.assertIsNone(self.store.claim())
+        self.store.update(row["id"], available_at=0)
+        self.assertEqual(self.store.claim()["job_id"], first)

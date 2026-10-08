@@ -439,15 +439,28 @@ class Store:
 
     def claim(self):
         with self.lock, self.db:
-            row = self.db.execute(
-                """
-                SELECT f.*, j.identifier, j.destination FROM jobs j JOIN files f ON j.id=f.job_id
-                WHERE j.status IN ('queued','running') AND f.status='queued' AND f.available_at<=?
-                ORDER BY j.priority DESC,j.queue_order,j.created,f.priority DESC,f.id LIMIT 1
-            """,
-                (time.time(),),
-            ).fetchone()
-            if not row:
+            now = time.time()
+            row = None
+            # Sort tasks, not every file across the whole queue. The per-task
+            # priority index supplies files in order without a temporary sort.
+            for job in self.db.execute(
+                "SELECT id,identifier,destination FROM jobs "
+                "WHERE status IN ('queued','running') ORDER BY priority DESC,queue_order,created"
+            ):
+                file = self.db.execute(
+                    "SELECT * FROM files INDEXED BY file_priority "
+                    "WHERE job_id=? AND status='queued' AND available_at<=? "
+                    "ORDER BY priority DESC,id LIMIT 1",
+                    (job["id"], now),
+                ).fetchone()
+                if file:
+                    row = {
+                        **dict(file),
+                        "identifier": job["identifier"],
+                        "destination": job["destination"],
+                    }
+                    break
+            if row is None:
                 return None
             self.db.execute(
                 "UPDATE files SET status='downloading', error=NULL WHERE id=?", (row["id"],)
