@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Az Archive Station nem fut. Nyissa meg a Csomagkezelési központot.",
   "Transfert interrompu avant la fin du fichier.": "Az átvitel a fájl vége előtt megszakadt.",
   "Incomplete disk write; transfer will resume from disk.": "Hiányos lemezírás; az átvitel a részleges fájltól folytatódik.",
-  "Réponse HTTP inattendue : {status}": "Váratlan HTTP-válasz: {status}"
+  "Réponse HTTP inattendue : {status}": "Váratlan HTTP-válasz: {status}",
+  "Mises à jour": "Frissítések",
+  "Vérifier automatiquement les mises à jour": "Frissítések automatikus keresése",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Napi egy ellenőrzés a GitHubon. Kézi telepítés a Csomagkezelési központban.",
+  "Inclure les préversions": "Előzetes verziók megjelenítése",
+  "Vérifier maintenant": "Ellenőrzés most",
+  "Voir la version sur GitHub": "Kiadás megtekintése a GitHubon",
+  "Version {version} disponible": "Elérhető verzió: {version}",
+  "Vérification automatique désactivée.": "Automatikus ellenőrzés kikapcsolva.",
+  "Aucune vérification effectuée.": "Még nem történt ellenőrzés.",
+  "Vérification en cours…": "Frissítések keresése…",
+  "Votre version est à jour.": "Az Ön verziója naprakész.",
+  "Aucune version publique compatible dans ce canal.": "Nincs kompatibilis nyilvános kiadás ebben a csatornában.",
+  "Vérification impossible. Réessayer plus tard.": "Az ellenőrzés sikertelen. Próbálja újra később.",
+  "Enregistrer les paramètres avant de vérifier.": "Ellenőrzés előtt mentse a beállításokat.",
+  "Réessayer dans {seconds} s": "Újrapróbálkozás {seconds} s múlva"
 }

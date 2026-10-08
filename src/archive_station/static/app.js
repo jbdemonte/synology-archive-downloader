@@ -8,6 +8,7 @@ const state = {
   filter: "all",
   search: "",
   settings: null,
+  updates: null,
   destinationLocked: false,
   expanded: new Map(),
   fileViews: new Map(),
@@ -825,6 +826,7 @@ async function refresh(initial = false) {
     const data = await api("/api/jobs");
     state.jobs = data.jobs;
     state.policy = data.policy;
+    renderUpdates(data.updates);
     renderHistory(data.history);
     $("schedule-notice").hidden = !data.policy?.outside;
     $("schedule-notice").textContent =
@@ -892,7 +894,78 @@ async function loadSettings() {
     ? `${(1 - s.storage.free / s.storage.total) * 100}%`
     : "0";
   $("version").textContent = s.version;
+  renderUpdates(s.updates);
 }
+function renderUpdates(update = state.updates) {
+  if (!update) return;
+  state.updates = update;
+  const safeLink =
+    /^https:\/\/github\.com\/jbdemonte\/synology-archive-downloader\/releases\/tag\/v?\d+\.\d+\.\d+(?:-\d+)?$/.test(
+      update.release_url || "",
+    );
+  const available = update.state === "available" && safeLink;
+  $("update-available").hidden = !available;
+  $("app-subtitle").hidden = available;
+  $("update-available").textContent = t("Version {version} disponible", {
+    version: update.latest_version,
+  });
+  for (const id of ["update-available", "update-release"]) {
+    $(id).hidden = !available;
+    if (available) $(id).href = update.release_url;
+    else $(id).removeAttribute("href");
+  }
+  const pending =
+    $("settings-dialog").open &&
+    state.settings &&
+    ($("setting-check-updates").checked !== !!state.settings.check_updates ||
+      $("setting-update-prereleases").checked !==
+        !!state.settings.update_prereleases);
+  const messages = {
+    disabled: "Vérification automatique désactivée.",
+    idle: "Aucune vérification effectuée.",
+    checking: "Vérification en cours…",
+    available: "Version {version} disponible",
+    current: "Votre version est à jour.",
+    none: "Aucune version publique compatible dans ce canal.",
+    error: "Vérification impossible. Réessayer plus tard.",
+  };
+  const statusText = pending
+    ? t("Enregistrer les paramètres avant de vérifier.")
+    : t(messages[update.state] || messages.idle, {
+        version: update.latest_version,
+      });
+  if ($("update-status").textContent !== statusText)
+    $("update-status").textContent = statusText;
+  $("update-status").dataset.state = pending ? "pending" : update.state;
+  $("update-status").setAttribute(
+    "aria-busy",
+    String(update.state === "checking"),
+  );
+  $("update-check").disabled =
+    pending || update.state === "checking" || update.retry_after > 0;
+  $("update-check").textContent =
+    update.retry_after > 0 && update.state !== "checking"
+      ? t("Réessayer dans {seconds} s", { seconds: update.retry_after })
+      : t("Vérifier maintenant");
+  $("update-checked").textContent = update.checked_at
+    ? t("Actualisé à {time}", {
+        time: new Date(update.checked_at * 1000).toLocaleString(
+          ArchiveI18n.locale,
+        ),
+      })
+    : "";
+}
+$("setting-check-updates").onchange = () => renderUpdates();
+$("setting-update-prereleases").onchange = () => renderUpdates();
+$("update-check").onclick = async () => {
+  renderUpdates({ ...state.updates, state: "checking" });
+  try {
+    renderUpdates(await api("/api/updates/check", {}));
+  } catch (error) {
+    renderUpdates({ ...state.updates, state: "error", retry_after: 0 });
+    toast(error.message);
+  }
+};
 function resetPlans() {
   state.plans = [];
   updateCapacity();
@@ -1523,6 +1596,8 @@ async function openSettings(focusDestination = false) {
     $("setting-retries").value = s.retries;
     $("setting-verify").checked = s.verify_checksums;
     $("setting-notifications").checked = s.notifications !== false;
+    $("setting-check-updates").checked = s.check_updates === true;
+    $("setting-update-prereleases").checked = s.update_prereleases === true;
     $("setting-reserve").value = s.disk_reserve_mib ?? 1024;
     $("schedule-enabled").checked = s.schedule_enabled || false;
     $("schedule-fields").disabled = !$("schedule-enabled").checked;
@@ -1539,6 +1614,7 @@ async function openSettings(focusDestination = false) {
     $("setting-password").value = "";
     $("settings-error").textContent = "";
     $("settings-dialog").showModal();
+    renderUpdates();
     if (focusDestination && !state.destinationLocked)
       $("setting-destination").focus();
   } catch (error) {
@@ -1560,6 +1636,8 @@ $("settings-form").onsubmit = async (event) => {
       retries: Number($("setting-retries").value),
       verify_checksums: $("setting-verify").checked,
       notifications: $("setting-notifications").checked,
+      check_updates: $("setting-check-updates").checked,
+      update_prereleases: $("setting-update-prereleases").checked,
       disk_reserve_mib: Number($("setting-reserve").value),
       schedule_enabled: $("schedule-enabled").checked,
       schedule_days: [

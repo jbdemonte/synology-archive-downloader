@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station tidak berjalan. Buka Pusat Paket.",
   "Transfert interrompu avant la fin du fichier.": "Transfer terputus sebelum akhir berkas.",
   "Incomplete disk write; transfer will resume from disk.": "Penulisan disk belum selesai; transfer akan dilanjutkan dari berkas parsial.",
-  "Réponse HTTP inattendue : {status}": "Respon HTTP tak terduga: {status}"
+  "Réponse HTTP inattendue : {status}": "Respon HTTP tak terduga: {status}",
+  "Mises à jour": "Pembaruan",
+  "Vérifier automatiquement les mises à jour": "Periksa pembaruan secara otomatis",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Satu pemeriksaan per hari di GitHub. Instal secara manual di Pusat Paket.",
+  "Inclure les préversions": "Sertakan versi prarilis",
+  "Vérifier maintenant": "Periksa sekarang",
+  "Voir la version sur GitHub": "Lihat rilis di GitHub",
+  "Version {version} disponible": "Versi {version} tersedia",
+  "Vérification automatique désactivée.": "Pemeriksaan otomatis dinonaktifkan.",
+  "Aucune vérification effectuée.": "Belum ada pemeriksaan.",
+  "Vérification en cours…": "Memeriksa pembaruan…",
+  "Votre version est à jour.": "Versi Anda sudah terbaru.",
+  "Aucune version publique compatible dans ce canal.": "Tidak ada rilis publik yang kompatibel di saluran ini.",
+  "Vérification impossible. Réessayer plus tard.": "Tidak dapat memeriksa. Coba lagi nanti.",
+  "Enregistrer les paramètres avant de vérifier.": "Simpan pengaturan sebelum memeriksa.",
+  "Réessayer dans {seconds} s": "Coba lagi dalam {seconds} dtk"
 }

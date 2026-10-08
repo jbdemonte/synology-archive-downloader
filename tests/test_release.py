@@ -114,7 +114,9 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Invalid release"):
             verify_bundle(directory)
 
-    def package(self, version="0.2.0-6", script=b"// Committed application\n"):
+    def package(
+        self, version="0.2.0-6", script=b"// Committed application\n", app_version="0.2.0-6"
+    ):
         def add(archive, name, content):
             info = tarfile.TarInfo(name)
             info.size = len(content)
@@ -122,6 +124,7 @@ class ReleaseTests(unittest.TestCase):
 
         payload = io.BytesIO()
         with tarfile.open(fileobj=payload, mode="w:gz") as archive:
+            add(archive, "app/archive_station/VERSION", app_version.encode())
             add(archive, "app/archive_station/static/app.js", script)
             add(archive, "ui/web/app.js", script)
             add(archive, "ui/web/style.css", b"body {}\n")
@@ -139,6 +142,8 @@ class ReleaseTests(unittest.TestCase):
             validate_package(self.package(version="0.2.0-5"), self.version, self.root)
         with self.assertRaisesRegex(ValueError, "source mismatch"):
             validate_package(self.package(script=b"Old script"), self.version, self.root)
+        with self.assertRaisesRegex(ValueError, "update-check version"):
+            validate_package(self.package(app_version="0.2.0"), self.version, self.root)
 
     def test_publication_instructions_pin_the_tag_and_attach_every_asset(self):
         text = publication_guide(self.version, "a" * 40)

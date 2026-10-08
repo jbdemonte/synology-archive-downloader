@@ -234,7 +234,16 @@ try {
         retries: 4,
         verify_checksums: true,
         language: "en",
-        version: "0.2.0",
+        version: "0.2.0-7",
+        check_updates: true,
+        update_prereleases: false,
+        updates: {
+          state: "current",
+          current_version: "0.2.0-7",
+          latest_version: "0.2.0-7",
+          checked_at: demoTime.getTime() / 1000,
+          retry_after: 0,
+        },
         disk_reserve_mib: 1024,
         notifications: true,
         timezone: "CEST",
@@ -351,6 +360,12 @@ try {
   await page
     .locator("#settings-dialog")
     .screenshot({ path: new URL("settings.png", out).pathname });
+
+  await page.locator("#update-settings summary").click();
+  await page.locator("#update-check").scrollIntoViewIfNeeded();
+  await page
+    .locator("#update-settings")
+    .screenshot({ path: new URL("updates.png", out).pathname });
 
   // The picker is available after transfers stop. Show both access badges and
   // the real New folder action in a writable demonstration destination.

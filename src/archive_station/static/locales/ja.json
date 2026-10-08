@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Stationが起動していません。パッケージセンターを開いてください。",
   "Transfert interrompu avant la fin du fichier.": "ファイルの終わりに達する前に転送が中断されました。",
   "Incomplete disk write; transfer will resume from disk.": "ディスクへの書き込みが不完全です。部分ファイルから転送を再開します。",
-  "Réponse HTTP inattendue : {status}": "予期しない HTTP 応答: {status}"
+  "Réponse HTTP inattendue : {status}": "予期しない HTTP 応答: {status}",
+  "Mises à jour": "アップデート",
+  "Vérifier automatiquement les mises à jour": "アップデートを自動確認",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "GitHubで1日1回確認します。パッケージセンターで手動インストールしてください。",
+  "Inclure les préversions": "プレリリースを含める",
+  "Vérifier maintenant": "今すぐ確認",
+  "Voir la version sur GitHub": "GitHubでリリースを見る",
+  "Version {version} disponible": "バージョン {version} が利用可能です",
+  "Vérification automatique désactivée.": "自動確認は無効です。",
+  "Aucune vérification effectuée.": "まだ確認していません。",
+  "Vérification en cours…": "アップデートを確認中…",
+  "Votre version est à jour.": "最新バージョンです。",
+  "Aucune version publique compatible dans ce canal.": "このチャンネルに対応する公開リリースはありません。",
+  "Vérification impossible. Réessayer plus tard.": "確認できませんでした。後でもう一度お試しください。",
+  "Enregistrer les paramètres avant de vérifier.": "確認する前に設定を保存してください。",
+  "Réessayer dans {seconds} s": "{seconds} 秒後に再試行"
 }

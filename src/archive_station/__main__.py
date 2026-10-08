@@ -17,6 +17,7 @@ from .engine import Engine
 from .notifications import Notifications
 from .reports import Reports
 from .store import Store
+from .updates import Updates
 from .web import WebApp
 
 
@@ -67,7 +68,10 @@ def main():
     engine = Engine(store, client, settings)
     reports = Reports(store, settings)
     notifications = Notifications(store, settings, enabled=args.dsm_auth)
-    app = WebApp(store, client, settings, data, no_auth=args.no_auth, dsm_auth=args.dsm_auth)
+    updates = Updates(settings, data)
+    app = WebApp(
+        store, client, settings, data, no_auth=args.no_auth, dsm_auth=args.dsm_auth, updates=updates
+    )
     from waitress import create_server
 
     server = create_server(
@@ -87,11 +91,13 @@ def main():
     engine.start()
     reports.start()
     notifications.start()
+    updates.start()
     logging.info("Archive Station listening on http://%s:%s", args.host, args.port)
     try:
         server.run()
     finally:
         server.close()
+        updates.shutdown()
         notifications.stop.set()
         reports.stop.set()
         downloads_stopped = engine.shutdown()

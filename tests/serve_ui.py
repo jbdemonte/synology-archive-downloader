@@ -9,6 +9,7 @@ from waitress import serve
 from archive_station.archive import ArchiveClient
 from archive_station.config import Settings
 from archive_station.store import Store
+from archive_station.updates import Updates
 from archive_station.web import WebApp
 
 parser = argparse.ArgumentParser()
@@ -58,5 +59,6 @@ for identifier in ["demo-one", "demo-two", "demo-select", "demo-refresh"]:
     )
 store = Store(root / "state.sqlite3")
 settings = Settings(root / "data", root / "downloads", [root])
-app = WebApp(store, client, settings, root / "data", no_auth=True)
+updates = Updates(settings, root / "data", fetch=lambda: [])
+app = WebApp(store, client, settings, root / "data", no_auth=True, updates=updates)
 serve(app, host="127.0.0.1", port=8275, threads=4)

@@ -317,5 +317,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station не запущено. Відкрийте Центр пакетів.",
   "Transfert interrompu avant la fin du fichier.": "Передачу перервано до кінця файлу.",
   "Incomplete disk write; transfer will resume from disk.": "Неповний запис на диск; передача продовжиться з часткового файлу.",
-  "Réponse HTTP inattendue : {status}": "Неочікувана відповідь HTTP: {status}"
+  "Réponse HTTP inattendue : {status}": "Неочікувана відповідь HTTP: {status}",
+  "Mises à jour": "Оновлення",
+  "Vérifier automatiquement les mises à jour": "Автоматично перевіряти оновлення",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Одна перевірка на день на GitHub. Ручне встановлення в Центрі пакетів.",
+  "Inclure les préversions": "Включати попередні версії",
+  "Vérifier maintenant": "Перевірити зараз",
+  "Voir la version sur GitHub": "Переглянути випуск на GitHub",
+  "Version {version} disponible": "Доступна версія {version}",
+  "Vérification automatique désactivée.": "Автоматичну перевірку вимкнено.",
+  "Aucune vérification effectuée.": "Перевірку ще не виконано.",
+  "Vérification en cours…": "Перевірка оновлень…",
+  "Votre version est à jour.": "Ваша версія актуальна.",
+  "Aucune version publique compatible dans ce canal.": "У цьому каналі немає сумісних загальнодоступних випусків.",
+  "Vérification impossible. Réessayer plus tard.": "Не вдалося перевірити. Спробуйте пізніше.",
+  "Enregistrer les paramètres avant de vérifier.": "Збережіть налаштування перед перевіркою.",
+  "Réessayer dans {seconds} s": "Повторити через {seconds} с"
 }

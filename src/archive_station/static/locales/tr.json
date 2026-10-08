@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station çalışmıyor. Paket Merkezi’ni açın.",
   "Transfert interrompu avant la fin du fichier.": "Aktarım dosyanın sonuna ulaşmadan kesildi.",
   "Incomplete disk write; transfer will resume from disk.": "Disk yazımı tamamlanamadı; aktarım kısmi dosyadan sürdürülecek.",
-  "Réponse HTTP inattendue : {status}": "Beklenmeyen HTTP yanıtı: {status}"
+  "Réponse HTTP inattendue : {status}": "Beklenmeyen HTTP yanıtı: {status}",
+  "Mises à jour": "Güncellemeler",
+  "Vérifier automatiquement les mises à jour": "Güncellemeleri otomatik denetle",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "GitHub üzerinden günde bir denetim. Paket Merkezi üzerinden elle kurulum.",
+  "Inclure les préversions": "Ön sürümleri dahil et",
+  "Vérifier maintenant": "Şimdi denetle",
+  "Voir la version sur GitHub": "Sürümü GitHub üzerinde görüntüle",
+  "Version {version} disponible": "{version} sürümü mevcut",
+  "Vérification automatique désactivée.": "Otomatik denetim kapalı.",
+  "Aucune vérification effectuée.": "Henüz denetim yapılmadı.",
+  "Vérification en cours…": "Güncellemeler denetleniyor…",
+  "Votre version est à jour.": "Sürümünüz güncel.",
+  "Aucune version publique compatible dans ce canal.": "Bu kanalda uyumlu herkese açık sürüm yok.",
+  "Vérification impossible. Réessayer plus tard.": "Denetlenemedi. Daha sonra tekrar deneyin.",
+  "Enregistrer les paramètres avant de vérifier.": "Denetlemeden önce ayarları kaydedin.",
+  "Réessayer dans {seconds} s": "{seconds} sn sonra yeniden dene"
 }

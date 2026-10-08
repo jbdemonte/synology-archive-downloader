@@ -63,6 +63,8 @@ class Settings:
             "retries": 4,
             "verify_checksums": True,
             "notifications": True,
+            "check_updates": False,
+            "update_prereleases": False,
             "disk_reserve_mib": 1024,
             "schedule_enabled": False,
             "schedule_days": list(range(7)),
@@ -114,6 +116,8 @@ class Settings:
                     raise ValueError(f"{key} doit être compris entre {minimum} et {maximum}.")
             if type(new["notifications"]) is not bool:
                 raise ValueError("Invalid notification setting")
+            if any(type(new[key]) is not bool for key in ("check_updates", "update_prereleases")):
+                raise ValueError("Invalid update setting")
             if type(new["verify_checksums"]) is not bool:
                 raise ValueError("Option de vérification invalide.")
             for key in ("language", "report_language"):

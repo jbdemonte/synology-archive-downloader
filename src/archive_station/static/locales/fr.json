@@ -312,5 +312,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.",
   "Transfert interrompu avant la fin du fichier.": "Transfert interrompu avant la fin du fichier.",
   "Incomplete disk write; transfer will resume from disk.": "Écriture disque incomplète ; le transfert reprendra depuis le fichier partiel.",
-  "Réponse HTTP inattendue : {status}": "Réponse HTTP inattendue : {status}"
+  "Réponse HTTP inattendue : {status}": "Réponse HTTP inattendue : {status}",
+  "Mises à jour": "Mises à jour",
+  "Vérifier automatiquement les mises à jour": "Vérifier automatiquement les mises à jour",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.",
+  "Inclure les préversions": "Inclure les préversions",
+  "Vérifier maintenant": "Vérifier maintenant",
+  "Voir la version sur GitHub": "Voir la version sur GitHub",
+  "Version {version} disponible": "Version {version} disponible",
+  "Vérification automatique désactivée.": "Vérification automatique désactivée.",
+  "Aucune vérification effectuée.": "Aucune vérification effectuée.",
+  "Vérification en cours…": "Vérification en cours…",
+  "Votre version est à jour.": "Votre version est à jour.",
+  "Aucune version publique compatible dans ce canal.": "Aucune version publique compatible dans ce canal.",
+  "Vérification impossible. Réessayer plus tard.": "Vérification impossible. Réessayer plus tard.",
+  "Enregistrer les paramètres avant de vérifier.": "Enregistrer les paramètres avant de vérifier.",
+  "Réessayer dans {seconds} s": "Réessayer dans {seconds} s"
 }

@@ -2,7 +2,7 @@
 PYTHON ?= python3
 VENV := .venv
 PY := $(VENV)/bin/python
-VERSION ?= 0.2.0-6
+VERSION ?= 0.2.0-7
 SPK := dist/ArchiveStation-$(VERSION)-x86_64.spk
 
 .PHONY: help build spk release runtime deps dev-deps run test test-ui screenshots lint format check clean

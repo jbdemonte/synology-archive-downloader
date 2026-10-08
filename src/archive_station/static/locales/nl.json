@@ -312,5 +312,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station is niet actief. Open Package Center.",
   "Transfert interrompu avant la fin du fichier.": "Overdracht onderbroken vóór het einde van het bestand.",
   "Incomplete disk write; transfer will resume from disk.": "Onvolledige schrijfactie; de overdracht wordt hervat vanaf het gedeeltelijke bestand.",
-  "Réponse HTTP inattendue : {status}": "Onverwachte HTTP-reactie: {status}"
+  "Réponse HTTP inattendue : {status}": "Onverwachte HTTP-reactie: {status}",
+  "Mises à jour": "Updates",
+  "Vérifier automatiquement les mises à jour": "Automatisch op updates controleren",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Eén controle per dag op GitHub. Handmatig installeren in Package Center.",
+  "Inclure les préversions": "Voorlopige versies opnemen",
+  "Vérifier maintenant": "Nu controleren",
+  "Voir la version sur GitHub": "Versie op GitHub bekijken",
+  "Version {version} disponible": "Versie {version} beschikbaar",
+  "Vérification automatique désactivée.": "Automatische controle uitgeschakeld.",
+  "Aucune vérification effectuée.": "Nog geen controle uitgevoerd.",
+  "Vérification en cours…": "Controleren op updates…",
+  "Votre version est à jour.": "Uw versie is up-to-date.",
+  "Aucune version publique compatible dans ce canal.": "Geen compatibele openbare versie in dit kanaal.",
+  "Vérification impossible. Réessayer plus tard.": "Controle niet mogelijk. Probeer het later opnieuw.",
+  "Enregistrer les paramètres avant de vérifier.": "Instellingen opslaan vóór de controle.",
+  "Réessayer dans {seconds} s": "Opnieuw proberen over {seconds} s"
 }

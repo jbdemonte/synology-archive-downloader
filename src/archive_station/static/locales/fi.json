@@ -312,5 +312,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station ei ole käynnissä. Avaa Pakettikeskus.",
   "Transfert interrompu avant la fin du fichier.": "Siirto keskeytyi ennen tiedoston loppua.",
   "Incomplete disk write; transfer will resume from disk.": "Levylle kirjoitus jäi kesken; siirto jatkuu osittaisesta tiedostosta.",
-  "Réponse HTTP inattendue : {status}": "Odottamaton HTTP-vastaus: {status}"
+  "Réponse HTTP inattendue : {status}": "Odottamaton HTTP-vastaus: {status}",
+  "Mises à jour": "Päivitykset",
+  "Vérifier automatiquement les mises à jour": "Tarkista päivitykset automaattisesti",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Yksi tarkistus päivässä GitHubista. Asennus manuaalisesti Pakettikeskuksessa.",
+  "Inclure les préversions": "Sisällytä ennakkoversiot",
+  "Vérifier maintenant": "Tarkista nyt",
+  "Voir la version sur GitHub": "Näytä julkaisu GitHubissa",
+  "Version {version} disponible": "Versio {version} saatavilla",
+  "Vérification automatique désactivée.": "Automaattinen tarkistus poistettu käytöstä.",
+  "Aucune vérification effectuée.": "Tarkistusta ei ole vielä tehty.",
+  "Vérification en cours…": "Tarkistetaan päivityksiä…",
+  "Votre version est à jour.": "Versiosi on ajan tasalla.",
+  "Aucune version publique compatible dans ce canal.": "Tässä kanavassa ei ole yhteensopivaa julkista versiota.",
+  "Vérification impossible. Réessayer plus tard.": "Tarkistus epäonnistui. Yritä myöhemmin uudelleen.",
+  "Enregistrer les paramètres avant de vérifier.": "Tallenna asetukset ennen tarkistusta.",
+  "Réessayer dans {seconds} s": "Yritä uudelleen {seconds} s kuluttua"
 }

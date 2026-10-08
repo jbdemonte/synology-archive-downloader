@@ -92,17 +92,22 @@ def validate_package(path, version, source):
             if not package.extractfile(name).read():
                 raise ValueError(f"Missing package content: {name}")
         with tarfile.open(fileobj=package.extractfile("package.tgz"), mode="r|gz") as payload:
+            installed_version = None
             required = {
                 "app/archive_station/static/app.js": source / "src/archive_station/static/app.js",
                 "ui/web/app.js": source / "src/archive_station/static/app.js",
                 "ui/web/style.css": source / "src/archive_station/static/style.css",
             }
             for member in payload:
+                if member.name == "app/archive_station/VERSION":
+                    installed_version = payload.extractfile(member).read().decode().strip()
                 if member.name in required:
                     if payload.extractfile(member).read() != required.pop(member.name).read_bytes():
                         raise ValueError(f"Package source mismatch: {member.name}")
             if required:
                 raise ValueError("The package is missing application assets.")
+            if installed_version != version:
+                raise ValueError("The installed update-check version differs from the package.")
 
 
 def browser_environment(root):

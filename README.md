@@ -26,6 +26,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
 - **Keep a readable record** — each archive gets a plain-text report in English or French with persistent error history, also readable inside the app.
 - **Use your language** — 27 bundled interface languages, automatic DSM language detection and an override in Settings.
+- **Find new versions** — optional daily GitHub release checks, a manual check and a link when an update is available.
 
 See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, repair and refresh behavior.
 
@@ -47,8 +48,8 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 
 ## Install
 
-1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-6-x86_64.spk`.
+1. Download the `.spk` from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases), or build it with `make build` (see below).
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-7-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -176,6 +177,21 @@ English, Français, Español, Português, Português (Brasil), Deutsch, Italiano
 
 Language names are sorted alphabetically using the current interface locale; Automatic stays first. The 27-language support applies to the interface; [download reports](#reports-and-error-history) currently support English and French.
 
+## Update notifications
+
+Open **Settings → Updates** and enable **Automatically check for updates** for one check per day, even when the application window is closed. Automatic checks are **off by default**. **Check now** also works with automatic checks disabled; save any changed update options first. Enable **Include prereleases** to receive community previews as well as stable releases.
+
+A newer compatible package appears as a link below the page title and in Settings. Follow it to GitHub, download the `.spk`, then use **Package Center → Manual Install** to upgrade. Installation is manual; task state and partial downloads are retained.
+
+Checks use GitHub's public API without credentials or download information. Only published releases with a matching x86_64 package are considered; drafts are excluded. A private repository or a channel without a published package reports **No compatible public release**. Network errors report a failed check, rather than claiming the application is up to date. Checks run independently of download workers and are limited to one manual request per minute.
+
+<details>
+<summary>See update preferences and the manual check</summary>
+
+![Update preferences with automatic daily checks, optional prereleases and a manual check](docs/images/updates.png)
+
+</details>
+
 ## Build and develop
 
 Build requirements: **Python 3.12+**, `make`, and network access for the first dependency download. macOS and Linux can build the package without executing the bundled Linux runtime.
@@ -183,7 +199,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
 make release               # Validate and prepare all GitHub release assets
-make build VERSION=0.2.0-6  # Override the package version
+make build VERSION=0.2.0-7  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
@@ -204,7 +220,7 @@ make format
 
 UI tests use port 8275 temporarily. Set `CHROMIUM_PATH` to an existing Chromium executable if necessary. Tests cover interrupted transfers, process termination, resumption, changing concurrency, old database migration, error history, the report reader, startup recovery, source links, task menus, permissions, DSM integration and all supported interface languages.
 
-`make screenshots` regenerates the activity, task menu, folder tree, destination picker, settings, history, report and startup images in `docs/images/`. It loads the embedded interface with simulated gateway responses and uses the application's own report formatter. It does not connect to a NAS or Archive.org.
+`make screenshots` regenerates the activity, task menu, folder tree, destination picker, settings, updates, history, report and startup images in `docs/images/`. It loads the embedded interface with simulated gateway responses and uses the application's own report formatter. It does not connect to a NAS, Archive.org or GitHub.
 
 ```text
 src/archive_station/  Download engine, API, SQLite, settings and static UI

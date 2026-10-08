@@ -149,7 +149,16 @@
             <h1 id="view-title">
               <span data-i18n="Transferts">Transferts</span>
             </h1>
-            <p>Internet Archive Downloader</p>
+            <p>
+              <span id="app-subtitle">Internet Archive Downloader</span
+              ><a
+                id="update-available"
+                class="update-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                hidden
+              ></a>
+            </p>
           </div>
           <div class="page-actions">
             <button id="settings-open" class="settings-button" type="button">
@@ -880,6 +889,48 @@
                 required
               />
             </fieldset>
+          </details>
+          <details id="update-settings" class="update-settings">
+            <summary data-i18n="Mises à jour">Mises à jour</summary>
+            <label class="checkbox"
+              ><input id="setting-check-updates" type="checkbox" /><span
+                data-i18n="Vérifier automatiquement les mises à jour"
+                >Vérifier automatiquement les mises à jour</span
+              ></label
+            >
+            <p
+              class="field-help"
+              data-i18n="Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets."
+            >
+              Une vérification par jour sur GitHub. Installation manuelle dans
+              le Centre de paquets.
+            </p>
+            <label class="checkbox"
+              ><input id="setting-update-prereleases" type="checkbox" /><span
+                data-i18n="Inclure les préversions"
+                >Inclure les préversions</span
+              ></label
+            >
+            <p id="update-status" role="status" aria-live="polite"></p>
+            <p id="update-checked" class="field-help"></p>
+            <div class="update-actions">
+              <button
+                id="update-check"
+                type="button"
+                data-i18n="Vérifier maintenant"
+              >
+                Vérifier maintenant
+              </button>
+              <a
+                id="update-release"
+                class="update-link"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-i18n="Voir la version sur GitHub"
+                hidden
+                >Voir la version sur GitHub</a
+              >
+            </div>
           </details>
           <div id="local-password-settings" hidden>
             <h3>

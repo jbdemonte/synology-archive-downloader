@@ -1473,14 +1473,35 @@ dialog > form {
   }
 }
 
-.settings-extra {
+.settings-extra,
+.update-settings {
   border-top: 1px solid var(--line);
   padding: 14px 0;
 }
-.settings-extra summary {
+.settings-extra summary,
+.update-settings summary {
   cursor: pointer;
   font-weight: 600;
   color: var(--blue);
+}
+.update-link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.update-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+#update-status {
+  overflow-wrap: anywhere;
+}
+#update-status[data-state="error"] {
+  color: #ce4646;
 }
 #schedule-days .checkbox {
   margin: 0;

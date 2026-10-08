@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlsplit
 
-from . import __version__
+from . import __package_version__
 from .archive import parse_identifier
 from .auth import Auth
 from .config import LANGUAGES, dsm_language
@@ -20,18 +20,22 @@ from .refresh import difference
 from .reports import render_report
 from .schedule import policy
 from .storage import capacity
+from .updates import Updates
 
 LOG = logging.getLogger(__name__)
 STATIC = Path(__file__).parent / "static"
 
 
 class WebApp:
-    def __init__(self, store, client, settings, data_dir, no_auth=False, dsm_auth=False):
+    def __init__(
+        self, store, client, settings, data_dir, no_auth=False, dsm_auth=False, updates=None
+    ):
         self.store, self.client, self.settings = store, client, settings
         self.auth = Auth(data_dir)
         self.no_auth = no_auth
         self.dsm_auth = dsm_auth
         self.plans = Plans()
+        self.updates = updates or Updates(settings, data_dir)
 
     def __call__(self, env, start_response):
         headers = []
@@ -90,7 +94,7 @@ class WebApp:
             return (status, value, "application/json", headers)
 
         if path == "/health" and method == "GET":
-            return response({"status": "ok", "version": __version__})
+            return response({"status": "ok", "version": __package_version__})
         if method == "GET" and path in {"/", "/app.js", "/i18n.js", "/style.css", "/icon.png"}:
             file = STATIC / ("index.html" if path == "/" else path[1:])
             return 200, file.read_bytes(), mimetypes.guess_type(file.name)[0] or "text/plain", []
@@ -181,7 +185,9 @@ class WebApp:
                             },
                             409,
                         )
-                    return response(self.settings.update(body))
+                    result = self.settings.update(body)
+                self.updates.configure()
+                return response(result)
             settings = self.settings.get()
             try:
                 disk = shutil.disk_usage(settings["download_dir"])
@@ -192,12 +198,15 @@ class WebApp:
                 {
                     **settings,
                     "storage": storage,
-                    "version": __version__,
+                    "version": __package_version__,
+                    "updates": self.updates.snapshot(),
                     "dsm_language": dsm_language() if self.dsm_auth else "",
                     "destination_locked": self.store.destination_locked(),
                     "timezone": time.strftime("%Z"),
                 }
             )
+        if path == "/api/updates/check" and method == "POST":
+            return response(self.updates.request(), 202)
         if path == "/api/password" and method == "POST":
             self.auth.set_password(body.get("password"))
             return response({"ok": True})
@@ -267,6 +276,7 @@ class WebApp:
                     "jobs": self.store.jobs(),
                     "policy": policy(self.settings.get()),
                     "history": self.store.estimates.graph(),
+                    "updates": self.updates.snapshot(),
                 }
             )
         parts = path.strip("/").split("/")

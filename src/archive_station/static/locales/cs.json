@@ -317,5 +317,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station není spuštěn. Otevřete Centrum balíčků.",
   "Transfert interrompu avant la fin du fichier.": "Přenos byl přerušen před koncem souboru.",
   "Incomplete disk write; transfer will resume from disk.": "Neúplný zápis na disk; přenos bude pokračovat z částečného souboru.",
-  "Réponse HTTP inattendue : {status}": "Neočekávaná odpověď HTTP: {status}"
+  "Réponse HTTP inattendue : {status}": "Neočekávaná odpověď HTTP: {status}",
+  "Mises à jour": "Aktualizace",
+  "Vérifier automatiquement les mises à jour": "Automaticky kontrolovat aktualizace",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Jedna kontrola denně na GitHubu. Ruční instalace v Centru balíčků.",
+  "Inclure les préversions": "Zahrnout předběžné verze",
+  "Vérifier maintenant": "Zkontrolovat nyní",
+  "Voir la version sur GitHub": "Zobrazit vydání na GitHubu",
+  "Version {version} disponible": "Verze {version} je k dispozici",
+  "Vérification automatique désactivée.": "Automatická kontrola vypnuta.",
+  "Aucune vérification effectuée.": "Zatím nebyla provedena žádná kontrola.",
+  "Vérification en cours…": "Kontrola aktualizací…",
+  "Votre version est à jour.": "Vaše verze je aktuální.",
+  "Aucune version publique compatible dans ce canal.": "V tomto kanálu není kompatibilní veřejná verze.",
+  "Vérification impossible. Réessayer plus tard.": "Kontrola se nezdařila. Zkuste to později.",
+  "Enregistrer les paramètres avant de vérifier.": "Před kontrolou uložit nastavení.",
+  "Réessayer dans {seconds} s": "Zkusit znovu za {seconds} s"
 }

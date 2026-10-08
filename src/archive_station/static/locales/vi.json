@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station chưa chạy. Mở Trung tâm gói.",
   "Transfert interrompu avant la fin du fichier.": "Truyền bị gián đoạn trước khi hết tệp.",
   "Incomplete disk write; transfer will resume from disk.": "Ghi đĩa chưa hoàn tất; quá trình truyền sẽ tiếp tục từ tệp một phần.",
-  "Réponse HTTP inattendue : {status}": "Phản hồi HTTP không mong đợi: {status}"
+  "Réponse HTTP inattendue : {status}": "Phản hồi HTTP không mong đợi: {status}",
+  "Mises à jour": "Cập nhật",
+  "Vérifier automatiquement les mises à jour": "Tự động kiểm tra cập nhật",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Kiểm tra GitHub một lần mỗi ngày. Cài đặt thủ công trong Trung tâm gói.",
+  "Inclure les préversions": "Bao gồm bản phát hành thử nghiệm",
+  "Vérifier maintenant": "Kiểm tra ngay",
+  "Voir la version sur GitHub": "Xem bản phát hành trên GitHub",
+  "Version {version} disponible": "Có phiên bản {version}",
+  "Vérification automatique désactivée.": "Đã tắt kiểm tra tự động.",
+  "Aucune vérification effectuée.": "Chưa thực hiện kiểm tra.",
+  "Vérification en cours…": "Đang kiểm tra cập nhật…",
+  "Votre version est à jour.": "Phiên bản của bạn đã mới nhất.",
+  "Aucune version publique compatible dans ce canal.": "Không có bản phát hành công khai tương thích trong kênh này.",
+  "Vérification impossible. Réessayer plus tard.": "Không thể kiểm tra. Hãy thử lại sau.",
+  "Enregistrer les paramètres avant de vérifier.": "Lưu cài đặt trước khi kiểm tra.",
+  "Réessayer dans {seconds} s": "Thử lại sau {seconds} giây"
 }

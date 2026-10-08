@@ -312,5 +312,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Το Archive Station δεν εκτελείται. Ανοίξτε το Κέντρο πακέτων.",
   "Transfert interrompu avant la fin du fichier.": "Η μεταφορά διακόπηκε πριν από το τέλος του αρχείου.",
   "Incomplete disk write; transfer will resume from disk.": "Ελλιπής εγγραφή στον δίσκο· η μεταφορά θα συνεχιστεί από το μερικό αρχείο.",
-  "Réponse HTTP inattendue : {status}": "Απροσδόκητη απόκριση HTTP: {status}"
+  "Réponse HTTP inattendue : {status}": "Απροσδόκητη απόκριση HTTP: {status}",
+  "Mises à jour": "Ενημερώσεις",
+  "Vérifier automatiquement les mises à jour": "Αυτόματος έλεγχος ενημερώσεων",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Ένας έλεγχος την ημέρα στο GitHub. Χειροκίνητη εγκατάσταση στο Κέντρο πακέτων.",
+  "Inclure les préversions": "Συμπερίληψη δοκιμαστικών εκδόσεων",
+  "Vérifier maintenant": "Έλεγχος τώρα",
+  "Voir la version sur GitHub": "Προβολή έκδοσης στο GitHub",
+  "Version {version} disponible": "Διαθέσιμη έκδοση {version}",
+  "Vérification automatique désactivée.": "Ο αυτόματος έλεγχος είναι απενεργοποιημένος.",
+  "Aucune vérification effectuée.": "Δεν έχει γίνει ακόμη έλεγχος.",
+  "Vérification en cours…": "Έλεγχος ενημερώσεων…",
+  "Votre version est à jour.": "Η έκδοσή σας είναι ενημερωμένη.",
+  "Aucune version publique compatible dans ce canal.": "Δεν υπάρχει συμβατή δημόσια έκδοση σε αυτό το κανάλι.",
+  "Vérification impossible. Réessayer plus tard.": "Αδυναμία ελέγχου. Δοκιμάστε αργότερα.",
+  "Enregistrer les paramètres avant de vérifier.": "Αποθηκεύστε τις ρυθμίσεις πριν τον έλεγχο.",
+  "Réessayer dans {seconds} s": "Νέα προσπάθεια σε {seconds} δ."
 }

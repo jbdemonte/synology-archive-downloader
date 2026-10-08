@@ -317,5 +317,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station nie działa. Otwórz Centrum pakietów.",
   "Transfert interrompu avant la fin du fichier.": "Transfer przerwany przed końcem pliku.",
   "Incomplete disk write; transfer will resume from disk.": "Niepełny zapis na dysku; transfer zostanie wznowiony z pliku częściowego.",
-  "Réponse HTTP inattendue : {status}": "Nieoczekiwana odpowiedź HTTP: {status}"
+  "Réponse HTTP inattendue : {status}": "Nieoczekiwana odpowiedź HTTP: {status}",
+  "Mises à jour": "Aktualizacje",
+  "Vérifier automatiquement les mises à jour": "Automatycznie sprawdzaj aktualizacje",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Jedno sprawdzenie dziennie w GitHub. Ręczna instalacja w Centrum pakietów.",
+  "Inclure les préversions": "Uwzględniaj wersje testowe",
+  "Vérifier maintenant": "Sprawdź teraz",
+  "Voir la version sur GitHub": "Zobacz wydanie w GitHub",
+  "Version {version} disponible": "Dostępna wersja {version}",
+  "Vérification automatique désactivée.": "Automatyczne sprawdzanie wyłączone.",
+  "Aucune vérification effectuée.": "Nie wykonano jeszcze sprawdzenia.",
+  "Vérification en cours…": "Sprawdzanie aktualizacji…",
+  "Votre version est à jour.": "Twoja wersja jest aktualna.",
+  "Aucune version publique compatible dans ce canal.": "Brak zgodnej publicznej wersji w tym kanale.",
+  "Vérification impossible. Réessayer plus tard.": "Nie można sprawdzić. Spróbuj później.",
+  "Enregistrer les paramètres avant de vérifier.": "Zapisz ustawienia przed sprawdzeniem.",
+  "Réessayer dans {seconds} s": "Spróbuj ponownie za {seconds} s"
 }

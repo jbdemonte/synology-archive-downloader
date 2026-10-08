@@ -312,5 +312,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station kjører ikke. Åpne Pakkesenter.",
   "Transfert interrompu avant la fin du fichier.": "Overføring avbrutt før slutten av filen.",
   "Incomplete disk write; transfer will resume from disk.": "Ufullstendig diskskriving; overføringen fortsetter fra den delvise filen.",
-  "Réponse HTTP inattendue : {status}": "Uventet HTTP-svar: {status}"
+  "Réponse HTTP inattendue : {status}": "Uventet HTTP-svar: {status}",
+  "Mises à jour": "Oppdateringer",
+  "Vérifier automatiquement les mises à jour": "Se automatisk etter oppdateringer",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "Én kontroll per dag på GitHub. Manuell installasjon i Pakkesenter.",
+  "Inclure les préversions": "Inkluder forhåndsversjoner",
+  "Vérifier maintenant": "Sjekk nå",
+  "Voir la version sur GitHub": "Se versjon på GitHub",
+  "Version {version} disponible": "Versjon {version} er tilgjengelig",
+  "Vérification automatique désactivée.": "Automatisk kontroll er deaktivert.",
+  "Aucune vérification effectuée.": "Ingen kontroll utført ennå.",
+  "Vérification en cours…": "Ser etter oppdateringer…",
+  "Votre version est à jour.": "Din versjon er oppdatert.",
+  "Aucune version publique compatible dans ce canal.": "Ingen kompatibel offentlig versjon i denne kanalen.",
+  "Vérification impossible. Réessayer plus tard.": "Kontrollen mislyktes. Prøv igjen senere.",
+  "Enregistrer les paramètres avant de vérifier.": "Lagre innstillingene før kontrollen.",
+  "Réessayer dans {seconds} s": "Prøv igjen om {seconds} s"
 }

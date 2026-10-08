@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station ไม่ได้ทำงาน เปิดศูนย์แพ็กเกจ",
   "Transfert interrompu avant la fin du fichier.": "การถ่ายโอนถูกขัดจังหวะก่อนสิ้นสุดไฟล์",
   "Incomplete disk write; transfer will resume from disk.": "เขียนดิสก์ไม่สมบูรณ์ การถ่ายโอนจะดำเนินต่อจากไฟล์บางส่วน",
-  "Réponse HTTP inattendue : {status}": "การตอบสนอง HTTP ที่ไม่คาดคิด: {status}"
+  "Réponse HTTP inattendue : {status}": "การตอบสนอง HTTP ที่ไม่คาดคิด: {status}",
+  "Mises à jour": "การอัปเดต",
+  "Vérifier automatiquement les mises à jour": "ตรวจหาการอัปเดตอัตโนมัติ",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "ตรวจสอบ GitHub วันละครั้ง ติดตั้งด้วยตนเองในศูนย์แพ็กเกจ",
+  "Inclure les préversions": "รวมรุ่นทดสอบ",
+  "Vérifier maintenant": "ตรวจสอบตอนนี้",
+  "Voir la version sur GitHub": "ดูรุ่นบน GitHub",
+  "Version {version} disponible": "มีเวอร์ชัน {version} พร้อมใช้งาน",
+  "Vérification automatique désactivée.": "ปิดการตรวจสอบอัตโนมัติแล้ว",
+  "Aucune vérification effectuée.": "ยังไม่ได้ตรวจสอบ",
+  "Vérification en cours…": "กำลังตรวจหาการอัปเดต…",
+  "Votre version est à jour.": "เวอร์ชันของคุณเป็นรุ่นล่าสุดแล้ว",
+  "Aucune version publique compatible dans ce canal.": "ไม่มีรุ่นสาธารณะที่เข้ากันได้ในช่องทางนี้",
+  "Vérification impossible. Réessayer plus tard.": "ไม่สามารถตรวจสอบได้ โปรดลองอีกครั้งภายหลัง",
+  "Enregistrer les paramètres avant de vérifier.": "บันทึกการตั้งค่าก่อนตรวจสอบ",
+  "Réessayer dans {seconds} s": "ลองอีกครั้งใน {seconds} วินาที"
 }

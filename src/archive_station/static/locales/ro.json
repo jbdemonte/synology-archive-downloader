@@ -317,5 +317,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station nu rulează. Deschideți Centrul de pachete.",
   "Transfert interrompu avant la fin du fichier.": "Transfer întrerupt înainte de sfârșitul fișierului.",
   "Incomplete disk write; transfer will resume from disk.": "Scriere incompletă pe disc; transferul va fi reluat din fișierul parțial.",
-  "Réponse HTTP inattendue : {status}": "Răspuns HTTP neașteptat: {status}"
+  "Réponse HTTP inattendue : {status}": "Răspuns HTTP neașteptat: {status}",
+  "Mises à jour": "Actualizări",
+  "Vérifier automatiquement les mises à jour": "Verifică automat actualizările",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "O verificare pe zi pe GitHub. Instalare manuală în Centrul de pachete.",
+  "Inclure les préversions": "Include versiunile preliminare",
+  "Vérifier maintenant": "Verifică acum",
+  "Voir la version sur GitHub": "Vezi versiunea pe GitHub",
+  "Version {version} disponible": "Versiunea {version} este disponibilă",
+  "Vérification automatique désactivée.": "Verificarea automată este dezactivată.",
+  "Aucune vérification effectuée.": "Nu s-a efectuat încă nicio verificare.",
+  "Vérification en cours…": "Se verifică actualizările…",
+  "Votre version est à jour.": "Versiunea ta este la zi.",
+  "Aucune version publique compatible dans ce canal.": "Nicio versiune publică compatibilă în acest canal.",
+  "Vérification impossible. Réessayer plus tard.": "Verificarea nu a reușit. Încearcă mai târziu.",
+  "Enregistrer les paramètres avant de vérifier.": "Salvează setările înainte de verificare.",
+  "Réessayer dans {seconds} s": "Reîncearcă peste {seconds} s"
 }

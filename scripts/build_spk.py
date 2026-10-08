@@ -124,6 +124,7 @@ def build(runtime, wheel, output, version):
             payload / "app/archive_station",
             ignore=shutil.ignore_patterns("__pycache__"),
         )
+        (payload / "app/archive_station/VERSION").write_text(version + "\n")
         with zipfile.ZipFile(wheel) as archive:
             archive.extractall(payload / "vendor")
         shutil.copytree(PACKAGING / "runtime-licenses", payload / "python/licenses")
@@ -178,8 +179,8 @@ if __name__ == "__main__":
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--waitress-wheel", type=Path, required=True)
     parser.add_argument(
-        "--output", type=Path, default=ROOT / "dist/ArchiveStation-0.2.0-6-x86_64.spk"
+        "--output", type=Path, default=ROOT / "dist/ArchiveStation-0.2.0-7-x86_64.spk"
     )
-    parser.add_argument("--version", default="0.2.0-6")
+    parser.add_argument("--version", default="0.2.0-7")
     args = parser.parse_args()
     build(args.runtime, args.waitress_wheel, args.output, args.version)

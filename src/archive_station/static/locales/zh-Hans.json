@@ -297,5 +297,20 @@
   "Archive Station n’est pas démarré. Ouvrez le Centre de paquets.": "Archive Station 未运行。请打开套件中心。",
   "Transfert interrompu avant la fin du fichier.": "文件传输在完成前中断。",
   "Incomplete disk write; transfer will resume from disk.": "磁盘写入不完整，将从部分文件继续传输。",
-  "Réponse HTTP inattendue : {status}": "意外的 HTTP 响应： {status}"
+  "Réponse HTTP inattendue : {status}": "意外的 HTTP 响应： {status}",
+  "Mises à jour": "更新",
+  "Vérifier automatiquement les mises à jour": "自动检查更新",
+  "Une vérification par jour sur GitHub. Installation manuelle dans le Centre de paquets.": "每天在 GitHub 检查一次。请在套件中心手动安装。",
+  "Inclure les préversions": "包含预发布版本",
+  "Vérifier maintenant": "立即检查",
+  "Voir la version sur GitHub": "在 GitHub 查看版本",
+  "Version {version} disponible": "版本 {version} 可用",
+  "Vérification automatique désactivée.": "已关闭自动检查。",
+  "Aucune vérification effectuée.": "尚未进行检查。",
+  "Vérification en cours…": "正在检查更新…",
+  "Votre version est à jour.": "您的版本已是最新。",
+  "Aucune version publique compatible dans ce canal.": "此渠道暂无兼容的公开版本。",
+  "Vérification impossible. Réessayer plus tard.": "无法检查，请稍后重试。",
+  "Enregistrer les paramètres avant de vérifier.": "请先保存设置再检查。",
+  "Réessayer dans {seconds} s": "{seconds} 秒后重试"
 }
