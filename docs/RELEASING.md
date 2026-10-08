@@ -1,0 +1,77 @@
+# Release and community distribution
+
+## Prepare a release
+
+Install development dependencies once with `make dev-deps` (Python 3.12+, Node.js,
+Git and make are required). Review and commit all changes, including screenshots.
+Write `docs/releases/<version>.md`, starting with `# Archive Station <version>`.
+Keep its compatibility claims limited to hardware and DSM versions actually tested.
+
+```sh
+make release                  # Current Makefile version
+make release VERSION=0.2.0-6  # Explicit DSM package version
+```
+
+The version format is `major.minor.patch-build`; its base must match
+`archive_station.__version__`. Bump the build for each changed package. GitHub tags
+use a `v` prefix, for example `v0.2.0-6`.
+
+The command exports committed sources into a temporary directory, runs backend tests,
+lint and browser tests there, builds the package and verifies its contents. Ignored
+local files, downloaded archives and credentials are absent from this snapshot.
+Development dependencies are reused from `.venv` and `node_modules`; runtime downloads
+are cached in `build/cache` and verified against the committed lock file.
+
+An existing Chromium installation can be selected with `CHROMIUM_PATH`. On macOS,
+the command also finds previously installed Playwright Chromium builds automatically.
+
+Successful output is placed in `dist/releases/<version>/`:
+
+| File | Purpose |
+| --- | --- |
+| `ArchiveStation-<version>-x86_64.spk` | Installable DSM package |
+| `ArchiveStation-<version>-x86_64.spk.sha256` | Package digest |
+| `ArchiveStation-<version>-source.tar.gz` | Exact committed sources, docs and screenshots |
+| `RELEASE_NOTES.md` | GitHub release description |
+| `INSTALL.md` | Installation and upgrade instructions |
+| `BUILD-INFO.txt` | Commit, version, runtime hashes and completed checks |
+| `SHA256SUMS` | Checksums of every other bundle file |
+| `PUBLISH.md` | Commands to push the tag and create a GitHub draft |
+
+A failed check leaves no final bundle. Repeating the command validates and reuses an
+existing bundle from the same commit; it refuses a different commit or damaged assets.
+To deliberately rebuild the same commit, remove that generated version directory first.
+`make release` does not tag, push, publish, change repository visibility or contact a NAS.
+It reuses committed screenshots; run `make screenshots` and commit them before release
+when the interface changes.
+
+## Publish on GitHub
+
+GitHub Releases can distribute the `.spk` directly; SynoCommunity membership is not
+required. Follow the generated `PUBLISH.md`: push the source and annotated tag, then
+create a draft with the release notes and assets. `--verify-tag` binds the release to
+the pushed tag; `--draft` allows reviewing the attachments before publishing.
+These options are documented in the [GitHub CLI manual](https://cli.github.com/manual/gh_release_create).
+
+For the first community version, use **Pre-release** while collecting feedback from
+other DSM models and versions. A public release needs a public repository; review
+the full Git history before changing repository visibility. A private repository's
+releases remain private. Review the draft and click **Publish release** when ready.
+See [GitHub's release workflow](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
+
+## SynoCommunity is a separate integration
+
+`https://packages.synocommunity.com` is a Package Center repository endpoint, not an
+upload form for arbitrary `.spk` files. Adding Archive Station requires a contribution
+to [SynoCommunity/spksrc](https://github.com/SynoCommunity/spksrc/blob/master/CONTRIBUTING.md):
+
+1. Check for existing package requests and discuss the proposed application.
+2. Prepare an `spksrc` package recipe with source version, license, dependencies,
+   service lifecycle, DSM integration and supported architectures.
+3. Adapt the current bundled-Python packaging to their framework and conventions.
+4. Verify builds, fresh installs, upgrades and data preservation on the declared targets.
+5. Submit a pull request for maintainer review; acceptance is not automatic.
+
+The current Makefile produces a standalone package. It does not build an `spksrc`
+recipe or claim inclusion in SynoCommunity. Their [developer guide](https://docs.synocommunity.com/developer-guide/)
+describes the framework and packaging process.

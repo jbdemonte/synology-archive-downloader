@@ -182,12 +182,15 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
+make release               # Validate and prepare all GitHub release assets
 make build VERSION=0.2.0-6  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
 
 Python and Waitress artifacts are pinned and checksum-verified in `packaging/synology/runtime-lock.json`. Downloads are cached in `build/cache/`; subsequent builds work offline. Third-party licenses are included in the package.
+
+`make release` requires a clean Git checkout and development dependencies. It tests a committed source snapshot and produces the package, source archive, checksums, release notes and publication instructions under `dist/releases/<version>/`. See [release and community distribution](docs/RELEASING.md) for GitHub publishing and the separate SynoCommunity integration process.
 
 Standalone mode writes its initial password to `data/initial-password.txt`. That password is only for local development; the DSM package uses DSM authentication. Local state lives in `data/` and downloads in `downloads/`.
 
