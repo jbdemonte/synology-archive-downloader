@@ -23,6 +23,20 @@ try {
     );
   await page.goto(base);
   await page.locator(".job-row").first().waitFor();
+  // A plain row click must replace earlier checkbox selection.
+  await page.locator(`[data-select-job="${ids[0]}"]`).check();
+  await page.locator(`[data-job="${ids[1]}"] strong`).click();
+  assert.equal(await page.locator("[data-select-job]:checked").count(), 0);
+  await page.locator("#resume").click();
+  await page.waitForFunction(
+    (id) => document.querySelector(`[data-job="${id}"] .badge.queued`),
+    ids[1],
+  );
+  let current = (await (await page.request.get(base + "/api/jobs")).json())
+    .jobs;
+  assert.equal(current.find((j) => j.id === ids[0]).status, "paused");
+  await page.locator("#pause").click();
+  await page.locator(`[data-job="${ids[1]}"] .badge.paused`).waitFor();
   await page.locator("#select-visible").check();
   assert.equal(await page.locator("[data-select-job]:checked").count(), 2);
   await page.locator("#resume").click();
@@ -44,7 +58,26 @@ try {
   );
   await page.locator("#select-visible").check();
   await page.locator("#remove").click();
-  await page.locator("#remove-confirm").click();
+  let removeCount = 0,
+    release;
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/jobs/bulk", async (route) => {
+    removeCount++;
+    await gate;
+    await route.continue();
+  });
+  await page.locator("#remove-confirm").evaluate((button) => {
+    button.click();
+    button.click();
+  });
+  await page.waitForFunction(
+    () => document.querySelector("#remove-confirm").disabled,
+  );
+  await page.waitForTimeout(100);
+  assert.equal(removeCount, 1);
+  release();
   await page.locator("#empty").waitFor({ state: "visible" });
   assert.equal(
     (await (await page.request.get(base + "/api/jobs")).json()).jobs.length,

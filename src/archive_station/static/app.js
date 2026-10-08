@@ -39,7 +39,10 @@ const number = (n) => Number(n || 0).toLocaleString(ArchiveI18n.locale);
 function bytes(n) {
   if (n == null) return t("Inconnue");
   if (!n) return t("0 o");
-  const unit = Math.min(4, Math.floor(Math.log(n) / Math.log(1024)));
+  const unit = Math.max(
+    0,
+    Math.min(4, Math.floor(Math.log(n) / Math.log(1024))),
+  );
   return `${(n / 1024 ** unit).toLocaleString(ArchiveI18n.locale, { maximumFractionDigits: unit ? 1 : 0 })} ${[t("o"), t("Kio"), t("Mio"), t("Gio"), t("Tio")][unit]}`;
 }
 function eta(job) {
@@ -589,7 +592,7 @@ function openReport(jobId) {
   loadReport();
 }
 $("read-report").onclick = () => openReport(state.selected);
-$("report-refresh").onclick = () => loadReport();
+$("report-refresh").onclick = () => loadReport(reportView?.offset || 0);
 $("report-prev").onclick = () =>
   loadReport(Math.max(0, reportView.offset - 200));
 $("report-next").onclick = () => loadReport(reportView.offset + 200);
@@ -853,9 +856,13 @@ $("download-rows").onclick = async (event) => {
     page = event.target.closest("[data-page]"),
     viewButton = event.target.closest("[data-file-view]"),
     row = event.target.closest("[data-job]");
-  if (row) state.selected = row.dataset.job;
+  if (row) {
+    state.checked.clear();
+    state.selected = row.dataset.job;
+  }
   if (viewButton) {
     const jobId = viewButton.dataset.viewJob;
+    state.checked.clear();
     state.selected = jobId;
     state.fileViews.set(jobId, viewButton.dataset.fileView);
     for (const id of [...state.expanded.keys()])
@@ -894,6 +901,7 @@ $("download-rows").onkeydown = (event) => {
     event.target.matches("tr[data-job]")
   ) {
     event.preventDefault();
+    state.checked.clear();
     state.selected = event.target.dataset.job;
     render();
   }
@@ -1020,6 +1028,17 @@ $("repair-confirm").onclick = async () => {
     $("repair-confirm").disabled = false;
   }
 };
+function setConfirmationBusy(action, busy) {
+  $(`${action}-dialog`)
+    .querySelectorAll("button")
+    .forEach((button) => {
+      button.disabled = busy;
+    });
+}
+for (const action of ["cancel", "remove"])
+  $(`${action}-dialog`).addEventListener("cancel", (event) => {
+    if ($(`${action}-confirm`).disabled) event.preventDefault();
+  });
 let cancelTargets = [];
 $("cancel").onclick = () => {
   cancelTargets = selectedJobs().map((job) => job.id);
@@ -1029,6 +1048,8 @@ $("cancel").onclick = () => {
   $("cancel-dialog").showModal();
 };
 $("cancel-confirm").onclick = async () => {
+  if ($("cancel-confirm").disabled) return;
+  setConfirmationBusy("cancel", true);
   try {
     if (cancelTargets.length === 1)
       await api(`/api/jobs/${cancelTargets[0]}/cancel`, {});
@@ -1040,6 +1061,8 @@ $("cancel-confirm").onclick = async () => {
   } catch (error) {
     $("cancel-dialog").close();
     toast(error.message);
+  } finally {
+    setConfirmationBusy("cancel", false);
   }
 };
 let removeTargets = [];
@@ -1051,6 +1074,8 @@ $("remove").onclick = () => {
   $("remove-dialog").showModal();
 };
 $("remove-confirm").onclick = async () => {
+  if ($("remove-confirm").disabled) return;
+  setConfirmationBusy("remove", true);
   try {
     if (removeTargets.length === 1)
       await api(`/api/jobs/${removeTargets[0]}/remove`, {});
@@ -1063,6 +1088,8 @@ $("remove-confirm").onclick = async () => {
   } catch (error) {
     $("remove-dialog").close();
     toast(error.message);
+  } finally {
+    setConfirmationBusy("remove", false);
   }
 };
 $("add-form").onsubmit = async (event) => {

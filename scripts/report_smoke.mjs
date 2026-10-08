@@ -64,6 +64,15 @@ try {
   await page.locator("#report-next").click();
   await page.getByText("Deuxième page", { exact: true }).waitFor();
   assert.ok(await page.locator("#report-next").isDisabled());
+  await page.locator("#report-refresh").click();
+  await page.waitForFunction(
+    () => !document.querySelector("#report-refresh").disabled,
+  );
+  assert.equal(
+    await page.locator("#report-text").textContent(),
+    "Deuxième page",
+  );
+  assert.equal(await page.locator("#report-page").textContent(), "2 / 2");
   await page.locator("#report-prev").click();
   await page.getByText("Connection reset", { exact: false }).waitFor();
   fail = true;
