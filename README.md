@@ -17,6 +17,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 ## What you can do
 
 - **Add multiple URLs** — accept `/details/` and `/download/` links, preview file counts and sizes, and create one independent task per item.
+- **Choose files before starting** — select files or whole folders, include/exclude patterns such as `*.zip`, and review the selected count and size without loading thousands of rows at once.
 - **See the whole hierarchy** — item → folders → files, with progress, transfer speeds, status filters and search.
 - **Control transfers** — pause, resume, cancel, retry failed files, or remove a task while preserving its downloads.
 - **See what is happening now** — Activity shows live transfers and the next ten files across every subfolder. Completed files have their own view; the folder tree remains available.

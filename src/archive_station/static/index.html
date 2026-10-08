@@ -458,6 +458,70 @@
         </div>
       </form>
     </dialog>
+    <dialog id="selection-dialog">
+      <div class="dialog-header">
+        <div>
+          <h2 data-i18n="Choisir les fichiers…">Choisir les fichiers…</h2>
+          <p id="selection-total"></p>
+        </div>
+      </div>
+      <fieldset id="selection-controls" class="dialog-body selection-controls">
+        <div class="selection-actions">
+          <button
+            id="selection-all"
+            type="button"
+            data-i18n="Tout sélectionner"
+          >
+            Tout sélectionner</button
+          ><button
+            id="selection-none"
+            type="button"
+            data-i18n="Tout désélectionner"
+          >
+            Tout désélectionner
+          </button>
+        </div>
+        <label for="selection-pattern" data-i18n="Filtre facultatif"
+          >Filtre facultatif</label
+        >
+        <div class="input-button">
+          <input id="selection-pattern" placeholder="*.zip" /><button
+            id="selection-include"
+            type="button"
+            data-i18n="Inclure"
+          >
+            Inclure</button
+          ><button id="selection-exclude" type="button" data-i18n="Exclure">
+            Exclure
+          </button>
+        </div>
+        <div class="selection-actions">
+          <button id="selection-up" type="button" data-i18n="↑ Dossier parent">
+            ↑ Dossier parent</button
+          ><code id="selection-path"></code>
+        </div>
+        <div id="selection-rows"></div>
+        <div class="selection-actions">
+          <button id="selection-prev" type="button" data-i18n="← Précédents">
+            ← Précédents</button
+          ><button id="selection-next" type="button" data-i18n="Suivants →">
+            Suivants →
+          </button>
+        </div>
+        <p id="selection-error" class="error" role="alert"></p>
+      </fieldset>
+      <div class="dialog-footer">
+        <button
+          id="selection-close"
+          type="button"
+          data-close="selection-dialog"
+          class="primary"
+          data-i18n="Terminé"
+        >
+          Terminé
+        </button>
+      </div>
+    </dialog>
     <dialog id="settings-dialog" class="settings-dialog">
       <form id="settings-form">
         <div class="dialog-header">

@@ -548,6 +548,7 @@ function finishInspection(inspection) {
   for (const [control, disabled] of inspection.controls)
     control.disabled = disabled;
   state.inspection = null;
+  renderPreviews();
   $("add-form")
     .querySelector(".dialog-body")
     .setAttribute("aria-busy", "false");
@@ -743,10 +744,7 @@ $("add-form").onsubmit = async (event) => {
         if (state.inspection !== inspection) return;
         if (state.plans.some((p) => p.identifier === info.identifier)) continue;
         state.plans.push({ ...plan, ...info });
-        $("preview-list").insertAdjacentHTML(
-          "beforeend",
-          `<div class="preview-item"><strong>▰ ${esc(info.identifier)}</strong><p>${number(info.file_count)} ${esc(t("fichiers"))} · ${bytes(info.total_size)}${info.unknown_sizes ? t(" + tailles inconnues") : ""}${info.private_files ? ` · ${info.private_files} ${esc(t("fichiers privés exclus"))}` : ""}</p><p><code>↳ ${esc(info.sample[0])}${info.file_count > 1 ? "…" : ""}</code></p></div>`,
-        );
+        renderPreviews();
       } catch (error) {
         if (state.inspection !== inspection) return;
         failures.push(`${urls[i]} : ${error.message}`);
@@ -776,6 +774,7 @@ $("create-button").onclick = async () => {
         url: plan.url,
         mode: plan.mode,
         pattern: plan.pattern,
+        plan_id: plan.plan_id,
         destination: $("job-destination").value,
         paused: $("start-paused").checked,
       });
@@ -787,6 +786,7 @@ $("create-button").onclick = async () => {
   }
   $("create-button").disabled = false;
   state.plans = failed;
+  renderPreviews();
   if (errors.length) $("add-error").textContent = errors.join(" · ");
   else {
     $("add-dialog").close();
@@ -795,6 +795,113 @@ $("create-button").onclick = async () => {
   }
   await refresh();
 };
+function renderPreviews() {
+  $("preview-list").innerHTML = state.plans
+    .map(
+      (plan) =>
+        `<div class="preview-item"><strong>▰ ${esc(plan.identifier)}</strong><p>${number(plan.selected_count ?? plan.file_count)} / ${number(plan.file_count)} ${esc(t("fichiers"))} · ${bytes(plan.selected_size ?? plan.total_size)}${plan.unknown_sizes ? t(" + tailles inconnues") : ""}</p>${plan.private_files ? `<p>${number(plan.private_files)} ${esc(t("fichiers privés exclus"))}</p>` : ""}<p><code>↳ ${esc(plan.sample?.[0])}${plan.file_count > 1 ? "…" : ""}</code></p>${plan.plan_id ? `<button type="button" data-select-plan="${esc(plan.plan_id)}" ${state.inspection ? "disabled" : ""}>${esc(t("Choisir les fichiers…"))}</button>` : ""}</div>`,
+    )
+    .join("");
+}
+let selectionPlan = null,
+  selectionPrefix = "",
+  selectionOffset = 0,
+  selectionBusy = false;
+async function loadSelection(change) {
+  selectionBusy = true;
+  $("selection-controls").disabled = true;
+  $("selection-close").disabled = true;
+  $("selection-error").textContent = "";
+  try {
+    const data = await api(
+      `/api/plans/${selectionPlan.plan_id}?prefix=${encodeURIComponent(selectionPrefix)}&offset=${selectionOffset}`,
+      change,
+    );
+    Object.assign(selectionPlan, {
+      selected_count: data.selected_count,
+      selected_size: data.selected_size,
+      unknown_sizes: data.unknown_sizes,
+    });
+    selectionOffset = data.offset;
+    $("selection-path").textContent =
+      selectionPrefix || selectionPlan.identifier;
+    $("selection-total").textContent =
+      `${number(data.selected_count)} / ${number(data.file_count)} ${t("fichiers")} · ${bytes(data.selected_size)}${data.unknown_sizes ? " +" : ""}`;
+    $("selection-up").disabled = !selectionPrefix;
+    $("selection-prev").disabled = !selectionOffset;
+    $("selection-next").disabled = selectionOffset + 100 >= data.total;
+    $("selection-rows").innerHTML = data.children
+      .map(
+        (file) =>
+          `<label class="selection-row"><input type="checkbox" data-select-path="${esc(file.path)}" ${file.selected_count === file.file_count ? "checked" : ""} data-partial="${file.selected_count > 0 && file.selected_count < file.file_count}" aria-label="${esc(t("Sélectionner {name}", { name: file.name }))}"><span>${file.kind === "folder" ? `<button type="button" data-selection-folder="${esc(file.path)}">▰ ${esc(file.name)}</button>` : esc(file.name)}</span><small>${number(file.selected_count)} / ${number(file.file_count)} · ${bytes(file.size)}${file.unknown_sizes ? " +" : ""}</small></label>`,
+      )
+      .join("");
+    for (const input of $("selection-rows").querySelectorAll("input"))
+      input.indeterminate = input.dataset.partial === "true";
+    renderPreviews();
+  } catch (error) {
+    $("selection-error").textContent = error.message;
+  } finally {
+    selectionBusy = false;
+    $("selection-controls").disabled = false;
+    $("selection-close").disabled = false;
+  }
+}
+$("preview-list").onclick = (event) => {
+  const button = event.target.closest("[data-select-plan]");
+  if (!button || state.inspection) return;
+  selectionPlan = state.plans.find(
+    (plan) => plan.plan_id === button.dataset.selectPlan,
+  );
+  selectionPrefix = "";
+  selectionOffset = 0;
+  $("selection-dialog").showModal();
+  loadSelection();
+};
+$("selection-dialog").addEventListener("cancel", (event) => {
+  if (selectionBusy) event.preventDefault();
+});
+$("selection-rows").onchange = (event) => {
+  if (event.target.matches("[data-select-path]"))
+    loadSelection({
+      target: event.target.dataset.selectPath,
+      selected: event.target.checked,
+    });
+};
+$("selection-rows").onclick = (event) => {
+  const button = event.target.closest("[data-selection-folder]");
+  if (button) {
+    event.preventDefault();
+    selectionPrefix = button.dataset.selectionFolder;
+    selectionOffset = 0;
+    loadSelection();
+  }
+};
+$("selection-up").onclick = () => {
+  selectionPrefix = selectionPrefix.replace(/[^/]+\/$/, "");
+  selectionOffset = 0;
+  loadSelection();
+};
+$("selection-prev").onclick = () => {
+  selectionOffset -= 100;
+  loadSelection();
+};
+$("selection-next").onclick = () => {
+  selectionOffset += 100;
+  loadSelection();
+};
+$("selection-all").onclick = () => loadSelection({ selected: true });
+$("selection-none").onclick = () => loadSelection({ selected: false });
+$("selection-include").onclick = () =>
+  loadSelection({
+    pattern: $("selection-pattern").value.trim(),
+    selected: true,
+  });
+$("selection-exclude").onclick = () =>
+  loadSelection({
+    pattern: $("selection-pattern").value.trim(),
+    selected: false,
+  });
 function setDestinationLocked(locked) {
   state.destinationLocked = locked;
   for (const id of [

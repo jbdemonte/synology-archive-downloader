@@ -486,6 +486,18 @@ class ApiTests(Base):
         result["body"] = json.loads(b"".join(self.app(env, start)))
         return result
 
+    def test_selected_manifest_creates_only_chosen_files(self):
+        self.app.no_auth = True
+        data = manifest()
+        data["files"].append({**data["files"][0], "name": "other.zip"})
+        token = self.app.plans.create(data, "all", "")
+        result = self.request(f"/api/plans/{token}", {"target": "folder/", "selected": False})
+        self.assertEqual(result["body"]["selected_count"], 1)
+        result = self.request("/api/jobs", {"url": "test-item", "plan_id": token, "paused": True})
+        self.assertEqual(result["status"], 201)
+        files = self.store.files(result["body"]["id"])["files"]
+        self.assertEqual([f["name"] for f in files], ["other.zip"])
+
     def test_auth_session_and_csrf(self):
         self.assertEqual(self.request("/api/jobs")["status"], 401)
         login = self.request("/api/login", {"password": "test-password-1234"})

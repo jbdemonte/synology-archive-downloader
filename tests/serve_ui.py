@@ -21,7 +21,7 @@ for name in ["state.sqlite3", "state.sqlite3-wal", "state.sqlite3-shm"]:
 (root / "downloads").mkdir(exist_ok=True)
 client = ArchiveClient()
 
-for identifier in ["demo-one", "demo-two"]:
+for identifier in ["demo-one", "demo-two", "demo-select"]:
     client.cache[identifier] = (
         time.monotonic(),
         {

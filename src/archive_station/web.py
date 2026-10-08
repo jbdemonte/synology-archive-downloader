@@ -14,6 +14,7 @@ from . import __version__
 from .archive import parse_identifier
 from .auth import Auth
 from .config import LANGUAGES, dsm_language
+from .plans import Plans
 
 LOG = logging.getLogger(__name__)
 STATIC = Path(__file__).parent / "static"
@@ -25,6 +26,7 @@ class WebApp:
         self.auth = Auth(data_dir)
         self.no_auth = no_auth
         self.dsm_auth = dsm_auth
+        self.plans = Plans()
 
     def __call__(self, env, start_response):
         headers = []
@@ -200,13 +202,17 @@ class WebApp:
         if path in {"/api/inspect", "/api/jobs"} and method == "POST":
             identifier = parse_identifier(body.get("url"))
             mode, pattern = body.get("mode", "all"), body.get("pattern", "")
-            manifest = self.client.manifest(identifier, mode, pattern)
+            if path == "/api/jobs" and body.get("plan_id"):
+                manifest, mode, pattern = self.plans.selection(body["plan_id"], identifier)
+            else:
+                manifest = self.client.manifest(identifier, mode, pattern)
             if path == "/api/inspect":
                 return response(
                     {k: v for k, v in manifest.items() if k != "files"}
                     | {
                         "file_count": len(manifest["files"]),
                         "sample": [f["name"] for f in manifest["files"][:5]],
+                        "plan_id": self.plans.create(manifest, mode, pattern),
                     }
                 )
             destination = self.settings.directory(
@@ -226,6 +232,19 @@ class WebApp:
         if path == "/api/jobs" and method == "GET":
             return response({"jobs": self.store.jobs()})
         parts = path.strip("/").split("/")
+        if len(parts) == 3 and parts[:2] == ["api", "plans"]:
+            if method == "POST":
+                self.plans.select(
+                    parts[2],
+                    body.get("target", ""),
+                    body.get("selected", True),
+                    body.get("pattern", ""),
+                )
+            return response(
+                self.plans.view(
+                    parts[2], query.get("prefix", ""), max(0, int(query.get("offset", 0)))
+                )
+            )
         if len(parts) == 4 and parts[:2] == ["api", "jobs"]:
             job_id, action = parts[2:]
             if method == "GET" and action == "activity":
