@@ -2,6 +2,10 @@
 
 These controls are available in **Settings** and in each task’s **⋯** menu, at the end of its row.
 
+The toolbar acts on the selected archive or checked rows. The **⋯** menu always acts on its own archive, regardless of the toolbar selection. It stays open during progress updates; Escape closes it, and arrow keys move between its actions.
+
+![Per-archive action menu](images/actions.png)
+
 ## Receive DSM desktop notifications
 
 Receive alerts for task completion, persistent file errors and low disk space, even with the window closed. Disable them in Settings. Alerts go to DSM administrators and survive service restarts without duplicates.
@@ -38,7 +42,7 @@ Fetch fresh metadata and review new or changed files before applying a selection
 
 ## Open the destination in File Station
 
-Use the selected task’s shortcut to open its folder inside DSM. If the item folder has not been created yet, its parent destination opens instead.
+Choose **⋯ → Open in File Station** on an archive to open its folder inside DSM. If the item folder has not been created yet, its parent destination opens instead. The external-link icon beside **⋯** opens the archive's source page in a browser tab.
 
 Pause and wait for active workers to stop before applying a metadata refresh or starting verification. Existing downloads and excluded files in older tasks remain intact during upgrades. For tasks created before file-selection tracking was introduced, refresh treats files absent from the saved task as new candidates.
 
@@ -49,3 +53,5 @@ Click the document icon on an archive row, or **Read report** in its **⋯** men
 The icon turns amber when incidents have been recorded, including incidents that were later resolved. The history lists the affected file, first and last occurrence, count, latest attempt number, diagnostic message and resolution date. Repeated identical errors are grouped per file. A successful transfer resolves its recorded errors; retrying, restarting or repairing does not erase them. Low-space pauses are also recorded.
 
 History starts when this feature is installed. An existing error can be imported without a known date, but errors already cleared by older versions cannot be recovered. The reader works even if the destination is temporarily unavailable; writing the disk copy still requires permission to that folder.
+
+Reports are available in French when the interface is French, and in English for other languages. Automatic mode uses the last resolved DSM language with the same fallback. A language change updates the disk report at the next check, approximately every 15 seconds; use **Refresh** in an open reader. Recorded technical error messages retain their original text.

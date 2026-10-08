@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const base = process.env.TEST_URL || "http://127.0.0.1:8275";
+const dsmPath = "/webman/3rdparty/ArchiveStation/";
 const out = new URL("../docs/images/", import.meta.url);
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({
@@ -65,6 +66,8 @@ const jobs = [
   },
 ].map((job) => ({
   ...job,
+  active_files: job.status === "running" ? 2 : 0,
+  priority: 0,
   destination: "/volume1/Download/Archives",
   unknown_sizes: 0,
   failed_files: 0,
@@ -202,8 +205,22 @@ const startupGate = new Promise((resolve) => {
   releaseStartup = resolve;
 });
 try {
-  await page.route("**/api/**", async (route) => {
+  // Load the real embedded layout and assets. Only the gateway responses are
+  // simulated; no desktop styling or production NAS session is required.
+  await page.route(`${base}${dsmPath}web/**`, async (route) => {
     const url = new URL(route.request().url());
+    const asset = url.pathname.slice((dsmPath + "web/").length);
+    const response = await route.fetch({
+      url: `${base}/${asset === "index.html" ? "" : asset}${url.search}`,
+    });
+    assert.ok(response.ok(), `Could not load screenshot asset: ${asset}`);
+    await route.fulfill({ response });
+  });
+  await page.route(`${base}${dsmPath}gateway.cgi?**`, async (route) => {
+    const url = new URL(
+      new URL(route.request().url()).searchParams.get("route"),
+      base,
+    );
     let body;
     if (url.pathname === "/api/auth") {
       await startupGate;
@@ -211,7 +228,7 @@ try {
     } else if (url.pathname === "/api/settings")
       body = {
         download_dir: "/volume1/Download/Archives",
-        destination_locked: true,
+        destination_locked: jobs.some((job) => job.status === "running"),
         connections: 5,
         speed_limit_kib: 0,
         retries: 4,
@@ -223,7 +240,29 @@ try {
         timezone: "CEST",
         storage: { free: 3.7 * 1024 ** 4, total: 8 * 1024 ** 4 },
       };
-    else if (url.pathname === "/api/jobs")
+    else if (url.pathname === "/api/folders") {
+      const path = url.searchParams.get("path") || "";
+      assert.ok(["", "/volume1", "/volume1/Download"].includes(path), path);
+      const children = {
+        "": [{ name: "volume1", readable: true, writable: false }],
+        "/volume1": [{ name: "Download", readable: true, writable: true }],
+        "/volume1/Download": [
+          { name: "Archives", readable: true, writable: true },
+          { name: "Completed", readable: true, writable: true },
+          { name: "Reference", readable: true, writable: false },
+          { name: "Private", readable: false, writable: false },
+        ],
+      };
+      body = {
+        path,
+        parent: path ? path.slice(0, path.lastIndexOf("/")) : null,
+        writable: path === "/volume1/Download",
+        folders: children[path].map((folder) => ({
+          ...folder,
+          path: `${path}/${folder.name}`,
+        })),
+      };
+    } else if (url.pathname === "/api/jobs")
       body = {
         jobs,
         history: {
@@ -258,7 +297,9 @@ try {
     } else throw new Error(`Unexpected screenshot request: ${url.pathname}`);
     await route.fulfill({ json: body });
   });
-  await page.goto(base, { waitUntil: "domcontentloaded" });
+  await page.goto(`${base}${dsmPath}web/index.html`, {
+    waitUntil: "domcontentloaded",
+  });
   await page
     .locator("#startup-status")
     .filter({ hasText: "Loading Archive Station" })
@@ -267,7 +308,15 @@ try {
   await page.screenshot({ path: new URL("startup.png", out).pathname });
   releaseStartup();
   await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
+  await page.locator('.job-row[data-job="demo-space"]').click();
   await page.screenshot({ path: new URL("downloads.png", out).pathname });
+  await page.locator('[data-menu-job="demo-space"]').click();
+  await page.locator("#task-menu").waitFor();
+  assert.ok(await page.locator("#open-folder").isVisible());
+  await page
+    .locator(".downloads-panel")
+    .screenshot({ path: new URL("actions.png", out).pathname });
+  await page.keyboard.press("Escape");
   await page.locator("#history-panel summary").click();
   await page.screenshot({ path: new URL("history.png", out).pathname });
   await page.locator("#history-panel summary").click();
@@ -296,9 +345,27 @@ try {
   await page.screenshot({ path: new URL("folders.png", out).pathname });
   await page.locator('[data-file-view="activity"]').click();
   await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
+  await page.setViewportSize({ width: 1360, height: 1200 });
   await page.locator("#settings-open").click();
-  await page.locator("#setting-language").selectOption("en");
-  await page.screenshot({ path: new URL("settings.png", out).pathname });
+  await page.locator("#settings-dialog").waitFor();
+  await page
+    .locator("#settings-dialog")
+    .screenshot({ path: new URL("settings.png", out).pathname });
+
+  // The picker is available after transfers stop. Show both access badges and
+  // the real New folder action in a writable demonstration destination.
+  Object.assign(jobs[0], { status: "paused", speed: 0, active_files: 0 });
+  await page.setViewportSize({ width: 1360, height: 840 });
+  await page.reload();
+  await page.locator("#settings-open").click();
+  await page.locator("#browse-settings").click();
+  await page.locator('[data-folder="/volume1"]').click();
+  await page.locator('[data-folder="/volume1/Download"]').click();
+  await page.locator(".folder-entry.blocked").waitFor();
+  assert.ok(await page.locator("#folder-new").isEnabled());
+  await page
+    .locator("#folder-dialog")
+    .screenshot({ path: new URL("destination.png", out).pathname });
   assert.deepEqual(errors, []);
   console.log("README screenshots generated from isolated demo data.");
 } finally {

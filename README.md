@@ -12,20 +12,20 @@ Archive Station downloads the public files of Internet Archive items directly to
 
 ![Archive Station activity view showing live transfers and upcoming files](docs/images/downloads.png)
 
-*All screenshots are captured from the application with isolated demonstration data.*
+*Screenshots show the current embedded DSM application view with isolated demonstration data.*
 
 ## What you can do
 
 - **One folder per URL** — add multiple `/details/` or `/download/` links and select files, folders or filename patterns before starting.
 - **Follow large archives** — live transfers and upcoming files appear first; completed files and the folder tree have separate views.
-- **Control the queue** — pause, resume, cancel, retry, prioritize tasks or individual files, and apply actions to multiple archives.
+- **Control the queue** — pause, resume, cancel or retry from the toolbar; use each archive's **⋯** menu for priority, maintenance and reports.
 - **Plan transfers** — choose weekly time slots, alternate speed limits, live concurrency and a free-space reserve.
 - **See progress** — per-file gauges, remaining-time estimates, downloaded/total sizes and a one-hour throughput graph.
 - **Maintain an archive** — verify and repair files, review source updates, and select additions or changed files to retrieve.
 - **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications. Each task also links to its original Archive.org page.
 - **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
-- **Keep a readable record** — each archive gets a plain-text report with persistent error history, also readable inside the app.
-- **Use your language** — 27 bundled languages, automatic DSM language detection and an override in Settings.
+- **Keep a readable record** — each archive gets a plain-text report in English or French with persistent error history, also readable inside the app.
+- **Use your language** — 27 bundled interface languages, automatic DSM language detection and an override in Settings.
 
 See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, repair and refresh behavior.
 
@@ -60,7 +60,19 @@ The package creates an `ArchiveStation` shared folder as the initial destination
 
 The folder picker marks **read/write in green**, **read-only in blue**, and **insufficient access in orange**. Open a writable folder and use **New folder → Create → Choose this folder** to create a destination. Reopen the picker after changing DSM permissions.
 
-![Archive Station settings, including destination, language and live transfer limits](docs/images/settings.png)
+<details>
+<summary>Choose a destination and check folder permissions</summary>
+
+![Destination picker showing read/write, read-only and inaccessible folders, with the New folder action](docs/images/destination.png)
+
+</details>
+
+<details>
+<summary>See language, destination and transfer settings</summary>
+
+![Archive Station settings showing the destination locked during downloads, language, transfer limits and free-space reserve](docs/images/settings.png)
+
+</details>
 
 ## Add your first archive
 
@@ -90,9 +102,9 @@ The item identifier determines its directory name; nested paths from Archive.org
 
 ## Follow large archives
 
-The first running task opens automatically. Select an archive row, or tick several, to enable Pause, Resume and the other toolbar actions. When only one archive is visible, it is selected automatically; otherwise a hint above the list explains how to activate the controls. The **⋯** button at the end of a row opens that archive's own actions: its destination and **Open in File Station**, priority and queue order, **Refresh file list**, **Verify and complete** and **Read report**. A disk-space hold or failed files are noted under the row's status. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
+The first running task expands automatically. **Activity** shows live transfers across all subfolders, followed by upcoming files in queue order. Completed files move into **Completed**; **Folders** keeps the full directory hierarchy. **Needs attention** appears when files fail. A disk-space hold or failed files are also noted under the archive's status.
 
-Click the **external-link icon** on an archive row to open that item's `archive.org/details/…` page in a new browser tab. Downloads keep running in DSM.
+Activity refreshes without pagination; only completed/error lists and full directory browsing are paginated.
 
 <details>
 <summary>Browse the folder hierarchy</summary>
@@ -100,6 +112,16 @@ Click the **external-link icon** on an archive row to open that item's `archive.
 ![Archive Station folder tree](docs/images/folders.png)
 
 </details>
+
+## Control each archive
+
+- **Toolbar:** select an archive row, or check several, to enable Pause, Resume and other actions. A single visible archive is selected automatically. **Global actions** controls the whole queue.
+- **⋯ menu:** open the menu beside an archive's name to see its destination, open it in File Station, change priority or queue order, refresh the file list, verify and complete files, or read its report. These actions apply to that archive, independently of checked rows.
+- **Row shortcuts:** the document icon opens the report; the external-link icon opens the item's `archive.org/details/…` page in a browser tab. Downloads keep running in DSM.
+
+![Per-archive action menu with destination, File Station, priorities, maintenance and report controls](docs/images/actions.png)
+
+The menu stays open during progress updates. Use Enter to open it, arrow keys to move between actions, and Escape to close it. It scrolls when the DSM window is too short to show every action. Pause an archive and wait for its active transfers to stop before starting verification or applying a file-list update.
 
 ## Transfer history and time remaining
 
@@ -131,7 +153,9 @@ The icon turns **amber** when incidents have been recorded, including incidents 
 
 Each item directory also contains `ArchiveStation-report-<task-id>.txt`, checked approximately every 15 seconds and on clean shutdown, and rewritten only when its state, counters or report settings change. This file contains the complete report and can be opened in any text editor. It includes the source URLs, dates, file counts, retained bytes, selection settings and error history. **Duration includes pauses and downtime; byte counts represent retained data, not cumulative network traffic.**
 
-Reports use French when the interface language is French, and English otherwise. Automatic mode remembers the last resolved DSM interface language for background reports. Incident history begins when this feature is installed: existing errors are imported when available, but incidents already cleared by older versions cannot be recovered.
+**Report translations currently cover English and French.** French interface selection produces a French report; other interface languages produce an English report. Automatic mode remembers the last resolved DSM interface language for background reports, with the same fallback. Changing the language updates the disk report at the next check; select **Refresh** to reload an already open reader. Technical error messages are preserved as recorded.
+
+Incident history begins when this feature is installed: existing errors are imported when available, but incidents already cleared by older versions cannot be recovered.
 
 ## Startup and connection status
 
@@ -149,6 +173,8 @@ On opening, a loading screen remains visible until the DSM session, settings and
 English, Français, Español, Português, Português (Brasil), Deutsch, Italiano, Polski, Nederlands, Türkçe, Bahasa Indonesia, Čeština, Română, Magyar, Svenska, Dansk, Norsk bokmål, Suomi, 日本語, 한국어, 简体中文, 繁體中文, Русский, ไทย, Українська, Ελληνικά and Tiếng Việt.
 
 **Settings → Interface language** lets you override the automatic DSM language. The choice is saved on the NAS. Standalone development follows the browser language when set to Automatic. Catalogs are bundled and work offline; see [the translation guide](docs/TRANSLATIONS.md) to help improve them.
+
+Language names are sorted alphabetically using the current interface locale; Automatic stays first. The 27-language support applies to the interface; [download reports](#reports-and-error-history) currently support English and French.
 
 ## Build and develop
 
@@ -173,7 +199,9 @@ make screenshots # Regenerate README screenshots from demo fixtures
 make format
 ```
 
-UI tests use port 8275 temporarily. Set `CHROMIUM_PATH` to an existing Chromium executable if necessary. Tests cover interrupted transfers, process termination, resumption, changing concurrency, old database migration, error history, the report reader, startup recovery, source links, permissions, DSM integration and all supported interface languages. `make screenshots` captures the current interface and uses the application's own report formatter with demonstration data.
+UI tests use port 8275 temporarily. Set `CHROMIUM_PATH` to an existing Chromium executable if necessary. Tests cover interrupted transfers, process termination, resumption, changing concurrency, old database migration, error history, the report reader, startup recovery, source links, task menus, permissions, DSM integration and all supported interface languages.
+
+`make screenshots` regenerates the activity, task menu, folder tree, destination picker, settings, history, report and startup images in `docs/images/`. It loads the embedded interface with simulated gateway responses and uses the application's own report formatter. It does not connect to a NAS or Archive.org.
 
 ```text
 src/archive_station/  Download engine, API, SQLite, settings and static UI

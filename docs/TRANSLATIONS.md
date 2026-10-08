@@ -10,6 +10,12 @@ Settings sorts native names alphabetically using the current interface locale, i
 
 DSM abbreviations such as `fre`, `enu`, `ger`, `chs` and `cht` are mapped to locale codes. Regional browser tags such as `fr-CA`, `pt-BR` and `zh-TW` are normalized. The interface formats numbers and times with the selected locale.
 
+## Download report languages
+
+The 27 catalogs cover the interface, including the report reader's controls. The plain-text report itself is generated separately in `src/archive_station/reports.py` and currently supports English and French. French interface selection uses French; other languages fall back to English. Automatic mode saves the last resolved DSM interface language for reports generated while the browser is closed.
+
+Adding or editing a UI catalog does not translate the report body. Technical incident messages are stored and displayed as recorded.
+
 ## Editing a translation
 
 1. Edit the relevant JSON catalog. French strings are stable message IDs inherited from the initial interface; `en.json` provides the English reference.
