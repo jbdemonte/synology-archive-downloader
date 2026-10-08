@@ -450,6 +450,23 @@ main > * {
   color: #a0acb9;
   font-weight: 400;
 }
+#stat-bytes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 5px;
+}
+#stat-bytes > * {
+  white-space: nowrap;
+}
+.remaining-time {
+  margin-top: 6px;
+  font-size: 10px;
+  color: #65798d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .downloads-panel {
   background: white;
   border: 1px solid var(--line);

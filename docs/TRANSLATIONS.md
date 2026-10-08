@@ -6,6 +6,8 @@ The interface ships with 27 offline catalogs in `src/archive_station/static/loca
 
 The saved setting is either a supported language code or `auto`. Automatic selection first checks `SYNO.SDS.Session.lang` in the same-origin DSM desktop, then the server’s DSM language, then the browser’s preferred languages. Unsupported languages fall back to English. A manual choice in Settings persists on the NAS and takes priority. Flags are visual hints; each option also includes the language’s native name.
 
+Settings sorts native names alphabetically using the current interface locale, ignoring case and accents. The automatic option always stays first; flags do not affect the order.
+
 DSM abbreviations such as `fre`, `enu`, `ger`, `chs` and `cht` are mapped to locale codes. Regional browser tags such as `fr-CA`, `pt-BR` and `zh-TW` are normalized. The interface formats numbers and times with the selected locale.
 
 ## Editing a translation

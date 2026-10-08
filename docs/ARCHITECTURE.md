@@ -13,6 +13,8 @@ Archive Station est une application Python légère avec une interface statique,
 
 Les tailles inconnues ne permettent pas une estimation exacte avant transfert. Les sommes de contrôle sont utilisées comme vérification d’intégrité, pas comme mécanisme cryptographique d’authentification. Les fichiers de métadonnées portant `summation` ne sont pas validés contre cette valeur, qui décrit leurs entrées.
 
+Le temps restant utilise les octets réellement écrits par les workers, regroupés par seconde et par tâche sur cinq minutes (301 cases au maximum, précision d’une seconde). L’historique est en mémoire sur le NAS : aucune écriture SQLite par bloc ni fenêtre ouverte n’est nécessaire. Les fichiers déjà présents et les octets partiels repris ne gonflent pas le débit. Le calcul commence après trente secondes ; une minute sans données masque la durée. Pause, reprise et redémarrage réinitialisent la moyenne. Les tailles inconnues donnent une estimation minimale ; leurs octets reçus ne sont pas soustraits du volume connu restant. Une erreur définitive suspend l’estimation jusqu’à la nouvelle tentative.
+
 ## Contrôles d’accès
 
 Les requêtes vers Archive.org acceptent uniquement les URL d’éléments valides et les redirections HTTPS vers ses domaines. Les chemins absolus, traversées `..`, composants vides et liens symboliques préexistants sont refusés. Les destinations sont limitées aux racines autorisées et aux permissions du processus.

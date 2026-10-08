@@ -56,7 +56,7 @@ try {
     await page.getByLabel("Téléchargements simultanés").inputValue(),
     "2",
   );
-  await page.getByRole("button", { name: "Sélectionnez…" }).click();
+  await page.getByRole("button", { name: "Sélectionner…" }).click();
   await page.getByRole("heading", { name: "Choisir un dossier" }).waitFor();
   await page
     .locator('#folder-dialog [data-close="folder-dialog"]')

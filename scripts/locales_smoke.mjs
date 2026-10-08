@@ -22,6 +22,32 @@ try {
       options.map((option) => option.value).filter((code) => code !== "auto"),
     );
   assert.equal(languages.length, 27);
+  const order = await page
+    .locator("#setting-language option")
+    .evaluateAll((options) =>
+      options
+        .slice(1)
+        .map((option) =>
+          option.textContent.slice(option.textContent.indexOf(" ") + 1),
+        ),
+    );
+  assert.deepEqual(
+    order,
+    [...order].sort((a, b) =>
+      a.localeCompare(b, "fr", { sensitivity: "base" }),
+    ),
+  );
+  assert.equal(
+    await page
+      .locator("#setting-language option")
+      .first()
+      .getAttribute("value"),
+    "auto",
+  );
+  assert.equal(
+    await page.locator("#browse-settings").innerText(),
+    "Sélectionner…",
+  );
   await page.locator("#settings-dialog [data-close]").first().click();
   for (const code of languages) {
     const catalog = JSON.parse(
@@ -102,7 +128,10 @@ try {
     await page.setViewportSize({ width: 1000, height: 720 });
   }
   await page.reload();
-  await page.waitForFunction(() => document.documentElement.lang === "vi");
+  await page.waitForFunction(
+    (code) => document.documentElement.lang === code,
+    languages.at(-1),
+  );
   await page.locator("#settings-open").click();
   await page.locator("#setting-language").selectOption("auto");
   await page.locator('#settings-form button[type="submit"]').click();

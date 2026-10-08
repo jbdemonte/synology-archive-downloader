@@ -263,9 +263,16 @@ class StateTests(Base):
 
     def test_settings_are_persistent_and_do_not_move_existing_jobs(self):
         self.add()
+        active = self.store.claim()
         new = self.root / "new-destination"
         self.settings.update({"download_dir": str(new), "connections": 5})
         self.assertEqual(self.store.jobs()[0]["destination"], str(self.downloads))
+        self.engine.transfer(active)
+        self.assertEqual(self.target().read_bytes(), PAYLOAD)
+        self.assertFalse((new / "test-item").exists())
+        self.store.add(manifest("next-item"), "all", "", self.settings.get()["download_dir"])
+        next_transfer = self.store.claim()
+        self.assertEqual(next_transfer["destination"], str(new))
         restored = Settings(self.root / "data", self.downloads, [self.root])
         self.assertEqual(restored.get()["connections"], 5)
         with self.assertRaises(ValueError):

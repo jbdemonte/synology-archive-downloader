@@ -20,6 +20,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **See the whole hierarchy** — item → folders → files, with progress, transfer speeds, status filters and search.
 - **Control transfers** — pause, resume, cancel, retry failed files, or remove a task while preserving its downloads.
 - **See what is happening now** — Activity shows live transfers and the next ten files across every subfolder. Completed files have their own view; the folder tree remains available.
+- **Estimate time remaining** — each archive shows an ETA based on its average transfer rate over the last five minutes, calculated on the NAS even with the window closed.
 - **Tune without restarting** — change the global speed limit or run 1–8 parallel downloads, including for tasks already in progress.
 - **Choose your destination** — browse NAS folders, distinguish read/write, read-only and inaccessible locations, and create subfolders.
 - **Resume safely** — keep partial files separate, resume supported HTTP transfers, and verify available SHA-1/MD5 checksums before publishing final files.
@@ -41,7 +42,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-11-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-12-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -79,13 +80,15 @@ Your destination/
     └── ...
 ```
 
-The item identifier determines its directory name; nested paths from Archive.org are preserved. Changing the default destination affects new tasks. Existing tasks keep their original destination.
+The item identifier determines its directory name; nested paths from Archive.org are preserved. Changing the default destination affects new tasks only, even while downloads are running. Existing tasks keep their original destination and are never moved by this setting.
 
 ## Follow large archives
 
 The first running task opens automatically. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
 
 ![Archive Station folder tree](docs/images/folders.png)
+
+The data summary shows downloaded bytes / total known size. A **+** means some file sizes are unknown. Remaining time uses actual bytes received across an archive’s concurrent transfers, with a **five-minute rolling average** and **30 seconds of initial observation**. Hover over the estimate to see the average rate. **≥** marks a minimum estimate when sizes are unknown. After a minute without data, the duration is replaced by “Waiting for data”. Pausing or restarting the package resets the observation window; retained partial files are not counted as new traffic.
 
 ## Interruptions, settings and reports
 
@@ -113,7 +116,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.1.0-11 # Override the package version
+make build VERSION=0.1.0-12 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

@@ -41,17 +41,63 @@ function bytes(n) {
   return `${(n / 1024 ** unit).toLocaleString(ArchiveI18n.locale, { maximumFractionDigits: unit ? 1 : 0 })} ${[t("o"), t("Kio"), t("Mio"), t("Gio"), t("Tio")][unit]}`;
 }
 function eta(job) {
-  if (!job.speed || job.unknown_sizes || job.total_size <= job.downloaded)
-    return "";
-  const seconds = Math.ceil((job.total_size - job.downloaded) / job.speed);
-  return seconds > 3600
-    ? t("Environ {hours} h {minutes} min restantes", {
-        hours: Math.floor(seconds / 3600),
-        minutes: Math.ceil((seconds % 3600) / 60),
-      })
-    : t("Environ {minutes} min restantes", {
-        minutes: Math.max(1, Math.ceil(seconds / 60)),
-      });
+  if (!["running", "queued"].includes(job.status)) return "";
+  const value =
+    job.eta_seconds != null
+      ? `${job.eta_lower_bound ? "≥" : "≈"} ${remainingDuration(job.eta_seconds)}`
+      : t(
+          {
+            measuring: "Calcul…",
+            stalled: "En attente de débit",
+            unknown: "Inconnue",
+            error: "À vérifier",
+            verifying: "En cours",
+          }[job.eta_state] || "En attente",
+        );
+  return `${t("Restant")} : ${value}`;
+}
+function remainingDuration(seconds) {
+  const minutes = Math.max(1, Math.ceil(seconds / 60));
+  const units = [
+    ["day", Math.floor(minutes / 1440)],
+    ["hour", Math.floor((minutes % 1440) / 60)],
+    ["minute", minutes % 60],
+  ];
+  return units
+    .filter(([, value]) => value)
+    .slice(0, 2)
+    .map(([unit, value]) =>
+      new Intl.NumberFormat(ArchiveI18n.locale, {
+        style: "unit",
+        unit,
+        unitDisplay: "short",
+      }).format(value),
+    )
+    .join(" ");
+}
+function etaHint(job) {
+  return [
+    job.average_window_seconds > 0
+      ? t("Moyenne sur {minutes} min : {speed}/s", {
+          minutes: Number(job.average_window_seconds / 60).toLocaleString(
+            ArchiveI18n.locale,
+            { maximumFractionDigits: 1 },
+          ),
+          speed: bytes(job.average_speed),
+        })
+      : "",
+    job.eta_lower_bound
+      ? t("Estimation minimale : certains fichiers ont une taille inconnue.")
+      : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+function etaMarkup(job) {
+  const label = eta(job);
+  return label
+    ? `<div class="remaining-time" title="${esc(etaHint(job))}">${esc(label)}</div>`
+    : "";
 }
 const embedded = location.pathname.startsWith(
   "/webman/3rdparty/ArchiveStation/",
@@ -324,7 +370,12 @@ function render() {
   $("stat-speed").textContent = bytes(sum("speed")) + "/s";
   $("stat-files").innerHTML =
     `${number(sum("completed_files"))} <em>/ ${number(sum("file_count"))}</em>`;
-  $("stat-bytes").textContent = bytes(sum("downloaded"));
+  const unknown = state.jobs.some((job) => job.unknown_sizes);
+  $("stat-bytes").innerHTML =
+    `<span>${esc(bytes(sum("downloaded")))}</span><em>/ ${esc(bytes(sum("total_size")))}${unknown ? " +" : ""}</em>`;
+  $("stat-bytes").title = unknown
+    ? t("Estimation minimale : certains fichiers ont une taille inconnue.")
+    : "";
   $("count-all").textContent = state.jobs.length;
   $("count-active").textContent = state.jobs.filter((j) =>
     ["queued", "running"].includes(j.status),
@@ -350,7 +401,7 @@ function render() {
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
-      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
+      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
   if (focusedView) {
@@ -377,6 +428,7 @@ function renderDetail() {
   if (!job) return;
   $("detail-name").textContent = job.title;
   $("detail-eta").textContent = eta(job);
+  $("detail-eta").title = etaHint(job);
   $("detail-destination").textContent = `${job.destination}/${job.identifier}/`;
   $("detail-source").textContent = `archive.org/download/${job.identifier}`;
   $("detail-source").href =
@@ -737,7 +789,9 @@ async function openSettings(focusDestination = false) {
     $("setting-language").replaceChildren(
       ...[
         ["auto", t("Automatique — langue DSM"), "🌐"],
-        ...ArchiveI18n.languages,
+        ...[...ArchiveI18n.languages].sort((a, b) =>
+          a[1].localeCompare(b[1], ArchiveI18n.locale, { sensitivity: "base" }),
+        ),
       ].map(([code, name, flag]) => new Option(`${flag} ${name}`, code)),
     );
     $("setting-language").value = s.language || "auto";

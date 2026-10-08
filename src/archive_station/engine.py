@@ -190,6 +190,7 @@ class Engine:
                         self.throttle(len(chunk), row["job_id"])
                         written = output.write(chunk)
                         received += written
+                        self.store.estimates.record(row["job_id"], written)
                         if written != len(chunk):
                             raise OSError("Incomplete disk write; transfer will resume from disk.")
                         if expected is not None and received > expected:

@@ -6,11 +6,14 @@ import time
 import uuid
 from pathlib import Path
 
+from .estimates import Estimates
+
 
 class Store:
     def __init__(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
+        self.estimates = Estimates()
         self.db = sqlite3.connect(path, check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.executescript("""
@@ -78,12 +81,14 @@ class Store:
 
     def jobs(self):
         with self.lock:
-            return [
+            jobs = [
                 dict(row)
                 for row in self.db.execute("""
                 SELECT j.*, COUNT(f.id) AS file_count,
                     COALESCE(SUM(f.size),0) AS total_size,
                     COALESCE(SUM(f.downloaded),0) AS downloaded,
+                    COALESCE(SUM(CASE WHEN f.size IS NOT NULL
+                        THEN MAX(f.size-f.downloaded,0) ELSE 0 END),0) AS remaining_known_bytes,
                     COALESCE(SUM(CASE WHEN j.status IN ('running','queued')
                         THEN f.speed ELSE 0 END),0) AS speed,
                     SUM(f.status='completed') AS completed_files,
@@ -96,6 +101,9 @@ class Store:
                 GROUP BY j.id ORDER BY j.created DESC
             """)
             ]
+            for job in jobs:
+                job.update(self.estimates.snapshot(job))
+            return jobs
 
     def files(self, job_id, offset=0, limit=100, query="", status=""):
         with self.lock:
@@ -188,6 +196,11 @@ class Store:
                 self.db.execute("DELETE FROM jobs WHERE id=?", (job_id,))
             else:
                 raise ValueError("Action inconnue.")
+            if action in {"pause", "cancel", "remove"}:
+                self.estimates.reset(job_id)
+            elif job["status"] in {"paused", "cancelled", "error"}:
+                self.estimates.reset(job_id)
+                self.estimates.start(job_id)
 
     def claim(self):
         with self.lock, self.db:
@@ -205,6 +218,7 @@ class Store:
                 "UPDATE files SET status='downloading', error=NULL WHERE id=?", (row["id"],)
             )
             self.db.execute("UPDATE jobs SET status='running' WHERE id=?", (row["job_id"],))
+            self.estimates.start(row["job_id"])
             return dict(row)
 
     def active(self, job_id):
@@ -222,7 +236,7 @@ class Store:
 
     def finish_jobs(self):
         with self.lock, self.db:
-            self.db.execute(
+            changed = self.db.execute(
                 """
                 UPDATE jobs SET status=CASE WHEN EXISTS (
                     SELECT 1 FROM files WHERE job_id=jobs.id AND status='error'
@@ -233,6 +247,11 @@ class Store:
             """,
                 (time.time(),),
             )
+            if changed.rowcount:
+                for row in self.db.execute(
+                    "SELECT id FROM jobs WHERE status IN ('completed','error')"
+                ):
+                    self.estimates.reset(row[0])
 
     def tree(self, job_id, prefix="", offset=0, limit=100):
         """Aggregate one directory level; never send an entire large item to the browser."""

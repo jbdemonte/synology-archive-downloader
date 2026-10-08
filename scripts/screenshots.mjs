@@ -29,6 +29,11 @@ const jobs = [
     total_size: 6.8 * GiB,
     downloaded: 4.7 * GiB,
     speed: 3.4 * MiB,
+    average_speed: 3.1 * MiB,
+    average_window_seconds: 300,
+    eta_seconds: 694,
+    eta_state: "ready",
+    eta_lower_bound: false,
   },
   {
     id: "demo-maps",
