@@ -16,6 +16,7 @@ from .archive import parse_identifier
 from .auth import Auth
 from .config import LANGUAGES, dsm_language
 from .plans import Plans
+from .refresh import difference
 from .schedule import policy
 from .storage import capacity
 
@@ -283,6 +284,43 @@ class WebApp:
             )
         if len(parts) == 4 and parts[:2] == ["api", "jobs"]:
             job_id, action = parts[2:]
+            if method == "POST" and action in {"refresh", "apply-refresh"}:
+                with self.store.lock:
+                    row = self.store.db.execute(
+                        "SELECT * FROM jobs WHERE id=?", (job_id,)
+                    ).fetchone()
+                    if not row:
+                        raise KeyError("Téléchargement introuvable.")
+                    job = dict(row)
+                if action == "refresh":
+                    remote = self.client.manifest(
+                        job["identifier"], job["mode"], job["pattern"], refresh=True
+                    )
+                    manifest = difference(self.store, job_id, remote)
+                    token = self.plans.create(manifest, job["mode"], job["pattern"], job_id=job_id)
+                    return response(
+                        {k: v for k, v in manifest.items() if k != "files"}
+                        | {
+                            "plan_id": token,
+                            "file_count": len(manifest["files"]),
+                            "selected_count": len(manifest["files"]),
+                            "selected_size": sum(f["size"] or 0 for f in manifest["files"]),
+                        }
+                    )
+                manifest, _, _ = self.plans.selection(
+                    body.get("plan_id"), job["identifier"], job_id=job_id
+                )
+                paused = body.get("paused", False)
+                if type(paused) is not bool:
+                    raise ValueError("Option de démarrage invalide.")
+                with self.store.lock:
+                    space = capacity(
+                        self.store, self.settings, job["destination"], manifest["total_size"]
+                    )
+                    if not paused and not space["fits"]:
+                        return response({"error": "Espace disque insuffisant."}, 409)
+                    self.store.apply_refresh(job_id, manifest, paused)
+                return response({"ok": True})
             if method == "GET" and action == "activity":
                 return response(self.store.activity(job_id))
             if method == "GET" and action in {"tree", "files"}:

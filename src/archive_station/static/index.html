@@ -386,6 +386,13 @@
               ↓
             </button>
           </div>
+          <button
+            id="refresh-manifest"
+            type="button"
+            data-i18n="Actualiser la liste"
+          >
+            Actualiser la liste
+          </button>
           <button id="repair" type="button" data-i18n="Vérifier et compléter">
             Vérifier et compléter
           </button>
@@ -986,6 +993,57 @@
           <span data-i18n="Annuler le téléchargement"
             >Annuler le téléchargement</span
           >
+        </button>
+      </div>
+    </dialog>
+    <dialog id="refresh-dialog">
+      <div class="dialog-header">
+        <h2 data-i18n="Actualiser la liste">Actualiser la liste</h2>
+      </div>
+      <fieldset id="refresh-controls" class="dialog-body selection-controls">
+        <p id="refresh-loading">
+          <span class="spinner" aria-hidden="true"></span>
+          <span data-i18n="Chargement des fichiers…"
+            >Chargement des fichiers…</span
+          >
+        </p>
+        <p id="refresh-summary"></p>
+        <button
+          type="button"
+          id="refresh-select"
+          data-i18n="Choisir les fichiers…"
+        >
+          Choisir les fichiers…</button
+        ><label class="checkbox"
+          ><input id="refresh-paused" type="checkbox" /><span
+            data-i18n="Ajouter en pause, pour démarrer plus tard"
+            >Ajouter en pause, pour démarrer plus tard</span
+          ></label
+        >
+        <p
+          id="refresh-warning"
+          class="field-help"
+          data-i18n="Mettez la tâche en pause et attendez l’arrêt des transferts."
+        >
+          Mettez la tâche en pause et attendez l’arrêt des transferts.
+        </p>
+        <p id="refresh-error" class="error" role="alert"></p>
+      </fieldset>
+      <div class="dialog-footer">
+        <button
+          type="button"
+          id="refresh-close"
+          data-close="refresh-dialog"
+          data-i18n="Annuler"
+        >
+          Annuler</button
+        ><button
+          type="button"
+          id="refresh-apply"
+          class="primary"
+          data-i18n="Appliquer la sélection"
+        >
+          Appliquer la sélection
         </button>
       </div>
     </dialog>

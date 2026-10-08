@@ -19,9 +19,28 @@ root.mkdir(parents=True, exist_ok=True)
 for name in ["state.sqlite3", "state.sqlite3-wal", "state.sqlite3-shm"]:
     (root / name).unlink(missing_ok=True)
 (root / "downloads").mkdir(exist_ok=True)
-client = ArchiveClient()
 
-for identifier in ["demo-one", "demo-two", "demo-select"]:
+
+class FixtureClient(ArchiveClient):
+    def manifest(self, identifier, mode="all", pattern="", refresh=False):
+        if refresh:
+            cached = self.cache.get(identifier)
+            if not cached:
+                raise ValueError("Fixture not found")
+            payload = {**cached[1], "files": [dict(f) for f in cached[1]["files"]]}
+            if identifier == "demo-refresh" and not any(
+                f["name"] == "new.zip" for f in payload["files"]
+            ):
+                payload["files"] = [f for f in payload["files"] if f["name"] != "readme.txt"]
+                payload["files"][0]["size"] = str(int(payload["files"][0]["size"]) + 100)
+                payload["files"].append({"name": "new.zip", "size": "42", "source": "original"})
+            self.cache[identifier] = (time.monotonic(), payload)
+        return super().manifest(identifier, mode, pattern)
+
+
+client = FixtureClient()
+
+for identifier in ["demo-one", "demo-two", "demo-select", "demo-refresh"]:
     client.cache[identifier] = (
         time.monotonic(),
         {

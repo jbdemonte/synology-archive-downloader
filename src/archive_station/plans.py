@@ -13,7 +13,7 @@ class Plans:
         self.lock = threading.RLock()
         self.items = OrderedDict()
 
-    def create(self, manifest, mode, pattern):
+    def create(self, manifest, mode, pattern, job_id=None):
         if len(manifest["files"]) > 500_000:
             raise ValueError("Archive trop volumineuse. Affiner le filtre.")
         with self.lock:
@@ -29,6 +29,7 @@ class Plans:
                 "manifest": manifest,
                 "selected": set(range(len(manifest["files"]))),
                 "touched": self.clock(),
+                "job_id": job_id,
                 "mode": mode,
                 "pattern": pattern,
             }
@@ -43,11 +44,11 @@ class Plans:
         self.items.move_to_end(token)
         return plan
 
-    def selection(self, token, identifier):
+    def selection(self, token, identifier, job_id=None):
         with self.lock:
             plan = self._get(token)
             manifest = plan["manifest"]
-            if manifest["identifier"] != identifier:
+            if manifest["identifier"] != identifier or plan["job_id"] != job_id:
                 raise ValueError("Sélection de fichiers invalide.")
             files = [f for i, f in enumerate(manifest["files"]) if i in plan["selected"]]
             if not files:
@@ -56,6 +57,7 @@ class Plans:
                 {
                     **manifest,
                     "files": files,
+                    "known_names": [f["name"] for f in manifest["files"]],
                     "total_size": sum(f["size"] or 0 for f in files),
                     "unknown_sizes": sum(f["size"] is None for f in files),
                 },
@@ -105,6 +107,7 @@ class Plans:
                         "name": name,
                         "path": path,
                         "kind": "folder" if separator else "file",
+                        "change": item.get("change") if not separator else None,
                         "file_count": 0,
                         "selected_count": 0,
                         "size": 0,

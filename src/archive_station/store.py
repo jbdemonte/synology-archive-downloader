@@ -32,6 +32,10 @@ class Store:
                 available_at REAL NOT NULL DEFAULT 0, error TEXT,
                 UNIQUE(job_id, name)
             );
+            CREATE TABLE IF NOT EXISTS known_files (
+                job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+                name TEXT NOT NULL, PRIMARY KEY(job_id,name)
+            );
             CREATE INDEX IF NOT EXISTS file_queue ON files(job_id, status, available_at, id);
         """)
         with self.lock, self.db:
@@ -40,12 +44,18 @@ class Store:
                 "source_url": "TEXT",
                 "finished_at": "REAL",
                 "hold_reason": "TEXT",
+                "manifest_revision": "INTEGER NOT NULL DEFAULT 0",
                 "priority": "INTEGER NOT NULL DEFAULT 0",
                 "queue_order": "REAL NOT NULL DEFAULT 0",
             }.items():
                 if name not in columns:
                     self.db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {definition}")
             file_columns = {row[1] for row in self.db.execute("PRAGMA table_info(files)")}
+            self.db.execute("INSERT OR IGNORE INTO known_files SELECT job_id,name FROM files")
+            if "reset_partial" not in file_columns:
+                self.db.execute(
+                    "ALTER TABLE files ADD COLUMN reset_partial INTEGER NOT NULL DEFAULT 0"
+                )
             if "repair" not in file_columns:
                 self.db.execute("ALTER TABLE files ADD COLUMN repair INTEGER NOT NULL DEFAULT 0")
             if "priority" not in file_columns:
@@ -89,6 +99,15 @@ class Store:
                     [
                         (job_id, f["name"], f["size"], f["algorithm"], f["digest"])
                         for f in manifest["files"]
+                    ],
+                )
+                self.db.executemany(
+                    "INSERT OR IGNORE INTO known_files VALUES (?,?)",
+                    [
+                        (job_id, name)
+                        for name in manifest.get(
+                            "known_names", [f["name"] for f in manifest["files"]]
+                        )
                     ],
                 )
             except sqlite3.IntegrityError as exc:
@@ -246,6 +265,43 @@ class Store:
                 self.estimates.reset(job_id)
                 self.estimates.start(job_id)
 
+    def apply_refresh(self, job_id, manifest, paused=False):
+        with self.lock, self.db:
+            job = self.db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+            if not job:
+                raise KeyError("Téléchargement introuvable.")
+            if job["manifest_revision"] != manifest["revision"]:
+                raise ValueError("L’analyse a expiré. Analyser les URL à nouveau.")
+            if (
+                job["status"] in {"queued", "running"}
+                or self.db.execute(
+                    "SELECT 1 FROM files WHERE job_id=? AND status='downloading'", (job_id,)
+                ).fetchone()
+            ):
+                raise ValueError("Mettez la tâche en pause et attendez l’arrêt des transferts.")
+            for file in manifest["files"]:
+                if file["change"] == "new":
+                    self.db.execute(
+                        "INSERT INTO files(job_id,name,size,algorithm,digest) VALUES (?,?,?,?,?)",
+                        (job_id, file["name"], file["size"], file["algorithm"], file["digest"]),
+                    )
+                else:
+                    self.db.execute(
+                        "UPDATE files SET size=?,algorithm=?,digest=?, status='queued', "
+                        "downloaded=0,speed=0,attempts=0,available_at=0,error=NULL, "
+                        "repair=1,reset_partial=1 WHERE job_id=? AND name=?",
+                        (file["size"], file["algorithm"], file["digest"], job_id, file["name"]),
+                    )
+                self.db.execute(
+                    "INSERT OR IGNORE INTO known_files VALUES (?,?)", (job_id, file["name"])
+                )
+            self.db.execute(
+                "UPDATE jobs SET manifest_revision=manifest_revision+1, "
+                "status=?,finished_at=NULL,hold_reason=NULL WHERE id=?",
+                ("paused" if paused else "queued", job_id),
+            )
+            self.estimates.reset(job_id)
+
     def bulk(self, action, ids=None):
         global_actions = {
             "pause_all": ("pause", {"queued", "running"}),
@@ -379,6 +435,7 @@ class Store:
             "error",
             "size",
             "repair",
+            "reset_partial",
         }
         if not values.keys() <= allowed:
             raise ValueError("Unknown file field")

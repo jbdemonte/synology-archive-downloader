@@ -157,6 +157,15 @@ class Engine:
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = safe_path(root, f".archive-station-parts/{row['job_id']}/{row['id']}.part")
         partial.parent.mkdir(parents=True, exist_ok=True)
+        if row.get("reset_partial"):
+            if partial.exists():
+                backup = safe_path(
+                    root,
+                    f".archive-station-replaced/{row['job_id']}/{uuid.uuid4().hex}/partial/{row['name']}",
+                )
+                backup.parent.mkdir(parents=True, exist_ok=True)
+                partial.rename(backup)
+            self.store.update(row["id"], reset_partial=0)
         if target.exists():
             if target.is_file() and self.verified(target, row):
                 self.complete(row, target)

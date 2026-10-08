@@ -470,9 +470,11 @@ $("global-action").onchange = async () => {
   }
 };
 function renderDetail() {
+  renderRefreshSummary();
   const job = state.jobs.find((j) => j.id === state.selected);
   $("detail").hidden = !job || state.checked.size > 1;
   const selected = selectedJobs();
+  $("refresh-manifest").disabled = !job;
   $("repair").disabled =
     !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
   $("pause").disabled = !selected.some((j) =>
@@ -798,6 +800,81 @@ for (const action of ["pause", "resume", "retry"])
       toast(error.message);
     }
   };
+let refreshPlan = null,
+  refreshBusy = false,
+  refreshSequence = 0;
+let refreshApplying = false;
+function renderRefreshSummary() {
+  if (!$("refresh-dialog").open) return;
+  const job = state.jobs.find((job) => job.id === refreshPlan?.job_id);
+  const active =
+    !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
+  $("refresh-controls").disabled = refreshBusy;
+  $("refresh-close").disabled = refreshApplying;
+  $("refresh-loading").hidden = !refreshBusy;
+  $("refresh-warning").hidden = !active || refreshBusy;
+  $("refresh-select").disabled = !refreshPlan?.file_count;
+  $("refresh-apply").disabled =
+    refreshBusy || active || !refreshPlan?.selected_count;
+  $("refresh-summary").textContent = refreshPlan
+    ? `${t("Nouveaux")} : ${refreshPlan.added_count} · ${t("Modifiés")} : ${refreshPlan.changed_count} · ${t("Absents conservés")} : ${refreshPlan.absent_count} — ${refreshPlan.selected_count} / ${refreshPlan.file_count} ${t("fichiers")} · ${bytes(refreshPlan.selected_size)}`
+    : "";
+}
+$("refresh-manifest").onclick = async () => {
+  const jobId = state.selected,
+    sequence = ++refreshSequence;
+  refreshPlan = null;
+  refreshBusy = true;
+  $("refresh-error").textContent = "";
+  $("refresh-paused").checked = false;
+  $("refresh-dialog").showModal();
+  renderRefreshSummary();
+  try {
+    const result = await api(`/api/jobs/${jobId}/refresh`, {});
+    if (sequence !== refreshSequence) return;
+    refreshPlan = { ...result, job_id: jobId };
+  } catch (error) {
+    if (sequence === refreshSequence)
+      $("refresh-error").textContent = error.message;
+  } finally {
+    if (sequence === refreshSequence) {
+      refreshBusy = false;
+      renderRefreshSummary();
+    }
+  }
+};
+$("refresh-dialog").addEventListener("close", () => {
+  refreshSequence++;
+});
+$("refresh-select").onclick = () => {
+  selectionPlan = refreshPlan;
+  selectionPrefix = "";
+  selectionOffset = 0;
+  $("selection-dialog").showModal();
+  loadSelection();
+};
+$("refresh-dialog").addEventListener("cancel", (event) => {
+  if (refreshApplying) event.preventDefault();
+});
+$("refresh-apply").onclick = async () => {
+  refreshApplying = true;
+  refreshBusy = true;
+  renderRefreshSummary();
+  try {
+    await api(`/api/jobs/${refreshPlan.job_id}/apply-refresh`, {
+      plan_id: refreshPlan.plan_id,
+      paused: $("refresh-paused").checked,
+    });
+    $("refresh-dialog").close();
+    await refresh();
+  } catch (error) {
+    $("refresh-error").textContent = error.message;
+  } finally {
+    refreshApplying = false;
+    refreshBusy = false;
+    renderRefreshSummary();
+  }
+};
 let repairTarget = null;
 $("repair").onclick = () => {
   repairTarget = state.selected;
@@ -1019,6 +1096,7 @@ async function loadSelection(change) {
       selected_size: data.selected_size,
       unknown_sizes: data.unknown_sizes,
     });
+    renderRefreshSummary();
     selectionOffset = data.offset;
     $("selection-path").textContent =
       selectionPrefix || selectionPlan.identifier;
@@ -1030,7 +1108,7 @@ async function loadSelection(change) {
     $("selection-rows").innerHTML = data.children
       .map(
         (file) =>
-          `<label class="selection-row"><input type="checkbox" data-select-path="${esc(file.path)}" ${file.selected_count === file.file_count ? "checked" : ""} data-partial="${file.selected_count > 0 && file.selected_count < file.file_count}" aria-label="${esc(t("Sélectionner {name}", { name: file.name }))}"><span>${file.kind === "folder" ? `<button type="button" data-selection-folder="${esc(file.path)}">▰ ${esc(file.name)}</button>` : esc(file.name)}</span><small>${number(file.selected_count)} / ${number(file.file_count)} · ${bytes(file.size)}${file.unknown_sizes ? " +" : ""}</small></label>`,
+          `<label class="selection-row"><input type="checkbox" data-select-path="${esc(file.path)}" ${file.selected_count === file.file_count ? "checked" : ""} data-partial="${file.selected_count > 0 && file.selected_count < file.file_count}" aria-label="${esc(t("Sélectionner {name}", { name: file.name }))}"><span>${file.kind === "folder" ? `<button type="button" data-selection-folder="${esc(file.path)}">▰ ${esc(file.name)}</button>` : esc(file.name)}</span><small>${file.change ? esc(t(file.change === "new" ? "Nouveau" : "Modifié")) + " · " : ""}${number(file.selected_count)} / ${number(file.file_count)} · ${bytes(file.size)}${file.unknown_sizes ? " +" : ""}</small></label>`,
       )
       .join("");
     for (const input of $("selection-rows").querySelectorAll("input"))

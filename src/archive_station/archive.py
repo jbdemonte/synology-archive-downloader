@@ -88,14 +88,14 @@ class ArchiveClient:
             headers["Range"] = f"bytes={offset}-"
         return build_opener(ArchiveRedirects()).open(Request(url, headers=headers), timeout=30)
 
-    def manifest(self, identifier, mode="all", pattern=""):
+    def manifest(self, identifier, mode="all", pattern="", refresh=False):
         if mode not in {"all", "original"}:
             raise ValueError("Sélection de fichiers invalide.")
         if not isinstance(pattern, str) or len(pattern) > 200:
             raise ValueError("Filtre trop long.")
         with self.lock:
             cached = self.cache.get(identifier)
-        if cached and time.monotonic() - cached[0] < 900:
+        if cached and not refresh and time.monotonic() - cached[0] < 900:
             payload = cached[1]
         else:
             request = Request(
