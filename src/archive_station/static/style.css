@@ -1688,3 +1688,20 @@ summary.detail-title::before {
   align-items: center;
   flex-wrap: wrap;
 }
+
+.startup-card {
+  width: min(420px, calc(100vw - 48px));
+  text-align: center;
+  padding: 24px;
+}
+#startup-status {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  color: #506a82;
+}
+#startup-error {
+  overflow-wrap: anywhere;
+}

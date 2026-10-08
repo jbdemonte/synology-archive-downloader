@@ -24,7 +24,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Maintain an archive** — verify and repair files, review source updates, and select additions or changed files to retrieve.
 - **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications.
 - **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
-- **Keep a readable record** — each archive gets a plain-text download report.
+- **Keep a readable record** — each archive gets a plain-text report with persistent error history, also readable inside the app.
 - **Use your language** — 27 bundled languages, automatic DSM language detection and an override in Settings.
 
 See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, repair and refresh behavior.
@@ -44,7 +44,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-2-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-3-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -118,7 +118,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.2.0-2 # Override the package version
+make build VERSION=0.2.0-3 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

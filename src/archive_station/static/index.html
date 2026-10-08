@@ -11,6 +11,27 @@
     <script defer src="app.js"></script>
   </head>
   <body>
+    <div id="startup-screen" class="login-screen" aria-busy="true">
+      <div class="startup-card">
+        <img src="icon.png" alt="" width="48" height="48" />
+        <p id="startup-status" role="status">
+          <span class="spinner" aria-hidden="true"></span
+          ><span data-i18n="Chargement d’Archive Station…"
+            >Chargement d’Archive Station…</span
+          >
+        </p>
+        <p id="startup-error" class="error" role="alert" hidden></p>
+        <button
+          id="startup-retry"
+          type="button"
+          class="primary"
+          data-i18n="Réessayer"
+          hidden
+        >
+          Réessayer
+        </button>
+      </div>
+    </div>
     <div id="login-screen" class="login-screen" hidden>
       <form id="login-form" class="login-card">
         <img src="icon.png" alt="" width="64" height="64" />

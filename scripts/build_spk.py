@@ -176,8 +176,8 @@ if __name__ == "__main__":
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--waitress-wheel", type=Path, required=True)
     parser.add_argument(
-        "--output", type=Path, default=ROOT / "dist/ArchiveStation-0.2.0-2-x86_64.spk"
+        "--output", type=Path, default=ROOT / "dist/ArchiveStation-0.2.0-3-x86_64.spk"
     )
-    parser.add_argument("--version", default="0.2.0-2")
+    parser.add_argument("--version", default="0.2.0-3")
     args = parser.parse_args()
     build(args.runtime, args.waitress_wheel, args.output, args.version)

@@ -109,6 +109,8 @@ const embedded = location.pathname.startsWith(
   "/webman/3rdparty/ArchiveStation/",
 );
 let authMode = embedded ? "dsm" : "password";
+let initializing = false;
+let startupController = null;
 document.body.classList.toggle("dsm-embedded", embedded);
 function restoreWindowLayout() {
   // DSM restores old geometry before loading our iframe. Migrate only this
@@ -170,7 +172,7 @@ async function api(path, body, signal) {
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
     credentials: "same-origin",
-    signal,
+    signal: signal || startupController?.signal,
   });
   let result;
   try {
@@ -193,7 +195,9 @@ async function api(path, body, signal) {
     : response.status;
   if (status >= 400) {
     if (status === 401 && path !== "/api/login") showLogin();
-    throw new Error(t(result.error) || `HTTP ${status}`);
+    throw Object.assign(new Error(t(result.error) || `HTTP ${status}`), {
+      status,
+    });
   }
   return result;
 }
@@ -207,6 +211,7 @@ function toast(message) {
   }, 6000);
 }
 function showLogin() {
+  $("startup-screen").hidden = true;
   $("login-screen").hidden = false;
   $("application").hidden = true;
   document.querySelectorAll("dialog[open]").forEach((d) => d.close());
@@ -221,6 +226,7 @@ function showLogin() {
         );
 }
 function showApp() {
+  $("startup-screen").hidden = true;
   $("login-screen").hidden = true;
   $("application").hidden = false;
 }
@@ -669,8 +675,8 @@ function renderHistory(history) {
       )
       .join("");
 }
-async function refresh() {
-  if (state.polling || $("application").hidden) return;
+async function refresh(initial = false) {
+  if (state.polling || (!initial && $("application").hidden)) return;
   state.polling = true;
   try {
     const data = await api("/api/jobs");
@@ -711,6 +717,7 @@ async function refresh() {
       time: new Date().toLocaleTimeString(ArchiveI18n.locale),
     });
   } catch (error) {
+    if (initial) throw error;
     $("connection").textContent = t(
       "Connexion au service interrompue. {error}",
       { error: error.message },
@@ -1514,9 +1521,7 @@ $("login-form").onsubmit = async (event) => {
   try {
     await api("/api/login", { password: $("password").value });
     $("password").value = "";
-    showApp();
-    await loadSettings();
-    await refresh();
+    await init();
   } catch (error) {
     $("login-error").textContent = error.message;
   }
@@ -1530,6 +1535,17 @@ $("logout").onclick = async () => {
   }
 };
 async function init() {
+  if (initializing) return;
+  initializing = true;
+  startupController = new AbortController();
+  const timeout = setTimeout(() => startupController?.abort(), 20000);
+  $("startup-screen").hidden = false;
+  $("startup-screen").setAttribute("aria-busy", "true");
+  $("startup-status").hidden = false;
+  $("startup-error").hidden = true;
+  $("startup-retry").hidden = true;
+  $("application").hidden = true;
+  $("login-screen").hidden = true;
   try {
     await ArchiveI18n.apply();
     const auth = await api("/api/auth");
@@ -1538,17 +1554,34 @@ async function init() {
     $("local-password-settings").hidden = authMode !== "password";
     if (auth.authenticated) {
       restoreWindowLayout();
-      showApp();
       await loadSettings();
-      await refresh();
+      await refresh(true);
+      showApp();
     } else {
       showLogin();
     }
   } catch (error) {
-    showLogin();
-    $("login-error").textContent = error.message;
+    if (error.status === 401) {
+      showLogin();
+      $("login-error").textContent = error.message;
+    } else {
+      $("startup-status").hidden = true;
+      $("startup-error").hidden = false;
+      $("startup-error").textContent = startupController.signal.aborted
+        ? t(
+            "Le service ne répond pas correctement. Réessayez dans quelques instants ou vérifiez le paquet dans DSM.",
+          )
+        : error.message;
+      $("startup-retry").hidden = false;
+    }
+  } finally {
+    clearTimeout(timeout);
+    startupController = null;
+    initializing = false;
+    $("startup-screen").setAttribute("aria-busy", "false");
   }
 }
+$("startup-retry").onclick = init;
 init();
 setInterval(refresh, 1500);
 setInterval(() => {
