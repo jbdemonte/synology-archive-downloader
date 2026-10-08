@@ -41,10 +41,14 @@ See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, 
 
 ARM packages are not available yet. Other DSM versions and models need community testing. Archive Station does not recursively crawl collections, authenticate to restricted Archive.org files, or extract ZIP archives.
 
+## Trust boundary
+
+DSM access is restricted to administrator sessions. The internal API listens on loopback and trusts a gateway marker header; local NAS users and services can forge that marker. This version therefore assumes trusted local accounts and workloads. It does not provide isolation from untrusted users or containers sharing the NAS network stack.
+
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-4-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-5-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -131,7 +135,7 @@ Reports use French when the interface language is French, and English otherwise.
 
 ## Startup and connection status
 
-On opening, a loading screen remains visible until the DSM session, settings and task list are ready. If the service cannot be reached, a message and **Retry** button appear. An empty download list is only displayed once the initial request succeeds.
+On opening, a loading screen remains visible until the DSM session, settings and task list are ready. If the service cannot be reached, a message and **Retry** button appear. An empty download list is only displayed once the initial request succeeds. An expired DSM session can be retried in the same window after signing in again. Background refreshes stop while the browser tab is hidden and resume when it becomes visible.
 
 <details>
 <summary>See the startup loading screen</summary>
@@ -152,7 +156,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.2.0-4  # Override the package version
+make build VERSION=0.2.0-5  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
