@@ -42,7 +42,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-12-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-13-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -84,7 +84,7 @@ The item identifier determines its directory name; nested paths from Archive.org
 
 ## Follow large archives
 
-The first running task opens automatically. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
+The first running task opens automatically. Select an archive row to enable Pause, Resume and the other task controls. When only one archive is visible, it is selected automatically; otherwise a hint above the list explains how to activate the controls. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
 
 ![Archive Station folder tree](docs/images/folders.png)
 
@@ -116,7 +116,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.1.0-12 # Override the package version
+make build VERSION=0.1.0-13 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

@@ -390,6 +390,11 @@ function render() {
     (j) => j.status === "error" || j.failed_files,
   ).length;
   const visible = state.jobs.filter(matches);
+  // A single visible archive is an unambiguous action target. Never keep an
+  // invisible task selected when the user changes the filter or search.
+  if (!visible.some((job) => job.id === state.selected))
+    state.selected = visible.length === 1 ? visible[0].id : null;
+  $("selection-hint").hidden = visible.length < 2 || !!state.selected;
   $("empty").hidden = state.jobs.length > 0;
   $("no-results").hidden = !state.jobs.length || !!visible.length;
   $("list-count").textContent = t(

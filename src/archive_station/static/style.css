@@ -491,6 +491,15 @@ main > * {
   align-items: center;
   gap: 2px;
 }
+.selection-hint {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 7px 14px;
+  color: #526b82;
+  background: #f3f8fc;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
 .actions button {
   border: 0;
   font-size: 15px;

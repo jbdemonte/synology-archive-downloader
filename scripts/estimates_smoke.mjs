@@ -57,7 +57,10 @@ try {
     await route.fulfill({ json: body });
   });
   await page.goto(base);
-  await page.getByText("Restant : Calcul…", { exact: true }).waitFor();
+  await page
+    .locator(".remaining-time")
+    .getByText("Restant : Calcul…", { exact: true })
+    .waitFor();
   assert.match(
     await page.locator("#stat-bytes").innerText(),
     /30 Gio\s*\/ 144,4 Gio/,
@@ -65,14 +68,20 @@ try {
   job.eta_state = "ready";
   job.eta_seconds = 90000; // Must use the server estimate, not instantaneous speed.
   job.average_window_seconds = 300;
-  await page.getByText("Restant : ≈ 1 j 1 h", { exact: true }).waitFor();
+  await page
+    .locator(".remaining-time")
+    .getByText("Restant : ≈ 1 j 1 h", { exact: true })
+    .waitFor();
   assert.match(
     await page.locator(".remaining-time").getAttribute("title"),
     /Moyenne sur 5 min/,
   );
   job.eta_lower_bound = true;
   job.unknown_sizes = 1;
-  await page.getByText("Restant : ≥ 1 j 1 h", { exact: true }).waitFor();
+  await page
+    .locator(".remaining-time")
+    .getByText("Restant : ≥ 1 j 1 h", { exact: true })
+    .waitFor();
   assert.match(await page.locator("#stat-bytes").innerText(), /Gio \+/);
   assert.match(
     await page.locator(".remaining-time").getAttribute("title"),
@@ -92,17 +101,24 @@ try {
   job.eta_seconds = null;
   job.eta_state = "stalled";
   await page
+    .locator(".remaining-time")
     .getByText("Restant : En attente de débit", { exact: true })
     .waitFor();
   job.status = "paused";
   await page.waitForFunction(() => !document.querySelector(".remaining-time"));
   job.status = "running";
   job.eta_state = "measuring";
-  await page.getByText("Restant : Calcul…", { exact: true }).waitFor();
+  await page
+    .locator(".remaining-time")
+    .getByText("Restant : Calcul…", { exact: true })
+    .waitFor();
   job.eta_state = "ready";
   job.eta_seconds = 1;
   job.eta_lower_bound = false;
-  await page.getByText("Restant : ≈ 1 min", { exact: true }).waitFor();
+  await page
+    .locator(".remaining-time")
+    .getByText("Restant : ≈ 1 min", { exact: true })
+    .waitFor();
   assert.deepEqual(errors, []);
   console.log(
     "ETA passed: warmup, server average, unknown sizes, stalls, pause/resume, byte totals and compact layout.",
