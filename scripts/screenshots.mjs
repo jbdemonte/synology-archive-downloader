@@ -1,7 +1,9 @@
 // Actual application screenshots using illustrative data only. Never connects
 // to a NAS or Internet Archive and never reads a user's download list.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { mkdir } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const base = process.env.TEST_URL || "http://127.0.0.1:8275";
@@ -16,6 +18,8 @@ const page = await browser.newPage({
   viewport: { width: 1360, height: 840 },
   deviceScaleFactor: 1,
 });
+const demoTime = new Date("2026-10-08T14:20:00Z");
+await page.clock.setFixedTime(demoTime);
 const MiB = 1024 ** 2,
   GiB = 1024 ** 3;
 const jobs = [
@@ -34,6 +38,8 @@ const jobs = [
     eta_seconds: 694,
     eta_state: "ready",
     eta_lower_bound: false,
+    incident_count: 3,
+    unresolved_incidents: 1,
   },
   {
     id: "demo-maps",
@@ -63,6 +69,61 @@ const jobs = [
   unknown_sizes: 0,
   failed_files: 0,
 }));
+// Render the demo text with the same Python formatter used by the NAS.
+const reportJob = {
+  ...jobs[0],
+  created: demoTime.getTime() / 1000 - 3600,
+  finished_at: null,
+  error_history_since: demoTime.getTime() / 1000 - 3600,
+  source_url: "https://archive.org/details/space-photography",
+  mode: "all",
+  pattern: "",
+  downloaded: Math.round(jobs[0].downloaded),
+  total_size: Math.round(jobs[0].total_size),
+  completed_bytes: Math.round(4 * GiB),
+};
+const reportText = execFileSync(
+  process.env.PYTHON ||
+    fileURLToPath(new URL("../.venv/bin/python", import.meta.url)),
+  [
+    "-c",
+    `import json, sys
+from archive_station.reports import render_report
+data = json.load(sys.stdin)
+print(render_report(data["job"], {"language": "en", "verify_checksums": True}, data["now"], data["incidents"]), end="")`,
+  ],
+  {
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      PYTHONPATH: fileURLToPath(new URL("../src", import.meta.url)),
+    },
+    input: JSON.stringify({
+      job: reportJob,
+      now: demoTime.getTime() / 1000,
+      incidents: [
+        {
+          name: "photographs/earth-from-orbit.tif",
+          first_at: reportJob.created + 240,
+          last_at: reportJob.created + 300,
+          occurrences: 2,
+          attempt: 2,
+          message: "Connection reset by peer",
+          resolved_at: reportJob.created + 420,
+        },
+        {
+          name: "photographs/solar-eclipse.tif",
+          first_at: reportJob.created + 3500,
+          last_at: reportJob.created + 3500,
+          occurrences: 1,
+          attempt: 1,
+          message: "HTTP Error 503: Service Unavailable — retry scheduled",
+          resolved_at: null,
+        },
+      ],
+    }),
+  },
+);
 const tree = {
   "": [
     {
@@ -136,13 +197,18 @@ const tree = {
 };
 const errors = [];
 page.on("pageerror", (error) => errors.push(error.message));
+let releaseStartup;
+const startupGate = new Promise((resolve) => {
+  releaseStartup = resolve;
+});
 try {
   await page.route("**/api/**", async (route) => {
     const url = new URL(route.request().url());
     let body;
-    if (url.pathname === "/api/auth")
+    if (url.pathname === "/api/auth") {
+      await startupGate;
       body = { authenticated: true, mode: "dsm" };
-    else if (url.pathname === "/api/settings")
+    } else if (url.pathname === "/api/settings")
       body = {
         download_dir: "/volume1/Download/Archives",
         destination_locked: true,
@@ -169,7 +235,16 @@ try {
           window_seconds: 3600,
         },
       };
-    else if (url.pathname.endsWith("/activity")) {
+    else if (url.pathname.endsWith("/report")) {
+      const lines = reportText.trimEnd().split("\n");
+      const offset = Number(url.searchParams.get("offset") || 0);
+      body = {
+        filename: "ArchiveStation-report-demo-space.txt",
+        content: lines.slice(offset, offset + 200).join("\n"),
+        total: lines.length,
+        offset,
+      };
+    } else if (url.pathname.endsWith("/activity")) {
       const files = tree.photographs.map((row) => ({ ...row, name: row.path }));
       body = {
         active: files.filter((row) => row.status === "downloading"),
@@ -183,12 +258,36 @@ try {
     } else throw new Error(`Unexpected screenshot request: ${url.pathname}`);
     await route.fulfill({ json: body });
   });
-  await page.goto(base);
+  await page.goto(base, { waitUntil: "domcontentloaded" });
+  await page
+    .locator("#startup-status")
+    .filter({ hasText: "Loading Archive Station" })
+    .waitFor();
+  assert.ok(await page.locator("#application").isHidden());
+  await page.screenshot({ path: new URL("startup.png", out).pathname });
+  releaseStartup();
   await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
   await page.screenshot({ path: new URL("downloads.png", out).pathname });
   await page.locator("#history-panel summary").click();
   await page.screenshot({ path: new URL("history.png", out).pathname });
   await page.locator("#history-panel summary").click();
+  await page.locator('[data-report-job="demo-space"]').click();
+  await page
+    .locator("#report-text")
+    .filter({ hasText: "ERROR HISTORY" })
+    .waitFor();
+  await page.locator("#report-text").evaluate((element) => {
+    const index = element.textContent
+      .split("\n")
+      .findIndex((line) => line === "ERROR HISTORY");
+    element.parentElement.scrollTop =
+      (index - 1) * parseFloat(getComputedStyle(element).lineHeight) +
+      parseFloat(getComputedStyle(element.parentElement).paddingTop);
+  });
+  await page
+    .locator("#report-dialog")
+    .screenshot({ path: new URL("report.png", out).pathname });
+  await page.locator("#report-dialog [data-close]").first().click();
   await page.getByRole("button", { name: "Folders", exact: true }).click();
   await page
     .getByRole("button", { name: "Expand photographs", exact: true })

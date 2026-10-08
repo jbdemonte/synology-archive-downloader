@@ -12,7 +12,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 
 ![Archive Station activity view showing live transfers and upcoming files](docs/images/downloads.png)
 
-*Screenshots show the actual application with demonstration data, not a live download.*
+*All screenshots are captured from the application with isolated demonstration data.*
 
 ## What you can do
 
@@ -22,7 +22,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Plan transfers** — choose weekly time slots, alternate speed limits, live concurrency and a free-space reserve.
 - **See progress** — per-file gauges, remaining-time estimates, downloaded/total sizes and a one-hour throughput graph.
 - **Maintain an archive** — verify and repair files, review source updates, and select additions or changed files to retrieve.
-- **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications.
+- **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications. Each task also links to its original Archive.org page.
 - **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
 - **Keep a readable record** — each archive gets a plain-text report with persistent error history, also readable inside the app.
 - **Use your language** — 27 bundled languages, automatic DSM language detection and an override in Settings.
@@ -44,7 +44,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-3-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-4-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -69,7 +69,7 @@ https://archive.org/details/<item-identifier>
 https://archive.org/download/<item-identifier>
 ```
 
-Review the file count and size, optionally choose **Original files only**, or apply a filename pattern such as `*.zip`. Choose **Add paused** if you want to start later.
+Review the file count and size, optionally choose **Original files only**, or apply a filename pattern such as `*.zip`. Use **Choose files…** to select individual files or entire folders. Choose **Add paused** if you want to start later.
 
 ```text
 Your destination/
@@ -88,23 +88,57 @@ The item identifier determines its directory name; nested paths from Archive.org
 
 The first running task opens automatically. Select an archive row to enable Pause, Resume and the other task controls. When only one archive is visible, it is selected automatically; otherwise a hint above the list explains how to activate the controls. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
 
+Click the **external-link icon** on an archive row to open that item's `archive.org/details/…` page in a new browser tab. The **Source** link in the selected task's details opens the same page. Downloads keep running in DSM.
+
+<details>
+<summary>Browse the folder hierarchy</summary>
+
 ![Archive Station folder tree](docs/images/folders.png)
+
+</details>
+
+## Transfer history and time remaining
+
+Expand **Transfer history** to see the last **60 minutes**, displayed as **30-second average rates**. Hover over the graph for the rate and time interval. The NAS collects measurements even while the application window is closed. This history starts empty after a package restart and fills as downloads continue.
+
+![One-hour transfer graph with live downloads, a remaining-time estimate and downloaded versus total bytes](docs/images/history.png)
 
 The data summary shows downloaded bytes / total known size. A **+** means some file sizes are unknown. Remaining time uses actual bytes received across an archive’s concurrent transfers, with a **five-minute rolling average** and **30 seconds of initial observation**. Hover over the estimate to see the average rate. **≥** marks a minimum estimate when sizes are unknown. After a minute without data, the duration is replaced by “Waiting for data”. Pausing or restarting the package resets the observation window; retained partial files are not counted as new traffic.
 
-## Interruptions, settings and reports
+## Reliable downloads and live settings
 
 **Files only appear under their final names after successful transfer and verification.** Incomplete data lives in `<destination>/.archive-station-parts/<task-id>/`. Do not delete that directory if you want to resume partial downloads.
 
 An active task resumes automatically after a package restart or upgrade. Paused and cancelled tasks remain stopped. HTTP `Range` resumes from the actual partial file size; if the remote server ignores it, that file restarts cleanly. A matching complete file is reused. Normal transfers refuse conflicting existing files. An explicit repair or metadata update backs up a replaced file before downloading its replacement.
 
+With checksum verification enabled, Archive Station reads the downloaded file from disk, computes its SHA-1 (or MD5 when only MD5 is available), and compares it with the value supplied by Archive.org. A mismatch triggers another attempt within the configured retry limit. When no checksum is supplied, verification is limited to the expected size when available.
+
 Increasing parallel downloads starts additional transfers without restarting the task. Decreasing the limit lets current files finish, then restricts new transfers. The global bandwidth limit is also applied while transfers run.
 
-Each item directory contains `ArchiveStation-report-<task-id>.txt`, refreshed approximately every 15 seconds and on clean shutdown. Open it in any text editor: it uses clear sections, readable sizes and dates, and a duration in days/hours/minutes/seconds. Reports use French when the interface language is French, and English otherwise. In automatic mode, the resolved language of the last opened DSM session is remembered for background reports (English fallback before first opening). Previous JSON reports generated by Archive Station are replaced automatically.
-
-The report includes the source and canonical download URLs, creation/update/completion times, retained bytes, completed bytes, file counts, errors and selection options. **Duration is elapsed wall time from task creation, including pauses and downtime.** Byte counts represent retained data, not cumulative network traffic. Older tasks receive a report after upgrading; their original completion time may be unavailable.
-
 Removing a task preserves complete and partial files. Re-adding its URL reuses verified complete files, but the old task’s partial files are not reused automatically.
+
+## Reports and error history
+
+Click the **document icon** on a task, or **Read report** in its details, to open an up-to-date plain-text report inside Archive Station. Use **Refresh** to reload it; long reports have page controls.
+
+The icon turns **amber** when incidents have been recorded, including incidents that were later resolved. The report lists the affected file, first and last occurrence, diagnostic message, occurrence count, last attempt number and resolution date. Identical errors are grouped per file. Retries, successful completion and service restarts preserve this history; low-disk-space pauses are recorded too.
+
+![Report reader showing a resolved connection error and an unresolved error awaiting a retry](docs/images/report.png)
+
+Each item directory also contains `ArchiveStation-report-<task-id>.txt`, refreshed approximately every 15 seconds and on clean shutdown. This file contains the complete report and can be opened in any text editor. It includes the source URLs, dates, file counts, retained bytes, selection settings and error history. **Duration includes pauses and downtime; byte counts represent retained data, not cumulative network traffic.**
+
+Reports use French when the interface language is French, and English otherwise. Automatic mode remembers the last resolved DSM interface language for background reports. Incident history begins when this feature is installed: existing errors are imported when available, but incidents already cleared by older versions cannot be recovered.
+
+## Startup and connection status
+
+On opening, a loading screen remains visible until the DSM session, settings and task list are ready. If the service cannot be reached, a message and **Retry** button appear. An empty download list is only displayed once the initial request succeeds.
+
+<details>
+<summary>See the startup loading screen</summary>
+
+![Archive Station startup screen while the application loads its tasks](docs/images/startup.png)
+
+</details>
 
 ## Languages
 
@@ -118,7 +152,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.2.0-3 # Override the package version
+make build VERSION=0.2.0-4  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
@@ -128,27 +162,28 @@ Python and Waitress artifacts are pinned and checksum-verified in `packaging/syn
 Standalone mode writes its initial password to `data/initial-password.txt`. That password is only for local development; the DSM package uses DSM authentication. Local state lives in `data/` and downloads in `downloads/`.
 
 ```sh
-make dev-deps   # Install development tools and Chromium
-make check      # Backend tests, catalog validation, Ruff and Prettier
-make test-ui    # Isolated browser tests; no external downloads
+make dev-deps    # Install development tools and Chromium
+make check       # Backend tests, catalog validation, Ruff and Prettier
+make test-ui     # Isolated browser tests; no external downloads
 make screenshots # Regenerate README screenshots from demo fixtures
 make format
 ```
 
-UI tests use port 8275 temporarily. Set `CHROMIUM_PATH` to an existing Chromium executable if necessary. Tests cover interrupted transfers, process termination, resumption, changing concurrency, old database migration, reports, permissions, DSM integration and all supported interface languages.
+UI tests use port 8275 temporarily. Set `CHROMIUM_PATH` to an existing Chromium executable if necessary. Tests cover interrupted transfers, process termination, resumption, changing concurrency, old database migration, error history, the report reader, startup recovery, source links, permissions, DSM integration and all supported interface languages. `make screenshots` captures the current interface and uses the application's own report formatter with demonstration data.
 
 ```text
 src/archive_station/  Download engine, API, SQLite, settings and static UI
 packaging/synology/   DSM lifecycle scripts, launcher, gateway and runtime licenses
 scripts/             Build tooling, browser tests and screenshots
-tests/              Deterministic backend tests and isolated UI fixtures
+tests/               Deterministic backend tests and isolated UI fixtures
 ```
 
 ## Troubleshooting and contributing
 
 - **A share is missing or orange:** check the package system user’s DSM permissions, then reopen the picker.
 - **A file needs authorization:** restricted Archive.org files are not supported. Public files continue independently.
-- **Downloads stop on one file:** inspect its error in the tree, correct the cause and select Retry.
+- **Downloads stop on one file:** open its task report or the **Needs attention** view, correct the cause and select Retry.
+- **The startup screen reports a connection error:** check that the package is running, then select Retry.
 - **The session expires:** sign back into DSM and reopen Archive Station.
 - **The UI looks outdated after upgrading:** close and reopen the application, or refresh the DSM desktop.
 
