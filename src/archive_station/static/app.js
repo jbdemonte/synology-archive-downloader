@@ -445,9 +445,12 @@ function renderDetail() {
   $("detail-source").textContent = `archive.org/download/${job.identifier}`;
   $("detail-source").href =
     `https://archive.org/download/${encodeURIComponent(job.identifier)}`;
-  $("detail-errors").textContent = job.failed_files
-    ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
-    : "";
+  $("detail-errors").textContent =
+    job.hold_reason === "disk"
+      ? t("Espace disque insuffisant.")
+      : job.failed_files
+        ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
+        : "";
 }
 async function setPriority(change) {
   if (!state.selected) return;
@@ -565,6 +568,7 @@ async function loadSettings() {
 }
 function resetPlans() {
   state.plans = [];
+  updateCapacity();
   $("preview-list").replaceChildren();
   $("create-button").hidden = true;
   $("inspect-button").hidden = false;
@@ -835,6 +839,7 @@ $("create-button").onclick = async () => {
   await refresh();
 };
 function renderPreviews() {
+  updateCapacity();
   $("preview-list").innerHTML = state.plans
     .map(
       (plan) =>
@@ -842,6 +847,29 @@ function renderPreviews() {
     )
     .join("");
 }
+let capacitySequence = 0;
+async function updateCapacity() {
+  const sequence = ++capacitySequence;
+  $("capacity-summary").hidden = !state.plans.length;
+  if (!state.plans.length) return;
+  const required = state.plans.reduce(
+    (sum, plan) => sum + (plan.selected_size ?? plan.total_size ?? 0),
+    0,
+  );
+  try {
+    const space = await api(
+      `/api/capacity?path=${encodeURIComponent($("job-destination").value)}&required=${required}`,
+    );
+    if (sequence !== capacitySequence) return;
+    $("capacity-summary").textContent =
+      `${t("Taille")} : ${bytes(required)} · ${t("Après réserve et file active")} : ${bytes(space.available)}`;
+    $("capacity-summary").classList.toggle("error", !space.fits);
+  } catch (error) {
+    if (sequence === capacitySequence)
+      $("capacity-summary").textContent = error.message;
+  }
+}
+$("job-destination").addEventListener("input", updateCapacity);
 let selectionPlan = null,
   selectionPrefix = "",
   selectionOffset = 0,
@@ -997,6 +1025,7 @@ async function openSettings(focusDestination = false) {
     $("setting-retries").value = s.retries;
     $("setting-verify").checked = s.verify_checksums;
     $("setting-notifications").checked = s.notifications !== false;
+    $("setting-reserve").value = s.disk_reserve_mib ?? 1024;
     $("schedule-enabled").checked = s.schedule_enabled || false;
     $("schedule-fields").disabled = !$("schedule-enabled").checked;
     $("schedule-zone").textContent = s.timezone || "—";
@@ -1033,6 +1062,7 @@ $("settings-form").onsubmit = async (event) => {
       retries: Number($("setting-retries").value),
       verify_checksums: $("setting-verify").checked,
       notifications: $("setting-notifications").checked,
+      disk_reserve_mib: Number($("setting-reserve").value),
       schedule_enabled: $("schedule-enabled").checked,
       schedule_days: [
         ...$("schedule-days").querySelectorAll("input:checked"),
@@ -1154,7 +1184,10 @@ $("folder-list").onclick = (event) => {
 };
 $("folder-up").onclick = () => browse(state.folder?.parent || "");
 $("folder-select").onclick = () => {
-  if (state.folder?.path) $(state.folderTarget).value = state.folder.path;
+  if (state.folder?.path) {
+    $(state.folderTarget).value = state.folder.path;
+    if (state.folderTarget === "job-destination") updateCapacity();
+  }
   $("folder-dialog").close();
 };
 $("login-form").onsubmit = async (event) => {

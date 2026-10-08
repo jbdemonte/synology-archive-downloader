@@ -39,6 +39,7 @@ class Store:
             for name, definition in {
                 "source_url": "TEXT",
                 "finished_at": "REAL",
+                "hold_reason": "TEXT",
                 "priority": "INTEGER NOT NULL DEFAULT 0",
                 "queue_order": "REAL NOT NULL DEFAULT 0",
             }.items():
@@ -186,7 +187,9 @@ class Store:
                 raise KeyError("Téléchargement introuvable.")
             if action == "pause":
                 if job["status"] in {"queued", "running"}:
-                    self.db.execute("UPDATE jobs SET status='paused' WHERE id=?", (job_id,))
+                    self.db.execute(
+                        "UPDATE jobs SET status='paused', hold_reason=NULL WHERE id=?", (job_id,)
+                    )
             elif action in {"resume", "retry"}:
                 if job["status"] != "completed":
                     self.db.execute(
@@ -195,7 +198,9 @@ class Store:
                         (job_id,),
                     )
                     self.db.execute(
-                        "UPDATE jobs SET status='queued', finished_at=NULL WHERE id=?", (job_id,)
+                        "UPDATE jobs SET status='queued', finished_at=NULL, hold_reason=NULL "
+                        "WHERE id=?",
+                        (job_id,),
                     )
             elif action == "cancel":
                 self.db.execute(
@@ -218,6 +223,15 @@ class Store:
             elif job["status"] in {"paused", "cancelled", "error"}:
                 self.estimates.reset(job_id)
                 self.estimates.start(job_id)
+
+    def pause_for_space(self, job_id):
+        with self.lock, self.db:
+            self.db.execute(
+                "UPDATE jobs SET status='paused', hold_reason='disk' WHERE id=? "
+                "AND status IN ('queued','running')",
+                (job_id,),
+            )
+            self.estimates.reset(job_id)
 
     def prioritize(self, job_id, priority=None, file_id=None, move=None):
         if priority is not None and (type(priority) is not int or priority not in {-1, 0, 1}):

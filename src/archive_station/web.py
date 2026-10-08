@@ -17,6 +17,7 @@ from .auth import Auth
 from .config import LANGUAGES, dsm_language
 from .plans import Plans
 from .schedule import policy
+from .storage import capacity
 
 LOG = logging.getLogger(__name__)
 STATIC = Path(__file__).parent / "static"
@@ -198,6 +199,15 @@ class WebApp:
         if path == "/api/password" and method == "POST":
             self.auth.set_password(body.get("password"))
             return response({"ok": True})
+        if path == "/api/capacity" and method == "GET":
+            return response(
+                capacity(
+                    self.store,
+                    self.settings,
+                    query.get("path") or self.settings.get()["download_dir"],
+                    int(query.get("required", 0)),
+                )
+            )
         if path == "/api/folders" and method == "GET":
             return response(self.settings.folders(query.get("path")))
         if path == "/api/folders" and method == "POST":
@@ -223,14 +233,29 @@ class WebApp:
             )
             if type(body.get("paused", False)) is not bool:
                 raise ValueError("Option de démarrage invalide.")
-            job_id = self.store.add(
-                manifest,
-                mode,
-                pattern,
-                destination,
-                body.get("paused", False),
-                source_url=body.get("url", "").strip(),
-            )
+            with self.store.lock:
+                space = capacity(
+                    self.store,
+                    self.settings,
+                    str(destination),
+                    sum(f["size"] or 0 for f in manifest["files"]),
+                )
+                if not space["fits"] and not body.get("paused", False):
+                    return response(
+                        {
+                            "error": "Espace disque insuffisant.",
+                            "capacity": space,
+                        },
+                        409,
+                    )
+                job_id = self.store.add(
+                    manifest,
+                    mode,
+                    pattern,
+                    destination,
+                    body.get("paused", False),
+                    source_url=body.get("url", "").strip(),
+                )
             return response({"id": job_id, "identifier": identifier}, 201)
         if path == "/api/jobs" and method == "GET":
             return response({"jobs": self.store.jobs(), "policy": policy(self.settings.get())})

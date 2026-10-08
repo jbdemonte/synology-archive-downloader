@@ -453,6 +453,7 @@
               >Ajouter en pause, pour démarrer plus tard</span
             ></label
           >
+          <p id="capacity-summary" class="field-help" role="status" hidden></p>
           <div id="preview-list" class="preview-list" aria-live="polite"></div>
           <p id="add-error" class="error" role="alert"></p>
         </div>
@@ -683,6 +684,24 @@
               transferts déjà actifs se terminent si vous réduisez le nombre de
               connexions.</span
             >
+          </p>
+          <label for="setting-reserve"
+            ><span data-i18n="Réserve d’espace libre"
+              >Réserve d’espace libre</span
+            >
+            (<span data-i18n="Mio">Mio</span>)</label
+          ><input
+            id="setting-reserve"
+            type="number"
+            min="0"
+            max="1000000000"
+            required
+          />
+          <p
+            class="field-help"
+            data-i18n="Pause automatique si l’espace manque."
+          >
+            Pause automatique si l’espace manque.
           </p>
           <details class="settings-extra">
             <summary data-i18n="Planification">Planification</summary>

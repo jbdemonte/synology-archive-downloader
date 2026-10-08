@@ -43,7 +43,8 @@ class Notifications:
     def events(self):
         with self.store.lock:
             jobs = self.store.db.execute(
-                "SELECT j.id, j.status, j.finished_at, j.destination, EXISTS(SELECT 1 FROM files f "
+                "SELECT j.id, j.status, j.finished_at, j.destination, j.hold_reason, "
+                "EXISTS(SELECT 1 FROM files f "
                 "WHERE f.job_id=j.id AND f.status='error') AS failed FROM jobs j"
             ).fetchall()
         events = {}
@@ -52,10 +53,12 @@ class Notifications:
                 events[f"complete:{job['id']}:{job['finished_at']}"] = "completed"
             elif job["failed"]:
                 events[f"error:{job['id']}"] = "error"
-            if job["status"] in {"queued", "running", "blocked"}:
+            if job["status"] in {"queued", "running"} or job["hold_reason"] == "disk":
                 try:
                     reserve = self.settings.get().get("disk_reserve_mib", 1024) * 1024**2
-                    if shutil.disk_usage(job["destination"]).free < max(reserve, 131072):
+                    if job["hold_reason"] == "disk" or shutil.disk_usage(
+                        job["destination"]
+                    ).free < max(reserve, 131072):
                         events[f"disk:{job['destination']}"] = "disk"
                 except OSError:
                     pass

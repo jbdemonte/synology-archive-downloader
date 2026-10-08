@@ -1,5 +1,6 @@
 """Bounded, resumable transfers with per-file integrity checks and retry backoff."""
 
+import errno
 import hashlib
 import logging
 import os
@@ -30,6 +31,7 @@ class Engine:
         self.stop = threading.Event()
         self.threads = []
         self.rate_lock = threading.Lock()
+        self.disk_lock = threading.Lock()
         self.next_chunk = 0
         self.rate_limit = 0
 
@@ -92,6 +94,10 @@ class Engine:
                 self.store.estimates.reset(row["job_id"])
                 self.store.update(row["id"], status="queued", speed=0)
             except Exception as exc:
+                if isinstance(exc, OSError) and exc.errno in {errno.ENOSPC, errno.EDQUOT}:
+                    self.store.pause_for_space(row["job_id"])
+                    self.store.update(row["id"], status="queued", speed=0)
+                    continue
                 LOG.warning("Transfer failed for %s: %s", row["name"], exc)
                 attempts = row["attempts"] + 1
                 permanent = isinstance(exc, (Conflict, ValueError, PermissionError)) or (
@@ -118,6 +124,12 @@ class Engine:
                     error=message,
                 )
             self.store.finish_jobs()
+
+    def check_space(self, root, job_id, size):
+        reserve = max(128 * 1024, self.settings.get()["disk_reserve_mib"] * 1024**2)
+        if shutil.disk_usage(root).free < reserve + size:
+            self.store.pause_for_space(job_id)
+            raise Interrupted()
 
     def verified(self, path, row):
         if row["size"] is not None and path.stat().st_size != row["size"]:
@@ -159,8 +171,7 @@ class Engine:
                 return
             partial.unlink()
             offset = 0
-        if shutil.disk_usage(root).free < CHUNK * 2:
-            raise OSError("Espace disque insuffisant.")
+        self.check_space(root, row["job_id"], CHUNK)
         with self.client.open(row["identifier"], row["name"], offset) as response:
             if response.status not in {200, 206}:
                 raise OSError(f"Réponse HTTP inattendue : {response.status}")
@@ -197,7 +208,9 @@ class Engine:
                         if not chunk:
                             break
                         self.throttle(len(chunk), row["job_id"])
-                        written = output.write(chunk)
+                        with self.disk_lock:
+                            self.check_space(root, row["job_id"], len(chunk))
+                            written = output.write(chunk)
                         received += written
                         self.store.estimates.record(row["job_id"], written)
                         if written != len(chunk):

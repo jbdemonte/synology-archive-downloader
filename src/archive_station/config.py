@@ -62,6 +62,7 @@ class Settings:
             "retries": 4,
             "verify_checksums": True,
             "notifications": True,
+            "disk_reserve_mib": 1024,
             "schedule_enabled": False,
             "schedule_days": list(range(7)),
             "schedule_start": 0,
@@ -103,6 +104,7 @@ class Settings:
             validate_schedule(new)
             for key, minimum, maximum in (
                 ("connections", 1, 8),
+                ("disk_reserve_mib", 0, 1_000_000_000),
                 ("schedule_limit_kib", 1, 1_000_000),
                 ("retries", 0, 10),
                 ("speed_limit_kib", 0, 1_000_000),
