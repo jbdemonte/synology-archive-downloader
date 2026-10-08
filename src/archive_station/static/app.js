@@ -434,6 +434,11 @@ function render() {
   }
   renderDetail();
 }
+const compactDetails = window.matchMedia("(max-height: 560px)");
+if (compactDetails.matches) $("detail").open = false;
+compactDetails.addEventListener("change", (event) => {
+  if (event.matches) $("detail").open = false;
+});
 function selectedJobs() {
   return state.jobs.filter(
     (job) =>
@@ -474,6 +479,7 @@ function renderDetail() {
   const job = state.jobs.find((j) => j.id === state.selected);
   $("detail").hidden = !job || state.checked.size > 1;
   const selected = selectedJobs();
+  $("open-folder").hidden = !embedded || !job;
   $("refresh-manifest").disabled = !job;
   $("repair").disabled =
     !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
@@ -507,6 +513,24 @@ function renderDetail() {
         ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
         : "";
 }
+$("open-folder").onclick = async () => {
+  const jobId = state.selected;
+  if (!jobId) return;
+  $("open-folder").disabled = true;
+  try {
+    const destination = await api(`/api/jobs/${jobId}/location`);
+    const desktop = window.parent.SYNO?.SDS;
+    if (!embedded || typeof desktop?.AppLaunch !== "function")
+      throw new Error(t("Cette action nécessite DSM."));
+    desktop.AppLaunch("SYNO.SDS.App.FileStation3.Instance", {
+      opendir: destination.file_station_path,
+    });
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    $("open-folder").disabled = false;
+  }
+};
 async function setPriority(change) {
   if (!state.selected) return;
   try {

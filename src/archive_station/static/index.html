@@ -350,14 +350,22 @@
             >
           </div>
         </section>
-        <section id="detail" class="detail" hidden>
-          <div class="detail-title">
+        <details id="detail" class="detail" open hidden>
+          <summary class="detail-title">
             <strong id="detail-name"></strong><span id="detail-eta"></span>
-          </div>
+          </summary>
           <div class="detail-grid">
             <div>
               <small><span data-i18n="Destination">Destination</span></small
-              ><code id="detail-destination"></code>
+              ><code id="detail-destination"></code
+              ><button
+                id="open-folder"
+                type="button"
+                data-i18n="Ouvrir dans File Station"
+                hidden
+              >
+                Ouvrir dans File Station
+              </button>
             </div>
             <div>
               <small><span data-i18n="Source">Source</span></small
@@ -385,19 +393,19 @@
             >
               ↓
             </button>
+            <button
+              id="refresh-manifest"
+              type="button"
+              data-i18n="Actualiser la liste"
+            >
+              Actualiser la liste
+            </button>
+            <button id="repair" type="button" data-i18n="Vérifier et compléter">
+              Vérifier et compléter
+            </button>
           </div>
-          <button
-            id="refresh-manifest"
-            type="button"
-            data-i18n="Actualiser la liste"
-          >
-            Actualiser la liste
-          </button>
-          <button id="repair" type="button" data-i18n="Vérifier et compléter">
-            Vérifier et compléter
-          </button>
           <p id="detail-errors" class="error"></p>
-        </section>
+        </details>
         <footer class="page-footer">
           <span
             ><span

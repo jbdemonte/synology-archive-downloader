@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import threading
 from pathlib import Path
 
@@ -124,6 +125,18 @@ class Settings:
             temporary.replace(self.path)
             self.values = new
         return self.get()
+
+    def file_station_location(self, destination, identifier):
+        root = self.directory(destination)
+        target = self.directory(str(root / identifier))
+        if not target.is_dir():
+            target = root
+        if not target.is_dir() or not os.access(target, os.R_OK | os.X_OK):
+            raise PermissionError("Folder not readable")
+        match = re.fullmatch(r"/volume[0-9]+(/.*)?", str(target))
+        if not match:
+            raise ValueError("Cette action nécessite DSM.")
+        return {"path": str(target), "file_station_path": match[1] or "/"}
 
     def create_folder(self, parent, name):
         if (

@@ -29,6 +29,8 @@ try {
       <link rel="stylesheet" href="/webman/3rdparty/ArchiveStation/style.css">
       <script>window.SYNO={SDS:{Session:{SynoToken:"test-dsm-token",lang:"fre"}}};</script>
       <script>
+      window.fileStationLaunches = [];
+      window.SYNO.SDS.AppLaunch = (name, options) => fileStationLaunches.push({name, options});
       window.layoutSettings = {};
       window.resizes = [];
       window.nativeWindow = {
@@ -74,6 +76,10 @@ try {
         } else if (api === "/api/auth") {
           await route.fulfill({
             json: { mode: "dsm", authenticated: true, configured: true },
+          });
+        } else if (api.endsWith("/location")) {
+          await route.fulfill({
+            json: { file_station_path: "/Download/Jeux & collections/été" },
           });
         } else if (api === "/api/jobs" && serviceUnavailable) {
           await route.fulfill({
@@ -167,9 +173,27 @@ try {
       });
     },
   );
+  if (!(await (await page.request.get(base + "/api/jobs")).json()).jobs.length)
+    await page.request.post(base + "/api/jobs", {
+      data: { url: "demo-one", paused: true },
+    });
   await page.goto(base + "/desktop-test");
   const app = page.frameLocator('iframe[title="Archive Station"]');
   await app.getByRole("heading", { name: "Transferts" }).waitFor();
+  await app.locator(".job-row").first().click();
+  await app.locator("#open-folder").click();
+  await page.waitForFunction(() => fileStationLaunches.length === 1);
+  assert.deepEqual(await page.evaluate(() => fileStationLaunches), [
+    {
+      name: "SYNO.SDS.App.FileStation3.Instance",
+      options: { opendir: "/Download/Jeux & collections/été" },
+    },
+  ]);
+  assert.equal(
+    page.context().pages().length,
+    1,
+    "File Station opens inside DSM",
+  );
   assert.deepEqual(await page.evaluate(() => resizes), [
     { width: 1360, height: 840 },
   ]);

@@ -1596,3 +1596,31 @@ dialog > form {
   display: flex;
   justify-content: space-between;
 }
+
+#open-folder {
+  padding: 4px 8px;
+  margin-top: 5px;
+  font-size: 11px;
+}
+
+summary.detail-title {
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+}
+summary.detail-title::before {
+  content: "▸";
+  color: #8193a6;
+}
+.detail[open] summary.detail-title::before {
+  transform: rotate(90deg);
+}
+.detail:not([open]) summary.detail-title {
+  margin-bottom: 0;
+}
+.detail-title strong {
+  flex: 1;
+}
+#detail-errors:empty {
+  display: none;
+}

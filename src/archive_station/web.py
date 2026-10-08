@@ -321,6 +321,16 @@ class WebApp:
                         return response({"error": "Espace disque insuffisant."}, 409)
                     self.store.apply_refresh(job_id, manifest, paused)
                 return response({"ok": True})
+            if method == "GET" and action == "location":
+                with self.store.lock:
+                    row = self.store.db.execute(
+                        "SELECT destination,identifier FROM jobs WHERE id=?", (job_id,)
+                    ).fetchone()
+                if not row:
+                    raise KeyError("Téléchargement introuvable.")
+                return response(
+                    self.settings.file_station_location(row["destination"], row["identifier"])
+                )
             if method == "GET" and action == "activity":
                 return response(self.store.activity(job_id))
             if method == "GET" and action in {"tree", "files"}:
