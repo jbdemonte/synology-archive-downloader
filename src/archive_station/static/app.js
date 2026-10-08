@@ -546,6 +546,22 @@ async function loadBranch(jobId, prefix, offset = 0) {
     if (state.expanded.get(id) === branch) branch.error = error.message;
   }
 }
+function renderHistory(history) {
+  const values = history?.values || Array(60).fill(0);
+  const peak = Math.max(1, ...values);
+  $("history-peak").textContent = bytes(Math.max(...values)) + "/s";
+  const points = values
+    .map((v, i) => `${(i * 600) / (values.length - 1)},${88 - (v / peak) * 82}`)
+    .join(" ");
+  $("history-chart").innerHTML =
+    `<path d="M0 6H600M0 47H600M0 88H600" stroke="#e4eaf1" fill="none"/><polyline points="${points}" stroke="#0785e8" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
+    values
+      .map(
+        (value, index) =>
+          `<rect x="${index * 10}" y="0" width="10" height="90" fill="transparent"><title>−${(values.length - index) * 5} s : ${esc(bytes(value))}/s</title></rect>`,
+      )
+      .join("");
+}
 async function refresh() {
   if (state.polling || $("application").hidden) return;
   state.polling = true;
@@ -553,6 +569,7 @@ async function refresh() {
     const data = await api("/api/jobs");
     state.jobs = data.jobs;
     state.policy = data.policy;
+    renderHistory(data.history);
     $("schedule-notice").hidden = !data.policy?.outside;
     $("schedule-notice").textContent =
       data.policy?.allowed === false

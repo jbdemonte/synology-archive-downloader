@@ -15,6 +15,7 @@ class Estimates:
         self.clock = clock
         self.lock = threading.Lock()
         self.history = {}
+        self.global_buckets = deque()
 
     def start(self, job_id):
         with self.lock:
@@ -40,6 +41,13 @@ class Estimates:
         if size <= 0:
             return
         with self.lock:
+            now = self.clock()
+            self._prune(self.global_buckets, now)
+            second = math.floor(now)
+            if self.global_buckets and self.global_buckets[-1][0] == second:
+                self.global_buckets[-1][1] += size
+            else:
+                self.global_buckets.append([second, size])
             history = self.history.get(job_id)
             if history is None:
                 return  # A chunk already in flight must not undo a pause/reset.
@@ -52,6 +60,20 @@ class Estimates:
             else:
                 buckets.append([second, size])
             history["last_byte"] = now
+
+    def graph(self):
+        """Sixty complete five-second bins. Pausing a job keeps global history."""
+        with self.lock:
+            now = self.clock()
+            self._prune(self.global_buckets, now)
+            end = math.floor(now)
+            start = end - self.WINDOW
+            values = [0] * 60
+            for second, size in self.global_buckets:
+                index = (second - start) // 5
+                if 0 <= index < len(values):
+                    values[index] += size / 5
+            return {"values": values, "period_seconds": 5, "window_seconds": self.WINDOW}
 
     def snapshot(self, job):
         result = {

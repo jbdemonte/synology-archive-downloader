@@ -260,7 +260,13 @@ class WebApp:
         if path == "/api/jobs/bulk" and method == "POST":
             return response(self.store.bulk(body.get("action"), body.get("ids")))
         if path == "/api/jobs" and method == "GET":
-            return response({"jobs": self.store.jobs(), "policy": policy(self.settings.get())})
+            return response(
+                {
+                    "jobs": self.store.jobs(),
+                    "policy": policy(self.settings.get()),
+                    "history": self.store.estimates.graph(),
+                }
+            )
         parts = path.strip("/").split("/")
         if len(parts) == 3 and parts[:2] == ["api", "plans"]:
             if method == "POST":

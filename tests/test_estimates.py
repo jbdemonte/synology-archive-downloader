@@ -149,3 +149,28 @@ class EstimateIntegrationTests(Base):
         self.assertEqual(result["downloaded"], 3000)
         self.assertIsNone(result["eta_seconds"])
         self.assertEqual(result["average_speed"], 0)
+
+
+class GraphTests(unittest.TestCase):
+    def test_graph_uses_fixed_windows_and_keeps_paused_history(self):
+        now = [1000]
+        estimates = Estimates(clock=lambda: now[0])
+        estimates.start("one")
+        estimates.record("one", 500)
+        estimates.reset("one")
+        now[0] = 1005
+        values = estimates.graph()["values"]
+        self.assertEqual(len(values), 60)
+        self.assertEqual(values[-1], 100)
+        self.assertEqual(sum(values), 100)
+        now[0] = 1400
+        self.assertEqual(sum(estimates.graph()["values"]), 0)
+
+    def test_graph_memory_is_bounded_without_browser_polling(self):
+        now = [0]
+        estimates = Estimates(clock=lambda: now[0])
+        estimates.start("one")
+        for second in range(10000):
+            now[0] = second
+            estimates.record("one", 1000)
+        self.assertLessEqual(len(estimates.global_buckets), 301)
