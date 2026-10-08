@@ -112,7 +112,11 @@ const ArchiveI18n = (() => {
   }
   async function load(code) {
     if (!cache.has(code)) {
-      const request = fetch(`locales/${code}.json${version}`)
+      const controller = new AbortController();
+      const deadline = setTimeout(() => controller.abort(), 10000);
+      const request = fetch(`locales/${code}.json${version}`, {
+        signal: controller.signal,
+      })
         .then((response) => {
           if (!response.ok)
             throw new Error(`Language catalog unavailable: ${code}`);
@@ -121,7 +125,8 @@ const ArchiveI18n = (() => {
         .catch((error) => {
           cache.delete(code);
           throw error;
-        });
+        })
+        .finally(() => clearTimeout(deadline));
       cache.set(code, request);
     }
     return cache.get(code);

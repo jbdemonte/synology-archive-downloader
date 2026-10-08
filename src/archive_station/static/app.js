@@ -170,39 +170,67 @@ async function api(path, body, signal) {
     body === undefined ? {} : { "Content-Type": "application/json" };
   const token = embedded ? dsmToken() : "";
   if (token) headers["X-SYNO-TOKEN"] = token;
-  const response = await fetch(endpoint, {
-    method: body === undefined ? "GET" : "POST",
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-    credentials: "same-origin",
-    signal: signal || startupController?.signal,
-  });
-  let result;
+  const controller = new AbortController();
+  const parentSignal = signal || startupController?.signal;
+  const abort = () => controller.abort();
+  if (parentSignal?.aborted) abort();
+  else parentSignal?.addEventListener("abort", abort, { once: true });
+  // Reads must not stall polling forever. Metadata analysis and mutations may
+  // take longer; their deadline also covers the gateway's 90-second timeout.
+  let timedOut = false;
+  const deadline = setTimeout(
+    () => {
+      timedOut = true;
+      controller.abort();
+    },
+    body === undefined ? 20000 : 100000,
+  );
   try {
-    result = await response.json();
-  } catch {
-    if (response.status === 403)
+    const response = await fetch(endpoint, {
+      method: body === undefined ? "GET" : "POST",
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      credentials: "same-origin",
+      signal: controller.signal,
+    });
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      if (response.status === 403)
+        throw new Error(
+          t(
+            "Accès refusé par DSM. Vérifiez les permissions du dossier pour ArchiveStation.",
+          ),
+        );
       throw new Error(
         t(
-          "Accès refusé par DSM. Vérifiez les permissions du dossier pour ArchiveStation.",
+          "Le service ne répond pas correctement. Réessayez dans quelques instants ou vérifiez le paquet dans DSM.",
         ),
       );
-    throw new Error(
-      t(
-        "Le service ne répond pas correctement. Réessayez dans quelques instants ou vérifiez le paquet dans DSM.",
-      ),
-    );
+    }
+    const status = embedded
+      ? (result._http_status ?? response.status)
+      : response.status;
+    if (status >= 400) {
+      if (status === 401 && path !== "/api/login") showLogin();
+      throw Object.assign(new Error(t(result.error) || `HTTP ${status}`), {
+        status,
+      });
+    }
+    return result;
+  } catch (error) {
+    if (timedOut)
+      throw new Error(
+        t(
+          "Le service ne répond pas correctement. Réessayez dans quelques instants ou vérifiez le paquet dans DSM.",
+        ),
+      );
+    throw error;
+  } finally {
+    clearTimeout(deadline);
+    parentSignal?.removeEventListener("abort", abort);
   }
-  const status = embedded
-    ? (result._http_status ?? response.status)
-    : response.status;
-  if (status >= 400) {
-    if (status === 401 && path !== "/api/login") showLogin();
-    throw Object.assign(new Error(t(result.error) || `HTTP ${status}`), {
-      status,
-    });
-  }
-  return result;
 }
 let toastTimer;
 function toast(message) {
@@ -219,6 +247,7 @@ function showLogin() {
   $("application").hidden = true;
   document.querySelectorAll("dialog[open]").forEach((d) => d.close());
   $("local-login").hidden = authMode !== "password";
+  $("dsm-retry").hidden = authMode !== "dsm";
   $("login-help").textContent =
     authMode === "dsm"
       ? t(
@@ -1620,8 +1649,18 @@ async function init() {
   }
 }
 $("startup-retry").onclick = init;
+$("dsm-retry").onclick = init;
 init();
-setInterval(refresh, 1500);
 setInterval(() => {
-  if (!$("application").hidden) loadSettings().catch(() => {});
+  if (!document.hidden) refresh();
+}, 1500);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && !$("application").hidden) {
+    refresh();
+    loadSettings().catch(() => {});
+  }
+});
+setInterval(() => {
+  if (!document.hidden && !$("application").hidden)
+    loadSettings().catch(() => {});
 }, 30000);
