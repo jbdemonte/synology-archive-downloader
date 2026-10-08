@@ -1,0 +1,43 @@
+# Queue management and archive maintenance
+
+These controls are available in **Settings** and the selected task’s details panel. The details panel folds on short windows to leave room for the file list; expand the task title to access its controls.
+
+## Receive DSM desktop notifications
+
+Receive alerts for task completion, persistent file errors and low disk space, even with the window closed. Disable them in Settings. Alerts go to DSM administrators and survive service restarts without duplicates.
+
+## Schedule transfers
+
+Choose weekdays and one daily time slot using the NAS clock; pause or apply an alternate speed limit outside it. Overnight slots belong to their starting day. Equal start/end times mean a full day. Manual pauses remain paused.
+
+## Prioritize the queue
+
+Set archive priority and move tasks within that priority. Star queued files to transfer them first within their archive. In-flight transfers finish normally.
+
+## Protect free disk space
+
+Keep a configurable reserve (1 GiB by default). The add dialog compares selected known sizes against free space minus the reserve and queued transfers on the same filesystem. Oversized tasks can be added paused. Low space during a transfer pauses the task; free space and resume it to continue. Unknown file sizes and external disk writes cannot be reserved in advance.
+
+## Verify and complete an archive
+
+Pause a task and wait for active transfers to stop, then recheck its files. Available checksums are always used for this operation, even if routine verification is disabled. Valid files are reused; missing or corrupt files are fetched again. Replaced copies are preserved under `.archive-station-replaced/<task-id>/<backup-id>/`, with their original relative paths. Without a checksum, only size can be verified.
+
+## Control multiple tasks
+
+Check archives or select all visible rows, then use the toolbar. Global actions pause all active tasks, resume paused tasks, or remove completed tasks while preserving their files. Search and filters clear hidden selections.
+
+## Inspect recent throughput
+
+Expand the five-minute transfer graph and hover to inspect five-second averages. Measurements are collected on the NAS without browser polling; this in-memory history resets when the service restarts.
+
+![Five-minute transfer history](images/history.png)
+
+## Refresh an archive
+
+Fetch fresh metadata and review new or changed files before applying a selection to a stopped task. Initial exclusions stay excluded for new tasks; files absent from the source stay on disk. Changed files and obsolete partials are backed up before replacement. Metadata comparisons use available sizes/checksums; they cannot detect changes missing from the remote metadata.
+
+## Open the destination in File Station
+
+Use the selected task’s shortcut to open its folder inside DSM. If the item folder has not been created yet, its parent destination opens instead.
+
+Pause and wait for active workers to stop before applying a metadata refresh or starting verification. Existing downloads and excluded files in older tasks remain intact during upgrades. For tasks created before file-selection tracking was introduced, refresh treats files absent from the saved task as new candidates.

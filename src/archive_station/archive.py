@@ -10,7 +10,7 @@ from urllib.parse import quote, unquote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}\Z")
-USER_AGENT = "ArchiveStation/0.1.0 (personal archive downloader)"
+USER_AGENT = "ArchiveStation/0.2.0 (personal archive downloader)"
 
 
 def parse_identifier(value):

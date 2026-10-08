@@ -151,10 +151,22 @@ try {
         retries: 4,
         verify_checksums: true,
         language: "en",
-        version: "0.1.0",
+        version: "0.2.0",
+        disk_reserve_mib: 1024,
+        notifications: true,
+        timezone: "CEST",
         storage: { free: 3.7 * 1024 ** 4, total: 8 * 1024 ** 4 },
       };
-    else if (url.pathname === "/api/jobs") body = { jobs };
+    else if (url.pathname === "/api/jobs")
+      body = {
+        jobs,
+        history: {
+          values: Array.from(
+            { length: 60 },
+            (_, i) => (2.1 + Math.sin(i / 5) * 0.7 + i / 60) * MiB,
+          ),
+        },
+      };
     else if (url.pathname.endsWith("/activity")) {
       const files = tree.photographs.map((row) => ({ ...row, name: row.path }));
       body = {
@@ -172,6 +184,9 @@ try {
   await page.goto(base);
   await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
   await page.screenshot({ path: new URL("downloads.png", out).pathname });
+  await page.locator("#history-panel summary").click();
+  await page.screenshot({ path: new URL("history.png", out).pathname });
+  await page.locator("#history-panel summary").click();
   await page.getByRole("button", { name: "Folders", exact: true }).click();
   await page
     .getByRole("button", { name: "Expand photographs", exact: true })

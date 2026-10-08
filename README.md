@@ -16,26 +16,18 @@ Archive Station downloads the public files of Internet Archive items directly to
 
 ## What you can do
 
-- **Add multiple URLs** — accept `/details/` and `/download/` links, preview file counts and sizes, and create one independent task per item.
-- **Choose files before starting** — select files or whole folders, include/exclude patterns such as `*.zip`, and review the selected count and size without loading thousands of rows at once.
-- **See the whole hierarchy** — item → folders → files, with progress, transfer speeds, status filters and search.
-- **Control transfers** — pause, resume, cancel, retry failed files, or remove a task while preserving its downloads.
-- **See what is happening now** — Activity shows live transfers and the next ten files across every subfolder. Completed files have their own view; the folder tree remains available.
-- **Estimate time remaining** — each archive shows an ETA based on its average transfer rate over the last five minutes, calculated on the NAS even with the window closed.
-- **Receive DSM desktop notifications** — task completion, persistent file errors and low disk space, even with the window closed. Disable them in Settings. Alerts go to DSM administrators and survive service restarts without duplicates.
-- **Schedule transfers** — choose weekdays and one daily time slot using the NAS clock; pause or apply an alternate speed limit outside it. Overnight slots belong to their starting day. Equal start/end times mean a full day. Manual pauses remain paused.
-- **Prioritize the queue** — set archive priority and move tasks within that priority. Star queued files to transfer them first within their archive. In-flight transfers finish normally.
-- **Protect free disk space** — keep a configurable reserve (1 GiB by default). The add dialog compares selected known sizes against free space minus the reserve and queued transfers on the same filesystem. Oversized tasks can be added paused. Low space during a transfer pauses the task; free space and resume it to continue. Unknown file sizes and external disk writes cannot be reserved in advance.
-- **Verify and complete an archive** — pause a task and wait for active transfers to stop, then recheck its files. Available checksums are always used for this operation, even if routine verification is disabled. Valid files are reused; missing or corrupt files are fetched again. Replaced copies are preserved under `.archive-station-replaced/<task-id>/<backup-id>/`, with their original relative paths. Without a checksum, only size can be verified.
-- **Control multiple tasks** — check archives or select all visible rows, then use the toolbar. Global actions pause all active tasks, resume paused tasks, or remove completed tasks while preserving their files. Search and filters clear hidden selections.
-- **Inspect recent throughput** — expand the five-minute transfer graph and hover to inspect five-second averages. Measurements are collected on the NAS without browser polling; this in-memory history resets when the service restarts.
-- **Refresh an archive** — fetch fresh metadata and review new or changed files before applying a selection to a stopped task. Initial exclusions stay excluded for new tasks; files absent from the source stay on disk. Changed files and obsolete partials are backed up before replacement. Metadata comparisons use available sizes/checksums; they cannot detect changes missing from the remote metadata.
-- **Open the destination in File Station** — use the selected task’s shortcut to open its folder inside DSM. If the item folder has not been created yet, its parent destination opens instead.
-- **Tune without restarting** — change the global speed limit or run 1–8 parallel downloads, including for tasks already in progress.
-- **Choose your destination** — browse NAS folders, distinguish read/write, read-only and inaccessible locations, and create subfolders.
-- **Resume safely** — keep partial files separate, resume supported HTTP transfers, and verify available SHA-1/MD5 checksums before publishing final files.
-- **Keep a download record** — an automatically updated plain-text report records each task’s source, dates, sizes, duration and results.
-- **Use your language** — 27 bundled languages, following the DSM session by default, with a language and flag selector in Settings.
+- **One folder per URL** — add multiple `/details/` or `/download/` links and select files, folders or filename patterns before starting.
+- **Follow large archives** — live transfers and upcoming files appear first; completed files and the folder tree have separate views.
+- **Control the queue** — pause, resume, cancel, retry, prioritize tasks or individual files, and apply actions to multiple archives.
+- **Plan transfers** — choose weekly time slots, alternate speed limits, live concurrency and a free-space reserve.
+- **See progress** — per-file gauges, remaining-time estimates, downloaded/total sizes and a five-minute throughput graph.
+- **Maintain an archive** — verify and repair files, review source updates, and select additions or changed files to retrieve.
+- **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications.
+- **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
+- **Keep a readable record** — each archive gets a plain-text download report.
+- **Use your language** — 27 bundled languages, automatic DSM language detection and an override in Settings.
+
+See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, repair and refresh behavior.
 
 ## Compatibility
 
@@ -52,7 +44,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-14-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-1-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -104,7 +96,7 @@ The data summary shows downloaded bytes / total known size. A **+** means some f
 
 **Files only appear under their final names after successful transfer and verification.** Incomplete data lives in `<destination>/.archive-station-parts/<task-id>/`. Do not delete that directory if you want to resume partial downloads.
 
-An active task resumes automatically after a package restart or upgrade. Paused and cancelled tasks remain stopped. HTTP `Range` resumes from the actual partial file size; if the remote server ignores it, that file restarts cleanly. A matching complete file is reused. A conflicting existing file is never overwritten.
+An active task resumes automatically after a package restart or upgrade. Paused and cancelled tasks remain stopped. HTTP `Range` resumes from the actual partial file size; if the remote server ignores it, that file restarts cleanly. A matching complete file is reused. Normal transfers refuse conflicting existing files. An explicit repair or metadata update backs up a replaced file before downloading its replacement.
 
 Increasing parallel downloads starts additional transfers without restarting the task. Decreasing the limit lets current files finish, then restricts new transfers. The global bandwidth limit is also applied while transfers run.
 
@@ -126,7 +118,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.1.0-14 # Override the package version
+make build VERSION=0.2.0-1 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

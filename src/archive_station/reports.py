@@ -124,7 +124,7 @@ def render_report(job, settings, now):
     )
     section(tr("SELECTION AND VERIFICATION", "SÉLECTION ET VÉRIFICATION"))
     row(
-        tr("File selection", "Fichiers sélectionnés"),
+        tr("Source file mode", "Mode des fichiers source"),
         tr("Original files only", "Fichiers originaux uniquement")
         if job["mode"] == "original"
         else tr("All public files", "Tous les fichiers publics"),
@@ -182,6 +182,9 @@ class Reports:
                 job["downloaded"],
                 job["completed_files"],
                 job["failed_files"],
+                job["file_count"],
+                job["total_size"],
+                job.get("manifest_revision", 0),
                 self.settings.get().get("language", "auto"),
                 self.settings.get().get("report_language", "auto"),
             )
