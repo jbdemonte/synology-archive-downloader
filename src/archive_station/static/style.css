@@ -1659,6 +1659,29 @@ summary.detail-title::before {
   font-size: 10px;
   line-height: 13px;
 }
+.task-source {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 30px;
+  margin-left: auto;
+  border-radius: 5px;
+  color: #4988bb;
+}
+.task-source:hover {
+  background: #e3f1ff;
+}
+.task-source svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 #report-dialog {
   width: min(960px, calc(100vw - 32px));
 }
