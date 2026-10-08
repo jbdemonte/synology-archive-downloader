@@ -8,6 +8,7 @@ import re
 import shutil
 import threading
 import time
+import uuid
 from urllib.error import HTTPError
 
 from .archive import safe_path
@@ -134,7 +135,7 @@ class Engine:
     def verified(self, path, row):
         if row["size"] is not None and path.stat().st_size != row["size"]:
             return False
-        if row["digest"] and self.settings.get()["verify_checksums"]:
+        if row["digest"] and (row.get("repair") or self.settings.get()["verify_checksums"]):
             digest = hashlib.new(row["algorithm"], usedforsecurity=False)
             with path.open("rb") as source:
                 while chunk := source.read(1024 * 1024):
@@ -146,7 +147,7 @@ class Engine:
     def complete(self, row, path):
         size = path.stat().st_size
         self.store.update(
-            row["id"], status="completed", downloaded=size, size=size, speed=0, error=None
+            row["id"], status="completed", downloaded=size, size=size, speed=0, error=None, repair=0
         )
 
     def transfer(self, row):
@@ -160,7 +161,16 @@ class Engine:
             if target.is_file() and self.verified(target, row):
                 self.complete(row, target)
                 return
-            raise Conflict("Un fichier différent existe déjà. Déplacez-le avant de réessayer.")
+            if not row.get("repair") or not target.is_file():
+                raise Conflict("Un fichier différent existe déjà. Déplacez-le avant de réessayer.")
+            self.check(row["job_id"])
+            backup = safe_path(
+                root, f".archive-station-replaced/{row['job_id']}/{uuid.uuid4().hex}/{row['name']}"
+            )
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            # Keep the original on the same volume. Restarting after this rename
+            # simply resumes the missing target from its retained partial file.
+            target.rename(backup)
         offset = partial.stat().st_size if partial.exists() else 0
         if row["size"] is not None and offset > row["size"]:
             partial.unlink()

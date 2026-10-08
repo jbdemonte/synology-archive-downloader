@@ -46,6 +46,8 @@ class Store:
                 if name not in columns:
                     self.db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {definition}")
             file_columns = {row[1] for row in self.db.execute("PRAGMA table_info(files)")}
+            if "repair" not in file_columns:
+                self.db.execute("ALTER TABLE files ADD COLUMN repair INTEGER NOT NULL DEFAULT 0")
             if "priority" not in file_columns:
                 self.db.execute("ALTER TABLE files ADD COLUMN priority INTEGER NOT NULL DEFAULT 0")
             self.db.execute(
@@ -202,6 +204,26 @@ class Store:
                         "WHERE id=?",
                         (job_id,),
                     )
+            elif action == "repair":
+                if (
+                    job["status"] in {"queued", "running"}
+                    or self.db.execute(
+                        "SELECT 1 FROM files WHERE job_id=? AND status='downloading'", (job_id,)
+                    ).fetchone()
+                ):
+                    raise ValueError("Mettez la tâche en pause et attendez l’arrêt des transferts.")
+                self.db.execute(
+                    "UPDATE files SET status='queued', downloaded=0, speed=0, "
+                    "attempts=0, available_at=0, error=NULL, repair=1 WHERE job_id=?",
+                    (job_id,),
+                )
+                self.db.execute(
+                    "UPDATE jobs SET status='queued', finished_at=NULL, "
+                    "hold_reason=NULL WHERE id=?",
+                    (job_id,),
+                )
+                self.estimates.reset(job_id)
+                self.estimates.start(job_id)
             elif action == "cancel":
                 self.db.execute(
                     "UPDATE jobs SET status='cancelled', finished_at=? WHERE id=?",
@@ -308,7 +330,16 @@ class Store:
             )
 
     def update(self, file_id, **values):
-        allowed = {"status", "downloaded", "speed", "attempts", "available_at", "error", "size"}
+        allowed = {
+            "status",
+            "downloaded",
+            "speed",
+            "attempts",
+            "available_at",
+            "error",
+            "size",
+            "repair",
+        }
         if not values.keys() <= allowed:
             raise ValueError("Unknown file field")
         with self.lock, self.db:

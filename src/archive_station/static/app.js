@@ -428,6 +428,8 @@ function render() {
 function renderDetail() {
   const job = state.jobs.find((j) => j.id === state.selected);
   $("detail").hidden = !job;
+  $("repair").disabled =
+    !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
   $("pause").disabled = !job || !["queued", "running"].includes(job.status);
   $("resume").disabled =
     !job || !["paused", "cancelled", "error"].includes(job.status);
@@ -705,6 +707,23 @@ for (const action of ["pause", "resume", "retry"])
       toast(error.message);
     }
   };
+let repairTarget = null;
+$("repair").onclick = () => {
+  repairTarget = state.selected;
+  $("repair-dialog").showModal();
+};
+$("repair-confirm").onclick = async () => {
+  $("repair-confirm").disabled = true;
+  try {
+    await api(`/api/jobs/${repairTarget}/repair`, {});
+    $("repair-dialog").close();
+    await refresh();
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    $("repair-confirm").disabled = false;
+  }
+};
 $("cancel").onclick = () => $("cancel-dialog").showModal();
 $("cancel-confirm").onclick = async () => {
   try {

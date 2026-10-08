@@ -344,6 +344,9 @@
               ↓
             </button>
           </div>
+          <button id="repair" type="button" data-i18n="Vérifier et compléter">
+            Vérifier et compléter
+          </button>
           <p id="detail-errors" class="error"></p>
         </section>
         <footer class="page-footer">
@@ -940,6 +943,30 @@
           <span data-i18n="Annuler le téléchargement"
             >Annuler le téléchargement</span
           >
+        </button>
+      </div>
+    </dialog>
+    <dialog id="repair-dialog">
+      <div class="dialog-header">
+        <h2 data-i18n="Vérifier et compléter">Vérifier et compléter</h2>
+      </div>
+      <div class="dialog-body">
+        <p
+          data-i18n="Fichiers valides conservés ; fichiers remplacés sauvegardés."
+        >
+          Fichiers valides conservés ; fichiers remplacés sauvegardés.
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" data-close="repair-dialog" data-i18n="Annuler">
+          Annuler</button
+        ><button
+          type="button"
+          id="repair-confirm"
+          class="primary"
+          data-i18n="Vérifier et compléter"
+        >
+          Vérifier et compléter
         </button>
       </div>
     </dialog>
