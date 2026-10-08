@@ -47,6 +47,55 @@ def pack(source, destination, compressed=False):
             stream.close()
 
 
+def notification_texts(ui):
+    """DSM requires package i18n keys, preloaded even when its window is closed."""
+    codes = {
+        "en": "enu",
+        "fr": "fre",
+        "de": "ger",
+        "es": "spn",
+        "it": "ita",
+        "pt": "ptg",
+        "pt-BR": "ptb",
+        "nl": "nld",
+        "da": "dan",
+        "sv": "sve",
+        "nb": "nor",
+        "fi": "fin",
+        "pl": "plk",
+        "cs": "csy",
+        "hu": "hun",
+        "tr": "trk",
+        "ru": "rus",
+        "ja": "jpn",
+        "ko": "krn",
+        "zh-Hans": "chs",
+        "zh-Hant": "cht",
+        "th": "tha",
+        "ro": "rom",
+        "uk": "ukr",
+        "el": "ell",
+        "vi": "vit",
+        "id": "ind",
+    }
+    keys = {
+        "completed": "Téléchargements terminés",
+        "error": "Téléchargements à vérifier",
+        "disk": "Espace disque insuffisant.",
+    }
+    for code, dsm in codes.items():
+        catalog = json.loads(
+            (ROOT / "src/archive_station/static/locales" / f"{code}.json").read_text()
+        )
+        path = ui / "texts" / dsm / "strings"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        lines = ["[notifications]", 'title="Archive Station"']
+        lines += [
+            f"{key}={json.dumps(catalog[value], ensure_ascii=False)}" for key, value in keys.items()
+        ]
+        path.write_text("\n".join(lines) + "\n")
+
+
 def build(runtime, wheel, output, version):
     lock = json.loads((PACKAGING / "runtime-lock.json").read_text())
     check(runtime, lock["python"]["sha256"])
@@ -84,6 +133,7 @@ def build(runtime, wheel, output, version):
         # DSM automatically loads ui/style.css into its desktop. Keep application
         # resources below web/, exclusively loaded by the application iframe.
         shutil.copytree(ROOT / "src/archive_station/static", payload / "ui/web")
+        notification_texts(payload / "ui")
         config_path = payload / "ui/config"
         config_path.write_text(config_path.read_text().replace("@VERSION@", version))
         html_path = payload / "ui/web/index.html"

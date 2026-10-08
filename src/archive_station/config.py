@@ -59,6 +59,7 @@ class Settings:
             "speed_limit_kib": 0,
             "retries": 4,
             "verify_checksums": True,
+            "notifications": True,
             "language": "auto",
             "report_language": "auto",
         }
@@ -98,6 +99,8 @@ class Settings:
             ):
                 if type(new[key]) is not int or not minimum <= new[key] <= maximum:
                     raise ValueError(f"{key} doit être compris entre {minimum} et {maximum}.")
+            if type(new["notifications"]) is not bool:
+                raise ValueError("Invalid notification setting")
             if type(new["verify_checksums"]) is not bool:
                 raise ValueError("Option de vérification invalide.")
             for key in ("language", "report_language"):

@@ -14,6 +14,7 @@ from .archive import ArchiveClient
 from .auth import Auth
 from .config import Settings
 from .engine import Engine
+from .notifications import Notifications
 from .reports import Reports
 from .store import Store
 from .web import WebApp
@@ -65,6 +66,7 @@ def main():
     client = ArchiveClient()
     engine = Engine(store, client, settings)
     reports = Reports(store, settings)
+    notifications = Notifications(store, settings, enabled=args.dsm_auth)
     app = WebApp(store, client, settings, data, no_auth=args.no_auth, dsm_auth=args.dsm_auth)
     from waitress import create_server
 
@@ -84,6 +86,7 @@ def main():
     signal.signal(signal.SIGINT, stop)
     engine.start()
     reports.start()
+    notifications.start()
     logging.info("Archive Station listening on http://%s:%s", args.host, args.port)
     try:
         server.run()
@@ -91,6 +94,7 @@ def main():
         server.close()
         engine.shutdown()
         reports.shutdown()
+        notifications.shutdown()
         store.close()
         lock.close()
 

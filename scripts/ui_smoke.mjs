@@ -47,6 +47,8 @@ try {
   await page.getByRole("button", { name: "Suivants →" }).click();
   await page.getByText("game-100.zip", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Paramètres", exact: false }).click();
+  await page.locator("#settings-dialog").waitFor({ state: "visible" });
+  await page.locator("#setting-notifications").uncheck();
   await page.getByLabel("Téléchargements simultanés").fill("2");
   await page.getByLabel("Limite globale (Kio/s)").fill("1024");
   await page.getByRole("button", { name: "Enregistrer" }).click();
@@ -56,6 +58,13 @@ try {
     await page.getByLabel("Téléchargements simultanés").inputValue(),
     "2",
   );
+  await page.locator("#settings-dialog").waitFor({ state: "visible" });
+  assert.equal(
+    (await (await page.request.get(base + "/api/settings")).json())
+      .notifications,
+    false,
+  );
+  assert.equal(await page.locator("#setting-notifications").isChecked(), false);
   await page.getByRole("button", { name: "Sélectionner…" }).click();
   await page.getByRole("heading", { name: "Choisir un dossier" }).waitFor();
   await page

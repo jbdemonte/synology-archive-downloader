@@ -947,6 +947,7 @@ async function openSettings(focusDestination = false) {
     $("setting-speed").value = s.speed_limit_kib;
     $("setting-retries").value = s.retries;
     $("setting-verify").checked = s.verify_checksums;
+    $("setting-notifications").checked = s.notifications !== false;
     $("setting-password").value = "";
     $("settings-error").textContent = "";
     $("settings-dialog").showModal();
@@ -970,6 +971,7 @@ $("settings-form").onsubmit = async (event) => {
       speed_limit_kib: Number($("setting-speed").value),
       retries: Number($("setting-retries").value),
       verify_checksums: $("setting-verify").checked,
+      notifications: $("setting-notifications").checked,
       language: $("setting-language").value,
     });
     if (authMode === "password" && $("setting-password").value) {

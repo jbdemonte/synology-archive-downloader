@@ -9,7 +9,13 @@
       "url": "/webman/3rdparty/ArchiveStation/web/index.html?v=@VERSION@",
       "allUsers": false,
       "width": 1360,
-      "height": 840
+      "height": 840,
+      "preloadTexts": [
+        "notifications:title",
+        "notifications:completed",
+        "notifications:error",
+        "notifications:disk"
+      ]
     }
   }
 }
