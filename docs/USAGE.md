@@ -28,9 +28,9 @@ Check archives or select all visible rows, then use the toolbar. Global actions 
 
 ## Inspect recent throughput
 
-Expand the five-minute transfer graph and hover to inspect five-second averages. Measurements are collected on the NAS without browser polling; this in-memory history resets when the service restarts.
+Expand the one-hour transfer graph and hover to inspect 30-second averages. Measurements are collected on the NAS without browser polling; this in-memory history resets when the service restarts and fills as transfers continue. Remaining-time estimates use their own five-minute average to respond to recent speed changes.
 
-![Five-minute transfer history](images/history.png)
+![One-hour transfer history](images/history.png)
 
 ## Refresh an archive
 

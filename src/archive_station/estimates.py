@@ -8,6 +8,8 @@ from collections import deque
 
 class Estimates:
     WINDOW = 300
+    GRAPH_WINDOW = 3600
+    GRAPH_PERIOD = 30
     WARMUP = 30
     STALLED = 60
 
@@ -30,10 +32,11 @@ class Estimates:
         with self.lock:
             self.history.pop(job_id, None)
 
-    def _prune(self, buckets, now):
-        # One-second resolution: at most 301 buckets, regardless of file count
-        # or throughput. The oldest boundary bucket can include <1 extra second.
-        cutoff = math.floor(now - self.WINDOW)
+    @staticmethod
+    def _prune(buckets, now, window):
+        # One-second resolution: at most window + 1 buckets, regardless of file
+        # count or throughput. The boundary bucket can include <1 extra second.
+        cutoff = math.floor(now - window)
         while buckets and buckets[0][0] < cutoff:
             buckets.popleft()
 
@@ -42,7 +45,7 @@ class Estimates:
             return
         with self.lock:
             now = self.clock()
-            self._prune(self.global_buckets, now)
+            self._prune(self.global_buckets, now, self.GRAPH_WINDOW)
             second = math.floor(now)
             if self.global_buckets and self.global_buckets[-1][0] == second:
                 self.global_buckets[-1][1] += size
@@ -53,7 +56,7 @@ class Estimates:
                 return  # A chunk already in flight must not undo a pause/reset.
             now = self.clock()
             buckets = history["buckets"]
-            self._prune(buckets, now)
+            self._prune(buckets, now, self.WINDOW)
             second = math.floor(now)
             if buckets and buckets[-1][0] == second:
                 buckets[-1][1] += size
@@ -62,18 +65,22 @@ class Estimates:
             history["last_byte"] = now
 
     def graph(self):
-        """Sixty complete five-second bins. Pausing a job keeps global history."""
+        """One hour in 30-second bins. Pausing a job keeps global history."""
         with self.lock:
             now = self.clock()
-            self._prune(self.global_buckets, now)
+            self._prune(self.global_buckets, now, self.GRAPH_WINDOW)
             end = math.floor(now)
-            start = end - self.WINDOW
-            values = [0] * 60
+            start = end - self.GRAPH_WINDOW
+            values = [0] * (self.GRAPH_WINDOW // self.GRAPH_PERIOD)
             for second, size in self.global_buckets:
-                index = (second - start) // 5
+                index = (second - start) // self.GRAPH_PERIOD
                 if 0 <= index < len(values):
-                    values[index] += size / 5
-            return {"values": values, "period_seconds": 5, "window_seconds": self.WINDOW}
+                    values[index] += size / self.GRAPH_PERIOD
+            return {
+                "values": values,
+                "period_seconds": self.GRAPH_PERIOD,
+                "window_seconds": self.GRAPH_WINDOW,
+            }
 
     def snapshot(self, job):
         result = {
@@ -93,7 +100,7 @@ class Estimates:
             now = self.clock()
             elapsed = now - history["started"]
             window = min(self.WINDOW, elapsed)
-            self._prune(history["buckets"], now)
+            self._prune(history["buckets"], now, self.WINDOW)
             speed = sum(size for _, size in history["buckets"]) / window if window > 0 else 0
             result.update(average_speed=speed, average_window_seconds=window)
             last_byte = history["last_byte"]

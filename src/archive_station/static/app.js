@@ -573,18 +573,31 @@ async function loadBranch(jobId, prefix, offset = 0) {
   }
 }
 function renderHistory(history) {
-  const values = history?.values || Array(60).fill(0);
+  const values = history?.values || Array(120).fill(0);
+  const period = history?.period_seconds || 30;
+  const windowSeconds = history?.window_seconds || values.length * period;
+  const binWidth = 600 / values.length;
+  const time = (seconds) =>
+    new Intl.NumberFormat(ArchiveI18n.locale, {
+      style: "unit",
+      unit: "minute",
+      unitDisplay: "short",
+      maximumFractionDigits: 1,
+    }).format(seconds ? -seconds / 60 : 0);
+  $("history-start").textContent = time(windowSeconds);
+  $("history-middle").textContent = time(windowSeconds / 2);
+  $("history-end").textContent = time(0);
   const peak = Math.max(1, ...values);
   $("history-peak").textContent = bytes(Math.max(...values)) + "/s";
   const points = values
-    .map((v, i) => `${(i * 600) / (values.length - 1)},${88 - (v / peak) * 82}`)
+    .map((v, i) => `${(i + 0.5) * binWidth},${88 - (v / peak) * 82}`)
     .join(" ");
   $("history-chart").innerHTML =
     `<path d="M0 6H600M0 47H600M0 88H600" stroke="#e4eaf1" fill="none"/><polyline points="${points}" stroke="#0785e8" fill="none" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
     values
       .map(
         (value, index) =>
-          `<rect x="${index * 10}" y="0" width="10" height="90" fill="transparent"><title>−${(values.length - index) * 5} s : ${esc(bytes(value))}/s</title></rect>`,
+          `<rect x="${index * binWidth}" y="0" width="${binWidth}" height="90" fill="transparent"><title>${esc(time((values.length - index) * period))} → ${esc(time((values.length - index - 1) * period))} : ${esc(bytes(value))}/s</title></rect>`,
       )
       .join("");
 }

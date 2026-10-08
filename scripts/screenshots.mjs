@@ -162,9 +162,11 @@ try {
         jobs,
         history: {
           values: Array.from(
-            { length: 60 },
-            (_, i) => (2.1 + Math.sin(i / 5) * 0.7 + i / 60) * MiB,
+            { length: 120 },
+            (_, i) => (2.1 + Math.sin(i / 10) * 0.7 + i / 120) * MiB,
           ),
+          period_seconds: 30,
+          window_seconds: 3600,
         },
       };
     else if (url.pathname.endsWith("/activity")) {

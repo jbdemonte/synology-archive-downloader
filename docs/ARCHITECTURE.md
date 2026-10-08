@@ -17,6 +17,8 @@ Les tailles inconnues ne permettent pas une estimation exacte avant transfert. L
 
 Le temps restant utilise les octets réellement écrits par les workers, regroupés par seconde et par tâche sur cinq minutes (301 cases au maximum, précision d’une seconde). L’historique est en mémoire sur le NAS : aucune écriture SQLite par bloc ni fenêtre ouverte n’est nécessaire. Les fichiers déjà présents et les octets partiels repris ne gonflent pas le débit. Le calcul commence après trente secondes ; une minute sans données masque la durée. Pause, reprise et redémarrage réinitialisent la moyenne. Les tailles inconnues donnent une estimation minimale ; leurs octets reçus ne sont pas soustraits du volume connu restant. Une erreur définitive suspend l’estimation jusqu’à la nouvelle tentative.
 
+Le graphique global conserve séparément une heure de transferts (3 601 cases par seconde au maximum), présentée en 120 moyennes de trente secondes. Il continue à se remplir sans navigateur ouvert et conserve les périodes de pause ; un redémarrage du service vide cet historique en mémoire. Cette durée ne modifie pas la moyenne de cinq minutes utilisée pour le temps restant.
+
 ## Contrôles d’accès
 
 Les requêtes vers Archive.org acceptent uniquement les URL d’éléments valides et les redirections HTTPS vers ses domaines. Les chemins absolus, traversées `..`, composants vides et liens symboliques préexistants sont refusés. Les destinations sont limitées aux racines autorisées et aux permissions du processus.

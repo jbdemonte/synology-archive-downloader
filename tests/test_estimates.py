@@ -156,15 +156,36 @@ class GraphTests(unittest.TestCase):
         now = [1000]
         estimates = Estimates(clock=lambda: now[0])
         estimates.start("one")
-        estimates.record("one", 500)
+        estimates.record("one", 3000)
         estimates.reset("one")
-        now[0] = 1005
-        values = estimates.graph()["values"]
-        self.assertEqual(len(values), 60)
+        now[0] = 1030
+        graph = estimates.graph()
+        values = graph["values"]
+        self.assertEqual(graph["window_seconds"], 3600)
+        self.assertEqual(graph["period_seconds"], 30)
+        self.assertEqual(len(values), 120)
         self.assertEqual(values[-1], 100)
         self.assertEqual(sum(values), 100)
+        # Data older than the ETA's five-minute window stays in the graph.
         now[0] = 1400
+        self.assertEqual(sum(estimates.graph()["values"]), 100)
+        now[0] = 4601
         self.assertEqual(sum(estimates.graph()["values"]), 0)
+
+    def test_graph_averages_only_the_last_hour_and_eta_stays_on_five_minutes(self):
+        now = [0]
+        estimates = Estimates(clock=lambda: now[0])
+        estimates.start("one")
+        for second in range(7200):
+            now[0] = second
+            estimates.record("one", 9000 if second < 3600 else 3000)
+        now[0] = 7200
+        self.assertEqual(estimates.graph()["values"], [3000] * 120)
+        job = dict(
+            id="one", status="running", remaining_known_bytes=6000, unknown_sizes=0, failed_files=0
+        )
+        self.assertEqual(estimates.snapshot(job)["average_window_seconds"], 300)
+        self.assertLessEqual(len(estimates.history["one"]["buckets"]), 301)
 
     def test_graph_memory_is_bounded_without_browser_polling(self):
         now = [0]
@@ -173,4 +194,4 @@ class GraphTests(unittest.TestCase):
         for second in range(10000):
             now[0] = second
             estimates.record("one", 1000)
-        self.assertLessEqual(len(estimates.global_buckets), 301)
+        self.assertLessEqual(len(estimates.global_buckets), 3601)
