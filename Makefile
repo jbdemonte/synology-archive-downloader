@@ -31,8 +31,8 @@ spk: build
 run: deps
 	PYTHONPATH=src $(PY) -m archive_station
 
-test:
-	PYTHONPATH=src $(PYTHON) -m unittest discover -s tests -v
+test: $(PY)
+	PYTHONPATH=src $(PY) -m unittest discover -s tests -v
 
 test-ui: $(PY)
 	$(PY) scripts/test_ui.py

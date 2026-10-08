@@ -9,8 +9,10 @@ from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
+from . import __version__
+
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}\Z")
-USER_AGENT = "ArchiveStation/0.2.0 (personal archive downloader)"
+USER_AGENT = f"ArchiveStation/{__version__} (personal archive downloader)"
 
 
 def parse_identifier(value):

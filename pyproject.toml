@@ -4,13 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "archive-station"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A resumable Internet Archive download manager for Synology and other NAS."
 requires-python = ">=3.10"
 dependencies = ["waitress==3.0.2"]
 
 [project.scripts]
 archive-station = "archive_station.__main__:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "archive_station.__version__"}
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -152,7 +152,9 @@ def build(runtime, wheel, output, version):
         shutil.copy2(ROOT / "LICENSE", package / "LICENSE")
         shutil.copy2(ROOT / "LICENSE", payload / "LICENSE")
         shutil.copy2(PACKAGING / "THIRD_PARTY_NOTICES.txt", payload / "THIRD_PARTY_NOTICES.txt")
-        size = sum(p.stat().st_size for p in payload.rglob("*") if p.is_file())
+        size = sum(
+            p.stat().st_size for p in payload.rglob("*") if p.is_file() and not p.is_symlink()
+        )
         info = (PACKAGING / "INFO.template").read_text().replace("@VERSION@", version)
         info = info.replace("@EXTRACTSIZE@", str((size + 1023) // 1024))
         for filename, size, field in [
