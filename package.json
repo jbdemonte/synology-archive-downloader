@@ -2,7 +2,7 @@
   "name": "archive-station-ui-tests",
   "private": true,
   "scripts": {
-    "test:ui": "node scripts/schedule_smoke.mjs && node scripts/selection_smoke.mjs && node scripts/ui_smoke.mjs && node scripts/dsm_smoke.mjs && node scripts/inspection_smoke.mjs && node scripts/activity_smoke.mjs && node scripts/destination_smoke.mjs && node scripts/pause_smoke.mjs && node scripts/estimates_smoke.mjs && node scripts/locales_smoke.mjs",
+    "test:ui": "node scripts/priority_smoke.mjs && node scripts/schedule_smoke.mjs && node scripts/selection_smoke.mjs && node scripts/ui_smoke.mjs && node scripts/dsm_smoke.mjs && node scripts/inspection_smoke.mjs && node scripts/activity_smoke.mjs && node scripts/destination_smoke.mjs && node scripts/pause_smoke.mjs && node scripts/estimates_smoke.mjs && node scripts/locales_smoke.mjs",
     "format": "prettier --write src/archive_station/static/*.{html,css,js} scripts/*.mjs",
     "format:check": "prettier --check src/archive_station/static/*.{html,css,js} scripts/*.mjs"
   },

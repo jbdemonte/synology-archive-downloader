@@ -24,6 +24,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Estimate time remaining** — each archive shows an ETA based on its average transfer rate over the last five minutes, calculated on the NAS even with the window closed.
 - **Receive DSM desktop notifications** — task completion, persistent file errors and low disk space, even with the window closed. Disable them in Settings. Alerts go to DSM administrators and survive service restarts without duplicates.
 - **Schedule transfers** — choose weekdays and one daily time slot using the NAS clock; pause or apply an alternate speed limit outside it. Overnight slots belong to their starting day. Equal start/end times mean a full day. Manual pauses remain paused.
+- **Prioritize the queue** — set archive priority and move tasks within that priority. Star queued files to transfer them first within their archive. In-flight transfers finish normally.
 - **Tune without restarting** — change the global speed limit or run 1–8 parallel downloads, including for tasks already in progress.
 - **Choose your destination** — browse NAS folders, distinguish read/write, read-only and inaccessible locations, and create subfolders.
 - **Resume safely** — keep partial files separate, resume supported HTTP transfers, and verify available SHA-1/MD5 checksums before publishing final files.

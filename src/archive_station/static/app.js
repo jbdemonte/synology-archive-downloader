@@ -286,7 +286,7 @@ function fileRow(job, row, depth, showPath = false) {
   const detail = folder
     ? `${number(row.completed_files)} / ${number(row.file_count)} ${esc(t("fichiers"))}`
     : esc(parent);
-  return `<tr class="child-row ${status === "downloading" ? "live-file" : ""}" data-job="${esc(job.id)}" data-file-path="${esc(row.path)}"><td><div class="tree-name" style="padding-left:${depth * 19}px">${toggle}<span class="tree-icon ${folder ? "" : "item-icon"}">${folder ? "▰" : "▤"}</span><div class="name-text"><span title="${esc(row.path)}">${esc(row.name)}</span>${detail ? `<small title="${esc(parent)}">${detail}</small>` : ""}</div></div></td><td>${bytes(row.size)}</td><td>${progress({ ...row, status }, row.size)}</td><td class="speed">${row.speed && !["paused", "cancelled"].includes(job.status) ? bytes(row.speed) + "/s" : "—"}</td><td>${badge(status, row.error)}</td></tr>`;
+  return `<tr class="child-row ${status === "downloading" ? "live-file" : ""}" data-job="${esc(job.id)}" data-file-path="${esc(row.path)}"><td><div class="tree-name" style="padding-left:${depth * 19}px">${toggle}<span class="tree-icon ${folder ? "" : "item-icon"}">${folder ? "▰" : "▤"}</span><div class="name-text"><span title="${esc(row.path)}">${esc(row.name)}</span>${detail ? `<small title="${esc(parent)}">${detail}</small>` : ""}</div></div></td><td>${bytes(row.size)}</td><td>${progress({ ...row, status }, row.size)}</td><td class="speed">${row.speed && !["paused", "cancelled"].includes(job.status) ? bytes(row.speed) + "/s" : "—"}</td><td>${badge(status, row.error)}${!folder && row.id && row.status === "queued" ? `<button class="file-priority" data-priority-file="${row.id}" data-priority-job="${esc(job.id)}" data-priority="${row.priority ? 0 : 1}" aria-pressed="${!!row.priority}" title="${esc(t("En premier"))}">${row.priority ? "★" : "☆"}</button>` : ""}</td></tr>`;
 }
 function flatFile(row) {
   return {
@@ -437,6 +437,8 @@ function renderDetail() {
   $("remove").disabled = !job || ["queued", "running"].includes(job.status);
   if (!job) return;
   $("detail-name").textContent = job.title;
+  if (document.activeElement !== $("job-priority"))
+    $("job-priority").value = job.priority || 0;
   $("detail-eta").textContent = eta(job);
   $("detail-eta").title = etaHint(job);
   $("detail-destination").textContent = `${job.destination}/${job.identifier}/`;
@@ -447,6 +449,19 @@ function renderDetail() {
     ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
     : "";
 }
+async function setPriority(change) {
+  if (!state.selected) return;
+  try {
+    await api(`/api/jobs/${state.selected}/priority`, change);
+    await refresh();
+  } catch (error) {
+    toast(error.message);
+  }
+}
+$("job-priority").onchange = () =>
+  setPriority({ priority: Number($("job-priority").value) });
+$("queue-up").onclick = () => setPriority({ move: "up" });
+$("queue-down").onclick = () => setPriority({ move: "down" });
 async function loadBranch(jobId, prefix, offset = 0) {
   const view = fileView(jobId);
   if (prefix && view !== "tree") return;
@@ -607,6 +622,19 @@ $("search").oninput = () => {
   render();
 };
 $("download-rows").onclick = async (event) => {
+  const priority = event.target.closest("[data-priority-file]");
+  if (priority) {
+    try {
+      await api(`/api/jobs/${priority.dataset.priorityJob}/priority`, {
+        file_id: Number(priority.dataset.priorityFile),
+        priority: Number(priority.dataset.priority),
+      });
+      await refresh();
+    } catch (error) {
+      toast(error.message);
+    }
+    return;
+  }
   const expand = event.target.closest("[data-expand]"),
     page = event.target.closest("[data-page]"),
     viewButton = event.target.closest("[data-file-view]"),

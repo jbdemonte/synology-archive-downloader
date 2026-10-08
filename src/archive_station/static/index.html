@@ -322,6 +322,28 @@
               ><a id="detail-source" target="_blank" rel="noreferrer"></a>
             </div>
           </div>
+          <div class="detail-actions">
+            <label for="job-priority" data-i18n="Priorité">Priorité</label
+            ><select id="job-priority">
+              <option value="1" data-i18n="Haute">Haute</option>
+              <option value="0" data-i18n="Normale">Normale</option>
+              <option value="-1" data-i18n="Basse">Basse</option></select
+            ><button
+              id="queue-up"
+              type="button"
+              data-i18n-title="Monter dans la file"
+              title="Monter dans la file"
+            >
+              ↑</button
+            ><button
+              id="queue-down"
+              type="button"
+              data-i18n-title="Descendre dans la file"
+              title="Descendre dans la file"
+            >
+              ↓
+            </button>
+          </div>
           <p id="detail-errors" class="error"></p>
         </section>
         <footer class="page-footer">

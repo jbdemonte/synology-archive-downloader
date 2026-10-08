@@ -39,9 +39,17 @@ class Store:
             for name, definition in {
                 "source_url": "TEXT",
                 "finished_at": "REAL",
+                "priority": "INTEGER NOT NULL DEFAULT 0",
+                "queue_order": "REAL NOT NULL DEFAULT 0",
             }.items():
                 if name not in columns:
                     self.db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {definition}")
+            file_columns = {row[1] for row in self.db.execute("PRAGMA table_info(files)")}
+            if "priority" not in file_columns:
+                self.db.execute("ALTER TABLE files ADD COLUMN priority INTEGER NOT NULL DEFAULT 0")
+            self.db.execute(
+                "CREATE INDEX IF NOT EXISTS file_priority ON files(job_id,status,priority DESC,id)"
+            )
             self.db.execute("UPDATE files SET status='queued', speed=0 WHERE status='downloading'")
             self.db.execute("UPDATE jobs SET status='queued' WHERE status='running'")
 
@@ -67,6 +75,11 @@ class Store:
                         str(destination),
                         source_url or f"https://archive.org/details/{manifest['identifier']}",
                     ),
+                )
+                self.db.execute(
+                    "UPDATE jobs SET queue_order=(SELECT COALESCE(MAX(queue_order),0)+1 FROM jobs) "
+                    "WHERE id=?",
+                    (job_id,),
                 )
                 self.db.executemany(
                     "INSERT INTO files(job_id,name,size,algorithm,digest) VALUES (?,?,?,?,?)",
@@ -98,7 +111,7 @@ class Store:
                     SUM(f.status='error') AS failed_files,
                     SUM(f.size IS NULL) AS unknown_sizes
                 FROM jobs j JOIN files f ON f.job_id=j.id
-                GROUP BY j.id ORDER BY j.created DESC
+                GROUP BY j.id ORDER BY j.priority DESC,j.queue_order,j.created
             """)
             ]
             for job in jobs:
@@ -139,11 +152,11 @@ class Store:
                 )
             )
 
-            def rows(status, limit, condition="", args=(), order="id"):
+            def rows(status, limit, condition="", args=(), order="priority DESC,id"):
                 return [
                     dict(row)
                     for row in self.db.execute(
-                        "SELECT id,name,size,downloaded,speed,status,error FROM files "
+                        "SELECT id,name,size,downloaded,speed,status,error,priority FROM files "
                         f"WHERE job_id=? AND status=? {condition} ORDER BY {order} LIMIT ?",
                         (job_id, status, *args, limit),
                     )
@@ -153,7 +166,11 @@ class Store:
             queued = rows("queued", 10, "AND available_at<=?", (now,))
             # Delayed retries follow ready files, never hide the next eligible transfer.
             queued += rows(
-                "queued", 10 - len(queued), "AND available_at>?", (now,), "available_at,id"
+                "queued",
+                10 - len(queued),
+                "AND available_at>?",
+                (now,),
+                "available_at,priority DESC,id",
             )
             return {
                 "active": rows("downloading", 200),
@@ -202,13 +219,51 @@ class Store:
                 self.estimates.reset(job_id)
                 self.estimates.start(job_id)
 
+    def prioritize(self, job_id, priority=None, file_id=None, move=None):
+        if priority is not None and (type(priority) is not int or priority not in {-1, 0, 1}):
+            raise ValueError("Invalid priority")
+        with self.lock, self.db:
+            job = self.db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+            if not job:
+                raise KeyError("Téléchargement introuvable.")
+            if file_id is not None:
+                if type(file_id) is not int or priority is None or move is not None:
+                    raise ValueError("Invalid file priority")
+                changed = self.db.execute(
+                    "UPDATE files SET priority=? WHERE job_id=? AND id=? AND status='queued'",
+                    (priority, job_id, file_id),
+                )
+                if not changed.rowcount:
+                    raise ValueError("Ce fichier n’est plus en attente.")
+            elif move is not None:
+                if move not in {"up", "down"}:
+                    raise ValueError("Invalid queue movement")
+                peers = [
+                    r[0]
+                    for r in self.db.execute(
+                        "SELECT id FROM jobs WHERE priority=? ORDER BY queue_order,created",
+                        (job["priority"],),
+                    )
+                ]
+                index = peers.index(job_id)
+                other = index + (-1 if move == "up" else 1)
+                if 0 <= other < len(peers):
+                    peers[index], peers[other] = peers[other], peers[index]
+                    self.db.executemany(
+                        "UPDATE jobs SET queue_order=? WHERE id=?", list(enumerate(peers))
+                    )
+            elif priority is not None:
+                self.db.execute("UPDATE jobs SET priority=? WHERE id=?", (priority, job_id))
+            else:
+                raise ValueError("Missing priority")
+
     def claim(self):
         with self.lock, self.db:
             row = self.db.execute(
                 """
                 SELECT f.*, j.identifier, j.destination FROM jobs j JOIN files f ON j.id=f.job_id
                 WHERE j.status IN ('queued','running') AND f.status='queued' AND f.available_at<=?
-                ORDER BY j.created, f.id LIMIT 1
+                ORDER BY j.priority DESC,j.queue_order,j.created,f.priority DESC,f.id LIMIT 1
             """,
                 (time.time(),),
             ).fetchone()
@@ -274,7 +329,7 @@ class Store:
             if not self.db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
                 raise KeyError("Téléchargement introuvable.")
             rows = self.db.execute(
-                "SELECT name,size,downloaded,speed,status,error FROM files "
+                "SELECT id,name,size,downloaded,speed,status,error,priority FROM files "
                 "WHERE job_id=? AND substr(name,1,?)=? ORDER BY name",
                 (job_id, len(prefix), prefix),
             )

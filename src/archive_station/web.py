@@ -262,6 +262,11 @@ class WebApp:
                         job_id, offset, limit, query.get("q", ""), query.get("status", "")
                     )
                 )
+            if method == "POST" and action == "priority":
+                self.store.prioritize(
+                    job_id, body.get("priority"), body.get("file_id"), body.get("move")
+                )
+                return response({"ok": True})
             if method == "POST":
                 self.store.action(job_id, action)
                 return response({"ok": True})

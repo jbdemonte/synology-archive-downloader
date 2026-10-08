@@ -1527,3 +1527,30 @@ dialog > form {
 #schedule-days .checkbox {
   margin: 0;
 }
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.detail-actions label {
+  margin: 0;
+  font-size: 12px;
+}
+.detail-actions select {
+  width: auto;
+  min-width: 115px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.detail-actions button {
+  padding: 5px 10px;
+}
+.file-priority {
+  padding: 2px 5px;
+  border: 0;
+  color: #8b6800;
+  margin-left: 3px;
+}

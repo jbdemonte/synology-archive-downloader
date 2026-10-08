@@ -30,6 +30,8 @@ with tempfile.TemporaryDirectory(prefix="archive-station-ui-") as data:
         command = (
             ["node", "scripts/screenshots.mjs"]
             if "--screenshots" in sys.argv
+            else ["node", sys.argv[2]]
+            if len(sys.argv) == 3 and sys.argv[1] == "--script"
             else ["npm", "run", "test:ui"]
         )
         subprocess.run(command, cwd=ROOT, env=env, check=True)
