@@ -46,8 +46,9 @@ class Engine:
 
     def shutdown(self):
         self.stop.set()
+        deadline = time.monotonic() + 35
         for thread in self.threads:
-            thread.join(timeout=35)
+            thread.join(timeout=max(0, deadline - time.monotonic()))
 
     def check(self, job_id):
         if (
@@ -77,54 +78,68 @@ class Engine:
             self.stop.wait(min(0.2, scheduled - time.monotonic()))
 
     def worker(self, index):
+        row = None
         while not self.stop.is_set():
-            if (
-                index >= self.settings.get()["connections"]
-                or not policy(self.settings.get())["allowed"]
-            ):
-                self.stop.wait(0.5)
-                continue
-            row = self.store.claim()
-            if not row:
-                self.store.finish_jobs()
-                self.stop.wait(0.3)
-                continue
             try:
-                self.transfer(row)
-            except Interrupted:
-                self.store.estimates.reset(row["job_id"])
-                self.store.update(row["id"], status="queued", speed=0)
-            except Exception as exc:
-                if isinstance(exc, OSError) and exc.errno in {errno.ENOSPC, errno.EDQUOT}:
-                    self.store.pause_for_space(row["job_id"])
-                    self.store.update(row["id"], status="queued", speed=0)
+                # Retain ownership until recovery succeeds, even if SQLite stays
+                # unavailable for several iterations. Never requeue a completed file.
+                if row is not None:
+                    self.store.release(row["id"])
+                    row = None
+                if (
+                    index >= self.settings.get()["connections"]
+                    or not policy(self.settings.get())["allowed"]
+                ):
+                    self.stop.wait(0.5)
                     continue
-                LOG.warning("Transfer failed for %s: %s", row["name"], exc)
-                attempts = row["attempts"] + 1
-                permanent = isinstance(exc, (Conflict, ValueError, PermissionError)) or (
-                    isinstance(exc, HTTPError) and exc.code in {401, 403, 404}
-                )
-                retry = not permanent and attempts <= self.settings.get()["retries"]
-                message = str(exc)
-                if isinstance(exc, HTTPError) and exc.code in {401, 403}:
-                    message = "Accès refusé : ce fichier nécessite une autorisation Archive.org."
-                delay = min(300, 5 * 2 ** (attempts - 1))
-                if isinstance(exc, HTTPError) and exc.headers:
-                    try:
-                        delay = max(delay, min(3600, int(exc.headers.get("Retry-After", 0))))
-                    except ValueError:
-                        pass
-                if isinstance(exc, HTTPError):
-                    exc.close()
-                self.store.update(
-                    row["id"],
-                    status="queued" if retry else "error",
-                    speed=0,
-                    attempts=attempts,
-                    available_at=time.time() + delay,
-                    error=message,
-                )
-            self.store.finish_jobs()
+                row = self.store.claim()
+                if not row:
+                    self.store.finish_jobs()
+                    self.stop.wait(0.3)
+                    continue
+                self.run_transfer(row)
+                row = None
+                self.store.finish_jobs()
+            except Exception:
+                LOG.exception("Download worker iteration failed; retrying in five seconds")
+                self.stop.wait(5)
+
+    def run_transfer(self, row):
+        try:
+            self.transfer(row)
+        except Interrupted:
+            self.store.estimates.reset(row["job_id"])
+            self.store.update(row["id"], status="queued", speed=0)
+        except Exception as exc:
+            if isinstance(exc, OSError) and exc.errno in {errno.ENOSPC, errno.EDQUOT}:
+                self.store.pause_for_space(row["job_id"])
+                self.store.update(row["id"], status="queued", speed=0)
+                return
+            LOG.warning("Transfer failed for %s: %s", row["name"], exc)
+            attempts = row["attempts"] + 1
+            permanent = isinstance(exc, (Conflict, ValueError, PermissionError)) or (
+                isinstance(exc, HTTPError) and exc.code in {401, 403, 404}
+            )
+            retry = not permanent and attempts <= self.settings.get()["retries"]
+            message = str(exc)
+            if isinstance(exc, HTTPError) and exc.code in {401, 403}:
+                message = "Accès refusé : ce fichier nécessite une autorisation Archive.org."
+            delay = min(300, 5 * 2 ** (attempts - 1))
+            if isinstance(exc, HTTPError) and exc.headers:
+                try:
+                    delay = max(delay, min(3600, int(exc.headers.get("Retry-After", 0))))
+                except ValueError:
+                    pass
+            if isinstance(exc, HTTPError):
+                exc.close()
+            self.store.update(
+                row["id"],
+                status="queued" if retry else "error",
+                speed=0,
+                attempts=attempts,
+                available_at=time.time() + delay,
+                error=message,
+            )
 
     def check_space(self, root, job_id, size):
         reserve = max(128 * 1024, self.settings.get()["disk_reserve_mib"] * 1024**2)
@@ -191,7 +206,20 @@ class Engine:
             partial.unlink()
             offset = 0
         self.check_space(root, row["job_id"], CHUNK)
-        with self.client.open(row["identifier"], row["name"], offset) as response:
+        try:
+            response = self.client.open(row["identifier"], row["name"], offset)
+        except HTTPError as exc:
+            if exc.code != 416 or not offset:
+                raise
+            # An unknown-size partial may already be complete, or the source may
+            # have shrunk. 416 alone proves neither integrity nor identity.
+            exc.close()
+            partial.unlink()
+            self.store.update(row["id"], downloaded=0, speed=0)
+            offset = 0
+            self.check(row["job_id"])
+            response = self.client.open(row["identifier"], row["name"], 0)
+        with response:
             if response.status not in {200, 206}:
                 raise OSError(f"Réponse HTTP inattendue : {response.status}")
             if response.status == 206:

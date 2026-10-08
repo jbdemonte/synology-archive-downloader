@@ -456,6 +456,14 @@ class Store:
             self.estimates.start(row["job_id"])
             return dict(row)
 
+    def release(self, file_id):
+        """Recover a worker's abandoned claim without undoing a terminal state."""
+        with self.lock, self.db:
+            self.db.execute(
+                "UPDATE files SET status='queued',speed=0 WHERE id=? AND status='downloading'",
+                (file_id,),
+            )
+
     def active(self, job_id):
         with self.lock:
             row = self.db.execute("SELECT status FROM jobs WHERE id=?", (job_id,)).fetchone()
