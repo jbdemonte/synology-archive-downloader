@@ -6,11 +6,11 @@
 <p align="center"><strong>Internet Archive Downloader for Synology DSM</strong></p>
 <p align="center">One URL. One folder. Every file in its place.</p>
 
-Archive Station downloads the public files of Internet Archive items directly to your NAS. Paste an item URL, review its contents, and follow each transfer in an expandable folder tree — inside a native DSM desktop window.
+Archive Station downloads the public files of Internet Archive items directly to your NAS. Paste an item URL, review its contents, and follow live transfers, upcoming files and an expandable folder tree — inside a native DSM desktop window.
 
 **No Docker. No extra sign-in. Downloads keep running when you close the window.**
 
-![Archive Station download manager with expandable folders and per-file progress](docs/images/downloads.png)
+![Archive Station activity view showing live transfers and upcoming files](docs/images/downloads.png)
 
 *Screenshots show the actual application with demonstration data, not a live download.*
 
@@ -19,6 +19,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Add multiple URLs** — accept `/details/` and `/download/` links, preview file counts and sizes, and create one independent task per item.
 - **See the whole hierarchy** — item → folders → files, with progress, transfer speeds, status filters and search.
 - **Control transfers** — pause, resume, cancel, retry failed files, or remove a task while preserving its downloads.
+- **See what is happening now** — Activity shows live transfers and the next ten files across every subfolder. Completed files have their own view; the folder tree remains available.
 - **Tune without restarting** — change the global speed limit or run 1–8 parallel downloads, including for tasks already in progress.
 - **Choose your destination** — browse NAS folders, distinguish read/write, read-only and inaccessible locations, and create subfolders.
 - **Resume safely** — keep partial files separate, resume supported HTTP transfers, and verify available SHA-1/MD5 checksums before publishing final files.
@@ -40,7 +41,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-10-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-11-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -80,6 +81,12 @@ Your destination/
 
 The item identifier determines its directory name; nested paths from Archive.org are preserved. Changing the default destination affects new tasks. Existing tasks keep their original destination.
 
+## Follow large archives
+
+The first running task opens automatically. Its **Activity** view shows active transfers across all subfolders, then a preview of upcoming files in worker queue order. Completed files move into **Completed**. **Folders** keeps the full directory hierarchy, and **Needs attention** appears when files fail. Activity refreshes without pagination; only historical lists and full directory browsing are paginated.
+
+![Archive Station folder tree](docs/images/folders.png)
+
 ## Interruptions, settings and reports
 
 **Files only appear under their final names after successful transfer and verification.** Incomplete data lives in `<destination>/.archive-station-parts/<task-id>/`. Do not delete that directory if you want to resume partial downloads.
@@ -106,7 +113,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.1.0-10 # Override the package version
+make build VERSION=0.1.0-11 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

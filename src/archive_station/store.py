@@ -101,16 +101,58 @@ class Store:
         with self.lock:
             if not self.db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
                 raise KeyError("Téléchargement introuvable.")
-            where, args = "job_id=? AND instr(lower(name), lower(?))>0", [job_id, query]
+            where, args = "job_id=?", [job_id]
+            if query:
+                where += " AND instr(lower(name), lower(?))>0"
+                args.append(query)
             if status:
                 where += " AND status=?"
                 args.append(status)
             total = self.db.execute(f"SELECT COUNT(*) FROM files WHERE {where}", args).fetchone()[0]
+            offset = min(offset, max(0, (total - 1) // limit * limit))
             rows = self.db.execute(
                 f"SELECT * FROM files WHERE {where} ORDER BY id LIMIT ? OFFSET ?",
                 [*args, limit, offset],
             ).fetchall()
-            return {"files": [dict(row) for row in rows], "total": total}
+            return {"files": [dict(row) for row in rows], "total": total, "offset": offset}
+
+    def activity(self, job_id):
+        """Bounded live view across all directories, ordered like the worker queue."""
+        with self.lock:
+            if not self.db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
+                raise KeyError("Téléchargement introuvable.")
+            counts = dict.fromkeys(("downloading", "queued", "completed", "error"), 0)
+            counts.update(
+                dict(
+                    self.db.execute(
+                        "SELECT status,COUNT(*) FROM files WHERE job_id=? GROUP BY status",
+                        (job_id,),
+                    )
+                )
+            )
+
+            def rows(status, limit, condition="", args=(), order="id"):
+                return [
+                    dict(row)
+                    for row in self.db.execute(
+                        "SELECT id,name,size,downloaded,speed,status,error FROM files "
+                        f"WHERE job_id=? AND status=? {condition} ORDER BY {order} LIMIT ?",
+                        (job_id, status, *args, limit),
+                    )
+                ]
+
+            now = time.time()
+            queued = rows("queued", 10, "AND available_at<=?", (now,))
+            # Delayed retries follow ready files, never hide the next eligible transfer.
+            queued += rows(
+                "queued", 10 - len(queued), "AND available_at>?", (now,), "available_at,id"
+            )
+            return {
+                "active": rows("downloading", 200),
+                "queued": queued,
+                "errors": rows("error", 5),
+                "counts": counts,
+            }
 
     def action(self, job_id, action):
         with self.lock, self.db:

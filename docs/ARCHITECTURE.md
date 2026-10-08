@@ -9,7 +9,7 @@ Archive Station est une application Python légère avec une interface statique,
 3. Une transaction SQLite enregistre la tâche, sa destination propre et ses fichiers. Un même identifiant ne peut avoir qu’une tâche présente dans la liste.
 4. Un ensemble borné de workers réclame les fichiers de manière atomique. Les paramètres limitent le nombre actif ; les tâches sont servies dans l’ordre d’ajout.
 5. Chaque worker écrit dans un fichier partiel, reprend avec `Range`, contrôle la taille et, si disponible, l’empreinte. La publication finale utilise un lien physique atomique sans écrasement, sur le même système de fichiers.
-6. L’interface interroge les résumés et seulement les niveaux de l’arborescence ouverts. Les listes de fichiers sont paginées.
+6. La vue Activité interroge un aperçu borné : fichiers actifs, cinq erreurs au maximum et dix prochains fichiers, dans l’ordre de la file de téléchargement. Elle traverse tous les sous-dossiers sans pagination. Les vues Terminés et À vérifier utilisent des listes filtrées paginées ; la vue Arborescence ne charge que les niveaux ouverts. Un changement de vue ignore les réponses devenues obsolètes.
 
 Les tailles inconnues ne permettent pas une estimation exacte avant transfert. Les sommes de contrôle sont utilisées comme vérification d’intégrité, pas comme mécanisme cryptographique d’authentification. Les fichiers de métadonnées portant `summation` ne sont pas validés contre cette valeur, qui décrit leurs entrées.
 
@@ -31,6 +31,6 @@ Les racines de destination doivent être des dossiers de confiance : la vérific
 
 ## Rapports et langues
 
-Un thread distinct écrit toutes les quinze secondes un résumé JSON dans le dossier de chaque élément, par remplacement atomique. Ses erreurs sont journalisées sans bloquer les transferts. Le schéma SQLite est migré en place pour conserver la source saisie et la date de fin ; les anciennes tâches restent utilisables. La durée du rapport comprend les pauses et les arrêts du service.
+Un thread distinct écrit toutes les quinze secondes un rapport texte `.txt` dans le dossier de chaque élément, par remplacement atomique. Ses erreurs sont journalisées sans bloquer les transferts. Le schéma SQLite est migré en place pour conserver la source saisie et la date de fin ; les anciennes tâches restent utilisables. La durée du rapport comprend les pauses et les arrêts du service.
 
 Les 27 catalogues JSON sont embarqués. Le choix manuel est enregistré avec les paramètres. En mode automatique, la langue de la session DSM précède celle de la configuration serveur et du navigateur ; l’anglais sert de repli. Aucun service de traduction n’est appelé par l’application. Voir `docs/TRANSLATIONS.md`.

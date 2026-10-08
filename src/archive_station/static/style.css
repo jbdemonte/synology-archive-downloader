@@ -571,6 +571,65 @@ main > * {
   padding-bottom: 9px;
   background: #fcfdff;
 }
+.tree-spacer {
+  width: 14px;
+  flex-shrink: 0;
+}
+.downloads .file-tabs-row td {
+  padding: 0 14px;
+  background: #f9fbfe;
+}
+.file-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.file-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 11px 5px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.file-tabs button[aria-pressed="true"] {
+  border-bottom-color: var(--blue);
+  color: var(--blue);
+  font-weight: 600;
+}
+.file-tabs button > span {
+  margin-left: 6px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #eaf0f6;
+  color: #6d8195;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.downloads .activity-heading td {
+  background: #f6f9fc;
+  padding: 8px 20px;
+  font-size: 10px;
+}
+.activity-heading strong {
+  color: #59718a;
+  font-weight: 600;
+}
+.activity-heading span {
+  color: #8293a5;
+  margin-left: 10px;
+}
+.downloads tr.live-file td {
+  background: #f1f8ff;
+}
+.downloads tr.live-file td:first-child {
+  box-shadow: inset 3px 0 #3b9fe6;
+}
+.downloads .file-empty td {
+  color: var(--muted);
+  padding: 12px 30px;
+}
 .tree-name {
   display: flex;
   align-items: center;

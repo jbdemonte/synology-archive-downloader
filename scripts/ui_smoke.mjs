@@ -21,9 +21,7 @@ try {
     }
   }
   await page.goto(process.env.TEST_URL || "http://127.0.0.1:8275");
-  await page
-    .getByRole("heading", { name: "Tous les téléchargements" })
-    .waitFor();
+  await page.getByRole("heading", { name: "Transferts" }).waitFor();
   await page
     .getByRole("button", { name: "Ajouter des URL", exact: false })
     .click();
@@ -41,6 +39,7 @@ try {
   await page
     .getByRole("button", { name: "Déplier demo-one", exact: true })
     .click();
+  await page.getByRole("button", { name: "Arborescence", exact: true }).click();
   await page.getByRole("button", { name: "Déplier roms", exact: true }).click();
   await page.getByText("game-000.zip", { exact: true }).waitFor();
   assert.equal(await page.locator(".job-row").count(), 2);

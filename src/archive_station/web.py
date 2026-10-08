@@ -211,6 +211,8 @@ class WebApp:
         parts = path.strip("/").split("/")
         if len(parts) == 4 and parts[:2] == ["api", "jobs"]:
             job_id, action = parts[2:]
+            if method == "GET" and action == "activity":
+                return response(self.store.activity(job_id))
             if method == "GET" and action in {"tree", "files"}:
                 offset = max(0, int(query.get("offset", 0)))
                 limit = min(200, max(1, int(query.get("limit", 100))))

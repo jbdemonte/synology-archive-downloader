@@ -46,7 +46,7 @@ try {
     );
     assert.equal(
       await page.locator("#view-title").innerText(),
-      catalog["Tous les téléchargements"],
+      catalog["Transferts"],
     );
     assert.equal(
       (await (await page.request.get(base + "/api/settings")).json()).language,

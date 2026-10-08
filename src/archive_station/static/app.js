@@ -8,6 +8,8 @@ const state = {
   search: "",
   settings: null,
   expanded: new Map(),
+  fileViews: new Map(),
+  openedInitially: false,
   plans: [],
   inspection: null,
   folderTarget: null,
@@ -191,30 +193,103 @@ function badge(status, error = "") {
 function key(jobId, prefix) {
   return `${jobId}|${prefix}`;
 }
+function fileView(jobId) {
+  return (
+    state.fileViews.get(jobId) ||
+    (state.jobs.find((job) => job.id === jobId)?.status === "completed"
+      ? "completed"
+      : "activity")
+  );
+}
+function fileTabs(job) {
+  const tabs = [
+    ["activity", "Activité", Math.max(0, job.file_count - job.completed_files)],
+    ["completed", "Terminés", job.completed_files],
+    ["tree", "Arborescence", null],
+  ];
+  if (job.failed_files) tabs.push(["error", "À vérifier", job.failed_files]);
+  return `<tr class="file-tabs-row"><td colspan="5"><div class="file-tabs" role="group" aria-label="${esc(job.identifier)}">${tabs
+    .map(
+      ([view, label, count]) =>
+        `<button type="button" data-file-view="${view}" data-view-job="${esc(job.id)}" aria-pressed="${fileView(job.id) === view}">${esc(t(label))}${count == null ? "" : `<span>${number(count)}</span>`}</button>`,
+    )
+    .join("")}</div></td></tr>`;
+}
+function fileRow(job, row, depth, showPath = false) {
+  const folder = row.kind === "folder";
+  const open = state.expanded.has(key(job.id, row.path));
+  let status = row.status;
+  if (
+    ["paused", "cancelled"].includes(job.status) &&
+    status !== "completed" &&
+    status !== "error"
+  )
+    status = job.status;
+  const toggle = folder
+    ? `<button class="toggle" data-expand="${esc(job.id)}" data-prefix="${esc(row.path)}" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(row.name)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>`
+    : '<span class="tree-spacer"></span>';
+  const parent =
+    showPath && row.path.includes("/")
+      ? row.path.slice(0, row.path.lastIndexOf("/"))
+      : "";
+  const detail = folder
+    ? `${number(row.completed_files)} / ${number(row.file_count)} ${esc(t("fichiers"))}`
+    : esc(parent);
+  return `<tr class="child-row ${status === "downloading" ? "live-file" : ""}" data-job="${esc(job.id)}" data-file-path="${esc(row.path)}"><td><div class="tree-name" style="padding-left:${depth * 19}px">${toggle}<span class="tree-icon ${folder ? "" : "item-icon"}">${folder ? "▰" : "▤"}</span><div class="name-text"><span title="${esc(row.path)}">${esc(row.name)}</span>${detail ? `<small title="${esc(parent)}">${detail}</small>` : ""}</div></div></td><td>${bytes(row.size)}</td><td>${progress({ ...row, status }, row.size)}</td><td class="speed">${row.speed && !["paused", "cancelled"].includes(job.status) ? bytes(row.speed) + "/s" : "—"}</td><td>${badge(status, row.error)}</td></tr>`;
+}
+function flatFile(row) {
+  return {
+    ...row,
+    path: row.name,
+    name: row.name.split("/").pop(),
+    kind: "file",
+  };
+}
+function activityRows(job, data) {
+  let html = "";
+  for (const [field, status, label] of [
+    ["active", "downloading", "En cours"],
+    ["errors", "error", "À vérifier"],
+    ["queued", "queued", "À suivre"],
+  ]) {
+    const rows = data[field],
+      total = data.counts[status];
+    if (!total && field !== "active") continue;
+    const count =
+      rows.length === total
+        ? number(total)
+        : `${number(rows.length)} / ${number(total)}`;
+    html += `<tr class="activity-heading ${field}"><td colspan="5"><strong>${esc(t(label))}</strong><span>${count} ${esc(t("fichiers"))}</span></td></tr>`;
+    html += rows.length
+      ? rows.map((row) => fileRow(job, flatFile(row), 1, true)).join("")
+      : `<tr class="file-empty"><td colspan="5">${esc(t("Aucun fichier en cours."))}</td></tr>`;
+  }
+  return html;
+}
 function treeRows(job, prefix, depth) {
   const branch = state.expanded.get(key(job.id, prefix));
   if (!branch) return "";
+  let html = prefix ? "" : fileTabs(job);
   if (branch.error)
-    return `<tr class="child-row"><td colspan="5" class="error">${esc(branch.error)}</td></tr>`;
+    return (
+      html +
+      `<tr class="child-row"><td colspan="5" class="error">${esc(branch.error)}</td></tr>`
+    );
   if (!branch.data)
-    return `<tr class="child-row"><td colspan="5">${esc(t("Chargement des fichiers…"))}</td></tr>`;
-  let html = "";
+    return (
+      html +
+      `<tr class="child-row"><td colspan="5">${esc(t("Chargement des fichiers…"))}</td></tr>`
+    );
+  if (branch.view === "activity") return html + activityRows(job, branch.data);
+  if (!branch.data.children.length)
+    return (
+      html +
+      `<tr class="file-empty"><td colspan="5">${esc(t("Aucun fichier dans cette vue."))}</td></tr>`
+    );
   for (const row of branch.data.children) {
-    const folder = row.kind === "folder";
-    const open = state.expanded.has(key(job.id, row.path));
-    let status = row.status;
-    if (
-      ["paused", "cancelled"].includes(job.status) &&
-      status !== "completed" &&
-      status !== "error"
-    )
-      status = job.status;
-    const icon = folder ? "▰" : "▤";
-    const toggle = folder
-      ? `<button class="toggle" data-expand="${esc(job.id)}" data-prefix="${esc(row.path)}" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(row.name)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>`
-      : '<span style="width:14px;flex-shrink:0"></span>';
-    html += `<tr class="child-row" data-job="${esc(job.id)}"><td><div class="tree-name" style="padding-left:${depth * 19}px">${toggle}<span class="tree-icon ${folder ? "" : "item-icon"}">${icon}</span><div class="name-text"><span title="${esc(row.path)}">${esc(row.name)}</span>${folder ? `<small>${number(row.completed_files)} / ${number(row.file_count)} ${esc(t("fichiers"))}</small>` : ""}</div></div></td><td>${bytes(row.size)}</td><td>${progress({ ...row, status }, row.size)}</td><td class="speed">${row.speed && !["paused", "cancelled"].includes(job.status) ? bytes(row.speed) + "/s" : "—"}</td><td>${badge(status, row.error)}</td></tr>`;
-    if (folder && open) html += treeRows(job, row.path, depth + 1);
+    html += fileRow(job, row, depth, branch.view !== "tree");
+    if (row.kind === "folder" && state.expanded.has(key(job.id, row.path)))
+      html += treeRows(job, row.path, depth + 1);
   }
   if (branch.data.total > 100) {
     html += `<tr class="page-row"><td colspan="5"><button data-page="${esc(job.id)}" data-prefix="${esc(prefix)}" data-offset="${Math.max(0, branch.offset - 100)}" ${branch.offset === 0 ? "disabled" : ""}>${esc(t("← Précédents"))}</button><span>${number(branch.offset + 1)}–${number(Math.min(branch.offset + 100, branch.data.total))} ${esc(t("sur"))} ${number(branch.data.total)}</span><button data-page="${esc(job.id)}" data-prefix="${esc(prefix)}" data-offset="${branch.offset + 100}" ${branch.offset + 100 >= branch.data.total ? "disabled" : ""}>${esc(t("Suivants →"))}</button></td></tr>`;
@@ -237,11 +312,11 @@ function matches(job) {
 function render() {
   $("view-title").textContent = t(
     {
-      all: "Tous les téléchargements",
-      active: "Téléchargements en cours",
-      paused: "Téléchargements en pause",
-      completed: "Téléchargements terminés",
-      error: "Téléchargements à vérifier",
+      all: "Transferts",
+      active: "En cours",
+      paused: "En pause",
+      completed: "Terminés",
+      error: "À vérifier",
     }[state.filter],
   );
   const sum = (field) =>
@@ -270,12 +345,23 @@ function render() {
     visible.length === 1 ? "{count} tâche" : "{count} tâches",
     { count: number(visible.length) },
   );
+  const focusedView = document.activeElement?.dataset.fileView;
+  const focusedJob = document.activeElement?.dataset.viewJob;
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
       return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
+  if (focusedView) {
+    [...$("download-rows").querySelectorAll("[data-file-view]")]
+      .find(
+        (button) =>
+          button.dataset.fileView === focusedView &&
+          button.dataset.viewJob === focusedJob,
+      )
+      ?.focus({ preventScroll: true });
+  }
   renderDetail();
 }
 function renderDetail() {
@@ -296,21 +382,35 @@ function renderDetail() {
   $("detail-source").href =
     `https://archive.org/download/${encodeURIComponent(job.identifier)}`;
   $("detail-errors").textContent = job.failed_files
-    ? t(
-        "{count} fichier(s) en erreur. Dépliez les dossiers pour consulter leur état, puis utilisez Réessayer.",
-        { count: number(job.failed_files) },
-      )
+    ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
     : "";
 }
 async function loadBranch(jobId, prefix, offset = 0) {
-  const branch = { offset, data: state.expanded.get(key(jobId, prefix))?.data };
-  state.expanded.set(key(jobId, prefix), branch);
+  const view = fileView(jobId);
+  if (prefix && view !== "tree") return;
+  const id = key(jobId, prefix),
+    previous = state.expanded.get(id);
+  const branch = {
+    offset,
+    view,
+    data: previous?.view === view ? previous.data : null,
+  };
+  state.expanded.set(id, branch);
   try {
-    branch.data = await api(
-      `/api/jobs/${jobId}/tree?prefix=${encodeURIComponent(prefix)}&offset=${offset}&limit=100`,
-    );
+    const endpoint =
+      view === "activity"
+        ? "activity"
+        : view === "tree"
+          ? `tree?prefix=${encodeURIComponent(prefix)}&offset=${offset}&limit=100`
+          : `files?status=${view}&offset=${offset}&limit=100`;
+    const data = await api(`/api/jobs/${jobId}/${endpoint}`);
+    if (state.expanded.get(id) !== branch) return;
+    branch.data = data.files
+      ? { ...data, children: data.files.map(flatFile) }
+      : data;
+    branch.offset = data.offset ?? offset;
   } catch (error) {
-    branch.error = error.message;
+    if (state.expanded.get(id) === branch) branch.error = error.message;
   }
 }
 async function refresh() {
@@ -318,12 +418,22 @@ async function refresh() {
   state.polling = true;
   try {
     state.jobs = (await api("/api/jobs")).jobs;
+    if (!state.openedInitially && state.jobs.length) {
+      state.openedInitially = true;
+      const first =
+        state.jobs.find(
+          (job) => job.active_files || job.status === "running",
+        ) || state.jobs.find((job) => job.status === "queued");
+      if (first) state.expanded.set(key(first.id, ""), { offset: 0 });
+    }
     for (const [id, branch] of [...state.expanded]) {
+      if (state.expanded.get(id) !== branch) continue;
       const split = id.indexOf("|");
       const jobId = id.slice(0, split),
         prefix = id.slice(split + 1);
       if (!state.jobs.some((j) => j.id === jobId)) state.expanded.delete(id);
-      else await loadBranch(jobId, prefix, branch.offset);
+      else if (matches(state.jobs.find((job) => job.id === jobId)))
+        await loadBranch(jobId, prefix, branch.offset);
     }
     render();
     $("connection").hidden = true;
@@ -413,13 +523,6 @@ $("filters").onclick = (event) => {
   document
     .querySelectorAll("[data-filter]")
     .forEach((b) => b.classList.toggle("active", b === button));
-  $("view-title").textContent = {
-    all: t("Tous les téléchargements"),
-    active: t("Téléchargements en cours"),
-    paused: t("Téléchargements en pause"),
-    completed: t("Téléchargements terminés"),
-    error: t("Téléchargements à vérifier"),
-  }[state.filter];
   render();
 };
 $("search").oninput = () => {
@@ -429,8 +532,19 @@ $("search").oninput = () => {
 $("download-rows").onclick = async (event) => {
   const expand = event.target.closest("[data-expand]"),
     page = event.target.closest("[data-page]"),
+    viewButton = event.target.closest("[data-file-view]"),
     row = event.target.closest("[data-job]");
   if (row) state.selected = row.dataset.job;
+  if (viewButton) {
+    const jobId = viewButton.dataset.viewJob;
+    state.selected = jobId;
+    state.fileViews.set(jobId, viewButton.dataset.fileView);
+    for (const id of [...state.expanded.keys()])
+      if (id.startsWith(key(jobId, ""))) state.expanded.delete(id);
+    const pending = loadBranch(jobId, "");
+    render();
+    await pending;
+  }
   if (expand) {
     const id = key(expand.dataset.expand, expand.dataset.prefix);
     if (state.expanded.has(id)) {

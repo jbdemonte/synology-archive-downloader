@@ -334,6 +334,54 @@ class StateTests(Base):
                 self.settings.create_folder(str(self.root), "forbidden")
         self.assertFalse((self.root / "forbidden").exists())
 
+    def test_large_activity_prioritizes_live_files_and_real_queue_order(self):
+        data = manifest()
+        data["files"] = [
+            {**data["files"][0], "name": f"nested/roms/game-{42000 - i:05}.zip"}
+            for i in range(42000)
+        ]
+        job = self.store.add(data, "all", "", self.downloads)
+        with self.store.db:
+            self.store.db.execute("UPDATE files SET status='completed' WHERE id<=40000")
+            self.store.db.execute("UPDATE files SET status='downloading' WHERE id IN (41998,41999)")
+            self.store.db.execute("UPDATE files SET status='error',error='Denied' WHERE id=40001")
+            self.store.db.execute(
+                "UPDATE files SET available_at=? WHERE id=40002", (time.time() + 3600,)
+            )
+        activity = self.store.activity(job)
+        self.assertEqual([row["id"] for row in activity["active"]], [41998, 41999])
+        self.assertEqual(
+            activity["counts"], {"completed": 40000, "downloading": 2, "error": 1, "queued": 1997}
+        )
+        self.assertEqual(len(activity["queued"]), 10)
+        self.assertEqual(activity["queued"][0]["id"], self.store.claim()["id"])
+        self.assertEqual(activity["queued"][0]["id"], 40003)
+        self.assertEqual(activity["errors"][0]["error"], "Denied")
+        self.assertLess(len(json.dumps(activity)), 10000)
+        self.store.update(41998, status="completed")
+        after = self.store.activity(job)
+        self.assertEqual(after["counts"]["completed"], 40001)
+        self.assertEqual([row["id"] for row in after["active"]], [40003, 41999])
+        completed = self.store.files(job, offset=99999, status="completed")
+        self.assertEqual(completed["total"], 40001)
+        self.assertEqual(completed["offset"], 40000)
+        self.assertTrue(all(row["status"] == "completed" for row in completed["files"]))
+        with self.assertRaises(KeyError):
+            self.store.activity("missing")
+
+    def test_activity_keeps_paused_queue_and_orders_delayed_retries(self):
+        data = manifest()
+        data["files"] = [{**data["files"][0], "name": f"game-{i}.zip"} for i in range(3)]
+        job = self.store.add(data, "all", "", self.downloads, paused=True)
+        self.store.update(1, available_at=time.time() + 200)
+        self.store.update(2, available_at=time.time() + 100)
+        self.assertEqual([row["id"] for row in self.store.activity(job)["queued"]], [3, 2, 1])
+        self.assertIsNone(self.store.claim())
+        self.assertEqual(self.store.jobs()[0]["status"], "paused")
+        self.store.update(2, status="error")
+        self.assertEqual(self.store.activity(job)["counts"]["error"], 1)
+        self.assertEqual(len(self.store.files(job, status="error")["files"]), 1)
+
     def test_tree_aggregates_folders_and_paginates(self):
         data = manifest()
         data["files"] = [

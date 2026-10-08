@@ -24,7 +24,7 @@ const jobs = [
     identifier: "space-photography",
     title: "Space Photography Collection",
     status: "running",
-    file_count: 248,
+    file_count: 176,
     completed_files: 173,
     total_size: 6.8 * GiB,
     downloaded: 4.7 * GiB,
@@ -68,7 +68,7 @@ const tree = {
       downloaded: 4.3 * GiB,
       speed: 3.4 * MiB,
       status: "downloading",
-      file_count: 246,
+      file_count: 174,
       completed_files: 171,
     },
     {
@@ -149,21 +149,31 @@ try {
         storage: { free: 3.7 * 1024 ** 4, total: 8 * 1024 ** 4 },
       };
     else if (url.pathname === "/api/jobs") body = { jobs };
-    else if (url.pathname.endsWith("/tree")) {
+    else if (url.pathname.endsWith("/activity")) {
+      const files = tree.photographs.map((row) => ({ ...row, name: row.path }));
+      body = {
+        active: files.filter((row) => row.status === "downloading"),
+        queued: files.filter((row) => row.status === "queued"),
+        errors: [],
+        counts: { downloading: 2, queued: 1, completed: 173, error: 0 },
+      };
+    } else if (url.pathname.endsWith("/tree")) {
       const children = tree[url.searchParams.get("prefix") || ""] || [];
       body = { children, total: children.length };
     } else throw new Error(`Unexpected screenshot request: ${url.pathname}`);
     await route.fulfill({ json: body });
   });
   await page.goto(base);
-  await page
-    .getByRole("button", { name: "Expand space-photography", exact: true })
-    .click();
+  await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
+  await page.screenshot({ path: new URL("downloads.png", out).pathname });
+  await page.getByRole("button", { name: "Folders", exact: true }).click();
   await page
     .getByRole("button", { name: "Expand photographs", exact: true })
     .click();
   await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
-  await page.screenshot({ path: new URL("downloads.png", out).pathname });
+  await page.screenshot({ path: new URL("folders.png", out).pathname });
+  await page.locator('[data-file-view="activity"]').click();
+  await page.getByText("lunar-surface.tif", { exact: true }).waitFor();
   await page.locator("#settings-open").click();
   await page.locator("#setting-language").selectOption("en");
   await page.screenshot({ path: new URL("settings.png", out).pathname });
