@@ -28,8 +28,27 @@ try {
       <style>body { margin: 8px; font: 19px serif; } button { padding: 2px; border-radius: 0; }</style>
       <link rel="stylesheet" href="/webman/3rdparty/ArchiveStation/style.css">
       <script>window.SYNO={SDS:{Session:{SynoToken:"test-dsm-token",lang:"fre"}}};</script>
-      </head><body><button id="dsm-button">Centre de paquets</button>
-      <iframe title="Archive Station" src="${appURL}" style="display:block;width:1200px;height:800px;border:0"></iframe>
+      <script>
+      window.layoutSettings = {};
+      window.resizes = [];
+      window.nativeWindow = {
+        iframeId: "archive-frame", jsConfig: {jsID: "com.archivestation.app"},
+        appInstance: {
+          getUserSettings: key => window.layoutSettings[key],
+          setUserSettings: (key, value) => { window.layoutSettings[key] = value; }
+        },
+        getSize: () => ({width: 1000, height: 1050}),
+        setSize: (width, height) => {
+          window.resizes.push({width, height});
+          const frame = document.getElementById("archive-frame");
+          frame.style.width = width + "px"; frame.style.height = height + "px";
+        },
+        onHandlerResize: () => { window.savedGeometry = true; }
+      };
+      window.Ext = {getCmp: id => id === "native-window" ? window.nativeWindow : null};
+      window.SYNO.SDS.WindowMgr = {centerWindow: () => { window.centered = true; }};
+      </script></head><body><button id="dsm-button">Centre de paquets</button>
+      <div id="native-window"><iframe id="archive-frame" title="Archive Station" src="${appURL}" style="display:block;width:1200px;height:800px;border:0"></iframe></div>
       </body></html>`,
     }),
   );
@@ -153,6 +172,37 @@ try {
   await app
     .getByRole("heading", { name: "Tous les téléchargements" })
     .waitFor();
+  assert.deepEqual(await page.evaluate(() => resizes), [
+    { width: 1360, height: 840 },
+  ]);
+  assert.equal(await page.evaluate(() => savedGeometry && centered), true);
+  const nativeFrame = page
+    .frames()
+    .find((frame) => frame.url().includes("/webman/"));
+  await nativeFrame.goto(base + appURL);
+  await app.locator("#application").waitFor({ state: "visible" });
+  assert.equal(
+    await page.evaluate(() => resizes.length),
+    1,
+    "Manual geometry is preserved after migration",
+  );
+  await page.evaluate(() => {
+    layoutSettings = {};
+    nativeWindow.maximized = true;
+  });
+  await nativeFrame.goto(base + appURL);
+  await app.locator("#application").waitFor({ state: "visible" });
+  assert.equal(
+    await page.evaluate(() => resizes.length),
+    1,
+    "Maximized windows must stay maximized",
+  );
+  assert.equal(
+    (await (await page.request.get(base + "/api/settings")).json())
+      .report_language,
+    "fr",
+    "Background reports remember the resolved DSM session language",
+  );
   assert.equal(await app.locator("#logout").isVisible(), false);
   assert.equal(await app.locator("#password").isVisible(), false);
   assert.equal(await app.locator(".app-header").isVisible(), false);
@@ -207,6 +257,31 @@ try {
     );
     await app.locator("#settings-open").click();
     await app.locator("#settings-dialog").waitFor({ state: "visible" });
+    const selectStyle = await app
+      .locator("#setting-language")
+      .evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          paddingRight: parseFloat(style.paddingRight),
+          arrow: style.backgroundPosition,
+        };
+      });
+    assert.ok(
+      selectStyle.paddingRight >= 36,
+      "Select text reserves space for the inset arrow",
+    );
+    assert.ok(selectStyle.arrow.includes("14px"));
+    assert.equal(
+      await app
+        .locator('#settings-dialog button[type="submit"]')
+        .evaluate(
+          (el) =>
+            getComputedStyle(el).fontSize ===
+            getComputedStyle(el.querySelector("[data-i18n]")).fontSize,
+        ),
+      true,
+      "Translated Save label retains normal button typography",
+    );
     assert.ok(
       await app
         .locator('#settings-dialog button[type="submit"]')

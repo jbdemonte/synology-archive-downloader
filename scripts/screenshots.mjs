@@ -13,7 +13,7 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({
   locale: "en-GB",
-  viewport: { width: 1360, height: 980 },
+  viewport: { width: 1360, height: 840 },
   deviceScaleFactor: 1,
 });
 const MiB = 1024 ** 2,

@@ -66,21 +66,25 @@
           data-i18n-aria-label="Filtrer les téléchargements"
         >
           <button data-filter="all" class="nav-item active">
-            <span>▤</span
-            ><span data-i18n="Tous les téléchargements"
+            <span class="nav-icon" aria-hidden="true">▤</span
+            ><span class="nav-label" data-i18n="Tous les téléchargements"
               >Tous les téléchargements</span
             ><b id="count-all">0</b></button
           ><button data-filter="active" class="nav-item">
-            <span>↓</span><span data-i18n="En cours">En cours</span
+            <span class="nav-icon" aria-hidden="true">↓</span
+            ><span class="nav-label" data-i18n="En cours">En cours</span
             ><b id="count-active">0</b></button
           ><button data-filter="paused" class="nav-item">
-            <span>Ⅱ</span><span data-i18n="En pause">En pause</span
+            <span class="nav-icon" aria-hidden="true">Ⅱ</span
+            ><span class="nav-label" data-i18n="En pause">En pause</span
             ><b id="count-paused">0</b></button
           ><button data-filter="completed" class="nav-item">
-            <span>✓</span><span data-i18n="Terminés">Terminés</span
+            <span class="nav-icon" aria-hidden="true">✓</span
+            ><span class="nav-label" data-i18n="Terminés">Terminés</span
             ><b id="count-completed">0</b></button
           ><button data-filter="error" class="nav-item">
-            <span>!</span><span data-i18n="À vérifier">À vérifier</span
+            <span class="nav-icon" aria-hidden="true">!</span
+            ><span class="nav-label" data-i18n="À vérifier">À vérifier</span
             ><b id="count-error">0</b>
           </button>
         </nav>
@@ -122,11 +126,11 @@
           </div>
           <div class="page-actions">
             <button id="settings-open" class="settings-button" type="button">
-              <span aria-hidden="true">⚙</span
+              <span class="button-icon" aria-hidden="true">⚙</span
               ><span data-i18n="Paramètres">Paramètres</span>
             </button>
             <button id="add-open" class="primary">
-              <span>＋</span
+              <span class="button-icon" aria-hidden="true">＋</span
               ><span data-i18n="Ajouter des URL">Ajouter des URL</span>
             </button>
           </div>

@@ -60,6 +60,7 @@ class Settings:
             "retries": 4,
             "verify_checksums": True,
             "language": "auto",
+            "report_language": "auto",
         }
         if self.path.exists():
             self.values.update(json.loads(self.path.read_text()))
@@ -99,8 +100,9 @@ class Settings:
                     raise ValueError(f"{key} doit être compris entre {minimum} et {maximum}.")
             if type(new["verify_checksums"]) is not bool:
                 raise ValueError("Option de vérification invalide.")
-            if not isinstance(new["language"], str) or new["language"] not in LANGUAGES:
-                raise ValueError("Langue non prise en charge.")
+            for key in ("language", "report_language"):
+                if not isinstance(new[key], str) or new[key] not in LANGUAGES:
+                    raise ValueError("Langue non prise en charge.")
             new["download_dir"] = str(self.directory(new["download_dir"], create=True))
             temporary = self.path.with_suffix(".tmp")
             temporary.write_text(json.dumps(new, indent=2))

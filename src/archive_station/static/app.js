@@ -56,6 +56,44 @@ const embedded = location.pathname.startsWith(
 );
 let authMode = embedded ? "dsm" : "password";
 document.body.classList.toggle("dsm-embedded", embedded);
+function restoreWindowLayout() {
+  // DSM restores old geometry before loading our iframe. Migrate only this
+  // application's formerly tall window, once per DSM user. Later manual sizes
+  // (and maximized windows) remain the user's choice.
+  try {
+    const desktop = window.parent;
+    const frame = window.frameElement;
+    if (!embedded || !frame || !desktop.Ext?.getCmp) return;
+    for (let node = frame.parentElement; node; node = node.parentElement) {
+      const nativeWindow = node.id && desktop.Ext.getCmp(node.id);
+      if (
+        nativeWindow?.iframeId !== frame.id ||
+        nativeWindow.jsConfig?.jsID !== "com.archivestation.app"
+      )
+        continue;
+      const instance = nativeWindow.appInstance;
+      if (instance.getUserSettings("layoutRevision") === 2) return;
+      if (!nativeWindow.maximized && desktop.innerWidth >= 1000) {
+        const size = nativeWindow.getSize();
+        if (size.width / size.height < 1.35) {
+          const width = Math.min(1360, desktop.innerWidth - 48);
+          const height = Math.min(
+            840,
+            Math.round(width / 1.62),
+            desktop.innerHeight - 96,
+          );
+          nativeWindow.setSize(width, height);
+          desktop.SYNO.SDS.WindowMgr.centerWindow(nativeWindow);
+          nativeWindow.onHandlerResize();
+        }
+      }
+      instance.setUserSettings("layoutRevision", 2);
+      return;
+    }
+  } catch {
+    // An unsupported DSM window API must never prevent using the application.
+  }
+}
 function dsmToken() {
   // DSM's own Ajax client uses this session token. Read it only from our
   // same-origin desktop parent and send it only to the DSM gateway.
@@ -306,6 +344,13 @@ async function loadSettings() {
   state.settings = await api("/api/settings");
   const s = state.settings;
   const changed = await ArchiveI18n.apply(s.language || "auto", s.dsm_language);
+  // Reports are generated even with the browser closed. Remember the language
+  // resolved from the DSM session when the UI preference is automatic.
+  if (s.language === "auto" && s.report_language !== ArchiveI18n.locale) {
+    await api("/api/settings", { report_language: ArchiveI18n.locale }).catch(
+      () => {},
+    );
+  }
   if (changed) render();
   $("destination-short").textContent = s.download_dir;
   $("destination-short").title = s.download_dir;
@@ -751,6 +796,7 @@ async function init() {
     $("logout").hidden = authMode !== "password";
     $("local-password-settings").hidden = authMode !== "password";
     if (auth.authenticated) {
+      restoreWindowLayout();
       showApp();
       await loadSettings();
       await refresh();

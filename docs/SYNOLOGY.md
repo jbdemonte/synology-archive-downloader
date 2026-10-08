@@ -23,7 +23,7 @@ Aucun mot de passe propre au paquet n’est demandé. À chaque appel API, `gate
 
 DSM remplace les réponses HTTP 403, 404 et certaines erreurs serveur par une page HTML. Pour conserver les messages de l’API, la passerelle transporte ces erreurs en HTTP 200 avec leur code dans `_http_status` ; le frontend les traite toujours comme des échecs. Les contrôles d’authentification et de permissions restent obligatoires. Aucun réglage Nginx n’est modifié.
 
-Le lanceur et les ressources statiques portent la version du paquet dans leur URL pour renouveler le cache après une mise à jour. La fenêtre s’ouvre par défaut en 1360 × 840 ; la mise en page s’adapte également aux fenêtres plus petites, avec défilement à l’intérieur de la liste de fichiers.
+Le lanceur et les ressources statiques portent la version du paquet dans leur URL pour renouveler le cache après une mise à jour. La fenêtre s’ouvre par défaut en 1360 × 840. Une migration unique des anciennes proportions trop verticales ajuste seulement la fenêtre Archive Station aux dimensions du bureau, sans toucher aux fenêtres maximisées ni aux redimensionnements ultérieurs ; la mise en page s’adapte également aux fenêtres plus petites, avec défilement à l’intérieur de la liste de fichiers.
 
 Le serveur démarre avec `--dsm-auth` sur la boucle locale et exige le marqueur ajouté par la passerelle après validation. Les cookies DSM ne sont pas transmis au backend. Les modifications restent soumises aux vérifications d’origine et de format JSON. Les anciens fichiers de mot de passe d’Archive Station sont ignorés dans ce mode.
 

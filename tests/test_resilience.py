@@ -8,11 +8,12 @@ import subprocess
 import sys
 import threading
 import time
+from unittest.mock import patch
 
 from test_downloads import PAYLOAD, Base, Response, manifest
 
 from archive_station.engine import CHUNK, Engine
-from archive_station.reports import Reports
+from archive_station.reports import Reports, duration, render_report, size
 from archive_station.store import Store
 
 
@@ -112,29 +113,77 @@ Engine(store, Client(), settings).transfer(store.claim())
             self.downloads,
             source_url="https://archive.org/download/test-item",
         )
+        self.settings.update({"language": "en"})
         reports = Reports(self.store, self.settings)
         row = self.store.claim()
         self.partial(row, PAYLOAD[:100])
         self.store.update(row["id"], downloaded=100)
         reports.update()
-        path = self.downloads / "test-item" / f"ArchiveStation-report-{job}.json"
-        report = json.loads(path.read_text())
-        self.assertEqual(report["downloaded_bytes"], 100)
-        self.assertEqual(report["completed_bytes"], 0)
+        path = self.downloads / "test-item" / f"ArchiveStation-report-{job}.txt"
+        report = path.read_text(encoding="utf-8")
+        self.assertIn("Data downloaded          : 100 bytes", report)
+        self.assertIn("Completed file data      : 0 bytes", report)
+        self.assertIn("Files completed          : 0 / 1", report)
         self.engine.transfer(row)
         self.store.finish_jobs()
         reports.update()
-        report = json.loads(path.read_text())
-        self.assertEqual(report["status"], "completed")
-        self.assertEqual(report["source_url"], "https://archive.org/download/test-item")
-        self.assertEqual(report["completed_bytes"], len(PAYLOAD))
-        self.assertIsNotNone(report["finished_at"])
-        self.assertGreaterEqual(report["duration_seconds"], 0)
+        report = path.read_text(encoding="utf-8")
+        self.assertIn("Status                   : Completed", report)
+        self.assertIn("https://archive.org/download/test-item", report)
+        self.assertIn("Completed file data      : " + size(len(PAYLOAD)), report)
+        self.assertNotIn("Task finished            : Not available", report)
+        self.assertIn("Duration includes pauses and NAS downtime.", report)
         self.assertEqual(list(path.parent.glob(".archive-station-report-*")), [])
-        path.write_text('{"user": "do not overwrite"}')
+        path.write_text("Personal notes, do not overwrite", encoding="utf-8")
         with self.assertRaises(ValueError):
             reports.write(self.store.jobs()[0])
-        self.assertEqual(json.loads(path.read_text()), {"user": "do not overwrite"})
+        self.assertEqual(path.read_text(), "Personal notes, do not overwrite")
+
+    def test_report_legacy_json_migration_preserves_unrelated_files(self):
+        job = self.add()
+        root = self.downloads / "test-item"
+        root.mkdir(parents=True)
+        legacy = root / f"ArchiveStation-report-{job}.json"
+        legacy.write_text(
+            json.dumps({"application": "Archive Station", "report_version": 1, "job_id": job})
+        )
+        reports = Reports(self.store, self.settings)
+        reports.update()
+        self.assertTrue((root / f"ArchiveStation-report-{job}.txt").exists())
+        self.assertFalse(legacy.exists())
+        for content in ['{"personal": "notes"}', "not JSON"]:
+            legacy.write_text(content)
+            reports.write(self.store.jobs()[0])
+            self.assertEqual(legacy.read_text(), content)
+        legacy.unlink()
+        external = self.root / "external.json"
+        external.write_text(
+            json.dumps({"application": "Archive Station", "report_version": 1, "job_id": job})
+        )
+        legacy.symlink_to(external)
+        reports.write(self.store.jobs()[0])
+        self.assertTrue(legacy.is_symlink())
+        self.assertTrue(external.exists())
+
+    def test_readable_report_formats_duration_sizes_and_french_language(self):
+        self.add()
+        job = self.store.jobs()[0]
+        with patch("archive_station.reports.dsm_language", return_value="fre"):
+            report = render_report(job, self.settings.get(), job["created"] + 90061)
+        self.assertIn("RAPPORT DE TÉLÉCHARGEMENT", report)
+        self.assertIn("1 j 01 h 01 min 01 s", report)
+        self.assertIn("En attente", report)
+        self.assertIn("UTC", report)
+        self.assertIn("0 octets", report)
+        self.assertEqual(size(1024**3), "1.00 GiB (1 073 741 824 bytes)")
+        self.assertEqual(duration(-1), "0 d 00 h 00 min 00 s")
+        with patch("archive_station.reports.dsm_language", return_value="def"):
+            self.settings.update({"report_language": "fr"})
+            self.assertIn(
+                "RAPPORT DE TÉLÉCHARGEMENT", render_report(job, self.settings.get(), job["created"])
+            )
+        self.settings.update({"language": "en"})
+        self.assertIn("DOWNLOAD REPORT", render_report(job, self.settings.get(), job["created"]))
 
     def test_old_database_migrates_without_changing_download_progress(self):
         old = self.root / "legacy.sqlite3"

@@ -58,6 +58,48 @@ try {
       ),
       false,
     );
+    for (const width of [1360, 1000, 800]) {
+      await page.setViewportSize({ width, height: 720 });
+      const overflow = await page.locator(".nav-item").evaluateAll((buttons) =>
+        buttons.flatMap((button) => {
+          const label = button.querySelector("[data-i18n]");
+          const count = button.querySelector("b");
+          const original = count.textContent;
+          count.textContent = "42798";
+          const range = document.createRange();
+          range.selectNodeContents(label);
+          const bounds = button.getBoundingClientRect();
+          const countBounds = count.getBoundingClientRect();
+          const clipped = [...range.getClientRects()].some(
+            (r) =>
+              r.left < bounds.left ||
+              r.right > countBounds.left ||
+              r.top < bounds.top ||
+              r.bottom > bounds.bottom,
+          );
+          count.textContent = original;
+          return clipped ? [label.textContent] : [];
+        }),
+      );
+      assert.deepEqual(
+        overflow,
+        [],
+        `Navigation labels must fit in ${code} at ${width}px`,
+      );
+      const overlap = await page.locator(".page-title").evaluate((element) => {
+        const title = element.querySelector("h1").getBoundingClientRect();
+        const buttons = element
+          .querySelector(".page-actions")
+          .getBoundingClientRect();
+        return title.right > buttons.left || buttons.right > innerWidth;
+      });
+      assert.equal(
+        overlap,
+        false,
+        `Title and buttons must fit in ${code} at ${width}px`,
+      );
+    }
+    await page.setViewportSize({ width: 1000, height: 720 });
   }
   await page.reload();
   await page.waitForFunction(() => document.documentElement.lang === "vi");
