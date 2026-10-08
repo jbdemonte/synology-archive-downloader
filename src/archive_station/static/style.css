@@ -1514,3 +1514,16 @@ dialog > form {
     grid-row: 1;
   }
 }
+
+.settings-extra {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+.settings-extra summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--blue);
+}
+#schedule-days .checkbox {
+  margin: 0;
+}

@@ -4,6 +4,7 @@ import json
 import logging
 import mimetypes
 import shutil
+import time
 from http import HTTPStatus
 from http.cookies import SimpleCookie
 from pathlib import Path
@@ -15,6 +16,7 @@ from .archive import parse_identifier
 from .auth import Auth
 from .config import LANGUAGES, dsm_language
 from .plans import Plans
+from .schedule import policy
 
 LOG = logging.getLogger(__name__)
 STATIC = Path(__file__).parent / "static"
@@ -190,6 +192,7 @@ class WebApp:
                     "version": __version__,
                     "dsm_language": dsm_language() if self.dsm_auth else "",
                     "destination_locked": self.store.destination_locked(),
+                    "timezone": time.strftime("%Z"),
                 }
             )
         if path == "/api/password" and method == "POST":
@@ -230,7 +233,7 @@ class WebApp:
             )
             return response({"id": job_id, "identifier": identifier}, 201)
         if path == "/api/jobs" and method == "GET":
-            return response({"jobs": self.store.jobs()})
+            return response({"jobs": self.store.jobs(), "policy": policy(self.settings.get())})
         parts = path.strip("/").split("/")
         if len(parts) == 3 and parts[:2] == ["api", "plans"]:
             if method == "POST":

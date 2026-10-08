@@ -71,6 +71,8 @@ class Notifications:
                 "DELETE FROM notifications WHERE event=?", [(key,) for key in known - events.keys()]
             )
         for key, kind in events.items():
+            if self.stop.is_set():
+                return
             if key in known:
                 continue
             if self.settings.get()["notifications"]:

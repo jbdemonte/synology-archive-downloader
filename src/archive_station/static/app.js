@@ -42,7 +42,11 @@ function bytes(n) {
   return `${(n / 1024 ** unit).toLocaleString(ArchiveI18n.locale, { maximumFractionDigits: unit ? 1 : 0 })} ${[t("o"), t("Kio"), t("Mio"), t("Gio"), t("Tio")][unit]}`;
 }
 function eta(job) {
-  if (!["running", "queued"].includes(job.status)) return "";
+  if (
+    state.policy?.allowed === false ||
+    !["running", "queued"].includes(job.status)
+  )
+    return "";
   const value =
     job.eta_seconds != null
       ? `${job.eta_lower_bound ? "≥" : "≈"} ${remainingDuration(job.eta_seconds)}`
@@ -475,7 +479,14 @@ async function refresh() {
   if (state.polling || $("application").hidden) return;
   state.polling = true;
   try {
-    state.jobs = (await api("/api/jobs")).jobs;
+    const data = await api("/api/jobs");
+    state.jobs = data.jobs;
+    state.policy = data.policy;
+    $("schedule-notice").hidden = !data.policy?.outside;
+    $("schedule-notice").textContent =
+      data.policy?.allowed === false
+        ? t("En attente du créneau planifié.")
+        : `${t("Débit réduit")} : ${bytes((data.policy?.limit_kib || 0) * 1024)}/s`;
     setDestinationLocked(
       state.jobs.some(
         (job) =>
@@ -929,6 +940,16 @@ function setDestinationLocked(locked) {
     }
   }
 }
+function timeInput(minutes) {
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+}
+function timeMinutes(value) {
+  const [h, m] = value.split(":").map(Number);
+  return h * 60 + m;
+}
+$("schedule-enabled").onchange = () => {
+  $("schedule-fields").disabled = !$("schedule-enabled").checked;
+};
 async function openSettings(focusDestination = false) {
   try {
     await loadSettings();
@@ -948,6 +969,18 @@ async function openSettings(focusDestination = false) {
     $("setting-retries").value = s.retries;
     $("setting-verify").checked = s.verify_checksums;
     $("setting-notifications").checked = s.notifications !== false;
+    $("schedule-enabled").checked = s.schedule_enabled || false;
+    $("schedule-fields").disabled = !$("schedule-enabled").checked;
+    $("schedule-zone").textContent = s.timezone || "—";
+    $("schedule-start").value = timeInput(s.schedule_start || 0);
+    $("schedule-end").value = timeInput(s.schedule_end || 0);
+    $("schedule-outside").value = s.schedule_outside || "pause";
+    $("schedule-limit").value = s.schedule_limit_kib || 1024;
+    $("schedule-days").innerHTML = Array.from(
+      { length: 7 },
+      (_, i) =>
+        `<label class="checkbox"><input type="checkbox" value="${i}" ${(s.schedule_days || [0, 1, 2, 3, 4, 5, 6]).includes(i) ? "checked" : ""}/>${esc(new Intl.DateTimeFormat(ArchiveI18n.locale, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, 9, 5 + i))))}</label>`,
+    ).join("");
     $("setting-password").value = "";
     $("settings-error").textContent = "";
     $("settings-dialog").showModal();
@@ -972,6 +1005,14 @@ $("settings-form").onsubmit = async (event) => {
       retries: Number($("setting-retries").value),
       verify_checksums: $("setting-verify").checked,
       notifications: $("setting-notifications").checked,
+      schedule_enabled: $("schedule-enabled").checked,
+      schedule_days: [
+        ...$("schedule-days").querySelectorAll("input:checked"),
+      ].map((input) => Number(input.value)),
+      schedule_start: timeMinutes($("schedule-start").value),
+      schedule_end: timeMinutes($("schedule-end").value),
+      schedule_outside: $("schedule-outside").value,
+      schedule_limit_kib: Number($("schedule-limit").value),
       language: $("setting-language").value,
     });
     if (authMode === "password" && $("setting-password").value) {

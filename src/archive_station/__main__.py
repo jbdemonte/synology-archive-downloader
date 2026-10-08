@@ -92,6 +92,8 @@ def main():
         server.run()
     finally:
         server.close()
+        notifications.stop.set()
+        reports.stop.set()
         engine.shutdown()
         reports.shutdown()
         notifications.shutdown()

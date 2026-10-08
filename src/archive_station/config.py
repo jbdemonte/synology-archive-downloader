@@ -5,6 +5,8 @@ import os
 import threading
 from pathlib import Path
 
+from .schedule import validate as validate_schedule
+
 LANGUAGES = {
     "auto",
     "en",
@@ -60,6 +62,12 @@ class Settings:
             "retries": 4,
             "verify_checksums": True,
             "notifications": True,
+            "schedule_enabled": False,
+            "schedule_days": list(range(7)),
+            "schedule_start": 0,
+            "schedule_end": 0,
+            "schedule_outside": "pause",
+            "schedule_limit_kib": 1024,
             "language": "auto",
             "report_language": "auto",
         }
@@ -92,8 +100,10 @@ class Settings:
             raise ValueError("Paramètre inconnu.")
         with self.lock:
             new = {**self.values, **values}
+            validate_schedule(new)
             for key, minimum, maximum in (
                 ("connections", 1, 8),
+                ("schedule_limit_kib", 1, 1_000_000),
                 ("retries", 0, 10),
                 ("speed_limit_kib", 0, 1_000_000),
             ):

@@ -235,6 +235,12 @@
           >
             Sélectionner une archive pour activer les commandes.
           </p>
+          <p
+            id="schedule-notice"
+            class="selection-hint"
+            role="status"
+            hidden
+          ></p>
           <div class="table-scroll">
             <table class="downloads">
               <thead>
@@ -656,6 +662,56 @@
               connexions.</span
             >
           </p>
+          <details class="settings-extra">
+            <summary data-i18n="Planification">Planification</summary>
+            <label class="checkbox"
+              ><input id="schedule-enabled" type="checkbox" /><span
+                data-i18n="Activer la planification"
+                >Activer la planification</span
+              ></label
+            >
+            <fieldset id="schedule-fields" class="selection-controls">
+              <p class="field-help">
+                <span data-i18n="Heure du NAS">Heure du NAS</span> :
+                <strong id="schedule-zone"></strong>
+              </p>
+              <div id="schedule-days" class="selection-actions"></div>
+              <div class="two-columns">
+                <div>
+                  <label for="schedule-start" data-i18n="Début">Début</label
+                  ><input id="schedule-start" type="time" required />
+                </div>
+                <div>
+                  <label for="schedule-end" data-i18n="Fin">Fin</label
+                  ><input id="schedule-end" type="time" required />
+                </div>
+              </div>
+              <p class="field-help" data-i18n="Début = fin : journée entière.">
+                Début = fin : journée entière.
+              </p>
+              <label for="schedule-outside" data-i18n="Hors créneau"
+                >Hors créneau</label
+              >
+              <select id="schedule-outside">
+                <option value="pause" data-i18n="En pause">En pause</option>
+                <option value="limited" data-i18n="Débit réduit">
+                  Débit réduit
+                </option>
+              </select>
+              <label for="schedule-limit"
+                ><span data-i18n="Débit réduit">Débit réduit</span> (<span
+                  data-i18n="Kio"
+                  >Kio</span
+                >/s)</label
+              ><input
+                id="schedule-limit"
+                type="number"
+                min="1"
+                max="1000000"
+                required
+              />
+            </fieldset>
+          </details>
           <div id="local-password-settings" hidden>
             <h3>
               <span data-i18n="Accès à l’application"

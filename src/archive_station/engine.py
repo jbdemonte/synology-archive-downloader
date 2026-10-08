@@ -10,6 +10,7 @@ import time
 from urllib.error import HTTPError
 
 from .archive import safe_path
+from .schedule import policy
 
 LOG = logging.getLogger(__name__)
 CHUNK = 64 * 1024
@@ -46,11 +47,15 @@ class Engine:
             thread.join(timeout=35)
 
     def check(self, job_id):
-        if self.stop.is_set() or not self.store.active(job_id):
+        if (
+            self.stop.is_set()
+            or not self.store.active(job_id)
+            or not policy(self.settings.get())["allowed"]
+        ):
             raise Interrupted()
 
     def throttle(self, size, job_id):
-        limit = self.settings.get()["speed_limit_kib"] * 1024
+        limit = policy(self.settings.get())["limit_kib"] * 1024
         if not limit:
             return
         with self.rate_lock:
@@ -61,7 +66,7 @@ class Engine:
             scheduled = max(now, self.next_chunk)
             self.next_chunk = scheduled + size / limit
         while time.monotonic() < scheduled:
-            if self.settings.get()["speed_limit_kib"] * 1024 != limit:
+            if policy(self.settings.get())["limit_kib"] * 1024 != limit:
                 with self.rate_lock:
                     self.next_chunk = 0
                 return
@@ -70,7 +75,10 @@ class Engine:
 
     def worker(self, index):
         while not self.stop.is_set():
-            if index >= self.settings.get()["connections"]:
+            if (
+                index >= self.settings.get()["connections"]
+                or not policy(self.settings.get())["allowed"]
+            ):
                 self.stop.wait(0.5)
                 continue
             row = self.store.claim()
@@ -81,6 +89,7 @@ class Engine:
             try:
                 self.transfer(row)
             except Interrupted:
+                self.store.estimates.reset(row["job_id"])
                 self.store.update(row["id"], status="queued", speed=0)
             except Exception as exc:
                 LOG.warning("Transfer failed for %s: %s", row["name"], exc)
