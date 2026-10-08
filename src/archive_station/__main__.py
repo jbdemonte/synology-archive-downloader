@@ -1,4 +1,4 @@
-"""Command-line entry point used by DSM, Docker and local development."""
+"""Command-line entry point used by DSM and local development."""
 
 import argparse
 import fcntl
@@ -48,8 +48,8 @@ def main():
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
         handlers=[
-            logging.StreamHandler(),
             RotatingFileHandler(data / "archive-station.log", maxBytes=2_000_000, backupCount=3),
+            *([] if args.dsm_auth else [logging.StreamHandler()]),
         ],
     )
     if not (args.no_auth or args.dsm_auth) and not Auth(data).path.exists():
@@ -94,10 +94,19 @@ def main():
         server.close()
         notifications.stop.set()
         reports.stop.set()
-        engine.shutdown()
-        reports.shutdown()
+        downloads_stopped = engine.shutdown()
+        reports_stopped = reports.shutdown()
         notifications.shutdown()
-        store.close()
+        if (
+            downloads_stopped
+            and reports_stopped
+            and not (notifications.thread and notifications.thread.is_alive())
+        ):
+            store.close()
+        else:
+            # Do not block again acquiring a database lock held by a stuck daemon.
+            # SQLite WAL and retained partials are recovered at the next start.
+            logging.warning("Exiting with a background operation still blocked")
         lock.close()
 
 

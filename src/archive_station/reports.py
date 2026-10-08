@@ -204,14 +204,30 @@ class Reports:
 
     def run(self):
         while not self.stop.is_set():
-            self.update()
+            try:
+                self.update()
+            except Exception:
+                LOG.exception("Report update failed; retrying on the next interval")
             self.stop.wait(15)
 
-    def shutdown(self):
+    def shutdown(self, timeout=10):
         self.stop.set()
-        if self.thread:
-            self.thread.join()
-        self.update()
+        previous = self.thread
+
+        def finish():
+            # Serialize the final snapshot with a possible in-flight write. Bound
+            # the caller's wait, including filesystem I/O in the final update.
+            if previous:
+                previous.join()
+            try:
+                self.update()
+            except Exception:
+                LOG.exception("Final report update failed")
+
+        self.thread = threading.Thread(target=finish, name="final-reports", daemon=True)
+        self.thread.start()
+        self.thread.join(timeout=timeout)
+        return not self.thread.is_alive()
 
     def update(self):
         for job in self.store.jobs():

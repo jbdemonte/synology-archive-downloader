@@ -49,6 +49,7 @@ class Engine:
         deadline = time.monotonic() + 35
         for thread in self.threads:
             thread.join(timeout=max(0, deadline - time.monotonic()))
+        return not any(thread.is_alive() for thread in self.threads)
 
     def check(self, job_id):
         if (

@@ -35,11 +35,22 @@ start() {
 }
 stop() {
     if running; then
-        kill "$pid"
+        kill "$pid" 2>/dev/null || true
         count=0
         while running; do
             count=$((count+1))
-            [ "$count" -lt 40 ] || { echo "Shutdown timed out" >&2; return 1; }
+            if [ "$count" -ge 60 ]; then
+                echo "Graceful shutdown timed out; stopping Archive Station forcibly" >&2
+                # running rechecks the process identity before using this PID.
+                kill -9 "$pid" 2>/dev/null || true
+                count=0
+                while running; do
+                    count=$((count+1))
+                    [ "$count" -lt 5 ] || { echo "Process is still blocked" >&2; return 1; }
+                    sleep 1
+                done
+                break
+            fi
             sleep 1
         done
     fi
