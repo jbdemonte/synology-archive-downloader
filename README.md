@@ -49,7 +49,7 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 ## Install
 
 1. Download the `.spk` from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases), or build it with `make build` (see below).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.2.0-7-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `ArchiveStation-0.2.0-7-x86_64.spk` (local builds place it in `dist/`).
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -74,6 +74,27 @@ The folder picker marks **read/write in green**, **read-only in blue**, and **in
 ![Archive Station settings showing the destination locked during downloads, language, transfer limits and free-space reserve](docs/images/settings.png)
 
 </details>
+
+## Upgrade while downloads are running
+
+1. Download the newer `.spk` and its `.spk.sha256` file from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases). To check the package download, run this command from their directory:
+
+   ```sh
+   shasum -a 256 -c ArchiveStation-0.2.0-7-x86_64.spk.sha256
+   ```
+
+   On Linux, use `sha256sum -c` instead.
+
+2. In DSM, use **Package Center → Manual Install** to install the newer package over the existing installation. DSM briefly stops and restarts Archive Station.
+3. Close and reopen the application, then check that progress continues.
+
+**An in-place upgrade preserves the queue, settings, completed files, partial downloads and error history.** Running tasks resume automatically; paused and cancelled tasks remain stopped. Downloads retain their original destination. The throughput graph and remaining-time estimate rebuild their recent measurements after the restart.
+
+Incomplete files stay in `.archive-station-parts` and resume from their actual size on disk. They only appear under their final names after transfer and the applicable integrity checks succeed. Keep **Check file integrity (SHA-1 / MD5)** enabled to compare files against the hashes supplied by Archive.org. If the server cannot resume a partial file, Archive Station downloads that file again cleanly. See [reliable downloads](#reliable-downloads-and-live-settings) for verification limits and conflict handling.
+
+The **0.2.0-6 → 0.2.0-7** upgrade was verified on a DS918+ running DSM 7.1.1 with five active transfers: partial files were retained, sampled completed files kept identical hashes, settings were preserved and progress resumed. Automated tests also cover forced process termination and recovery.
+
+For a manual pre-upgrade backup of the queue and configuration, stop the package and copy `/var/packages/ArchiveStation/var/`, then restart it. Downloaded files live separately in your chosen destination. A live database backup requires SQLite's backup API rather than copying an active database file.
 
 ## Add your first archive
 
@@ -181,7 +202,7 @@ Language names are sorted alphabetically using the current interface locale; Aut
 
 Open **Settings → Updates** and enable **Automatically check for updates** for one check per day, even when the application window is closed. Automatic checks are **off by default**. **Check now** also works with automatic checks disabled; save any changed update options first. Enable **Include prereleases** to receive community previews as well as stable releases.
 
-A newer compatible package appears as a link below the page title and in Settings. Follow it to GitHub, download the `.spk`, then use **Package Center → Manual Install** to upgrade. Installation is manual; task state and partial downloads are retained.
+A newer compatible package appears as a link below the page title and in Settings. Follow it to GitHub and use the [in-place upgrade procedure](#upgrade-while-downloads-are-running). Installation is manual; task state and partial downloads are retained.
 
 Checks use GitHub's public API without credentials or download information. Only published releases with a matching x86_64 package are considered; drafts are excluded. A private repository or a channel without a published package reports **No compatible public release**. Network errors report a failed check, rather than claiming the application is up to date. Checks run independently of download workers and are limited to one manual request per minute.
 
@@ -206,7 +227,7 @@ make run                   # Start locally at http://127.0.0.1:8274
 
 Python and Waitress artifacts are pinned and checksum-verified in `packaging/synology/runtime-lock.json`. Downloads are cached in `build/cache/`; subsequent builds work offline. Third-party licenses are included in the package.
 
-`make release` requires a clean Git checkout and development dependencies. It tests a committed source snapshot and produces the package, source archive, checksums, release notes and publication instructions under `dist/releases/<version>/`. See [release and community distribution](docs/RELEASING.md) for GitHub publishing and the separate SynoCommunity integration process.
+`make release` requires a clean Git checkout and development dependencies. See [prepare a community release](#prepare-a-community-release) below for the generated assets and publication steps.
 
 Standalone mode writes its initial password to `data/initial-password.txt`. That password is only for local development; the DSM package uses DSM authentication. Local state lives in `data/` and downloads in `downloads/`.
 
@@ -228,6 +249,27 @@ packaging/synology/   DSM lifecycle scripts, launcher, gateway and runtime licen
 scripts/             Build tooling, browser tests and screenshots
 tests/               Deterministic backend tests and isolated UI fixtures
 ```
+
+## Prepare a community release
+
+After installing development dependencies, update the package version and `docs/releases/<version>.md`, regenerate screenshots if the interface changed, and commit the sources. Then run:
+
+```sh
+make release
+```
+
+The command exports the committed tree, runs backend tests, formatting checks and browser tests, builds the `.spk`, and validates its contents. A successful run creates `dist/releases/<version>/` with:
+
+- The installable `.spk` and its SHA-256 checksum.
+- A source archive containing the same committed code, README and screenshots.
+- `RELEASE_NOTES.md`, `INSTALL.md` and `BUILD-INFO.txt` identifying the commit and completed checks.
+- `SHA256SUMS` for the bundle and `PUBLISH.md` with the exact tag and GitHub draft-release commands.
+
+The source archive contains committed files only; ignored local files, downloads and the private development how-to are excluded. The command prepares local artifacts; publishing is a separate step.
+
+Follow `PUBLISH.md` to push the source and tag and create a **draft release** with its attachments. Review the draft, make the repository public when ready, then select **Publish release**. Making the repository public alone does not publish a draft. Keep the first release marked **Pre-release** while gathering feedback on other NAS models; users must enable **Include prereleases** to discover it through the in-app checker.
+
+GitHub Releases supports direct `.spk` distribution for manual DSM installation. SynoCommunity inclusion is a separate contribution to `SynoCommunity/spksrc`, requiring a package recipe and maintainer review; uploading a GitHub release does not add the application to their catalog. See [release and community distribution](docs/RELEASING.md) for the full workflow and upstream references.
 
 ## Troubleshooting and contributing
 
