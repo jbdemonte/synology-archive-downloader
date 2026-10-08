@@ -1,0 +1,13 @@
+{
+  "python": {
+    "version": "3.12.15",
+    "release": "20261003",
+    "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261003/cpython-3.12.15%2B20261003-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+    "sha256": "731af898886c5f821890dc901eca3c651cca8e51fa7308c159d12a1194aeac91"
+  },
+  "waitress": {
+    "filename": "waitress-3.0.2-py3-none-any.whl",
+    "sha256": "c56d67fd6e87c2ee598b76abdd4e96cfad1f24cacdea5078d382b1f9d7b5ed2e",
+    "url": "https://files.pythonhosted.org/packages/8d/57/a27182528c90ef38d82b636a11f606b0cbb0e17588ed205435f8affe3368/waitress-3.0.2-py3-none-any.whl"
+  }
+}

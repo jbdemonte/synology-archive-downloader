@@ -1,0 +1,254 @@
+"""SQLite state, shared by the API and a bounded set of download workers."""
+
+import sqlite3
+import threading
+import time
+import uuid
+from pathlib import Path
+
+
+class Store:
+    def __init__(self, path):
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        self.lock = threading.RLock()
+        self.db = sqlite3.connect(path, check_same_thread=False)
+        self.db.row_factory = sqlite3.Row
+        self.db.executescript("""
+            PRAGMA journal_mode=WAL;
+            PRAGMA foreign_keys=ON;
+            CREATE TABLE IF NOT EXISTS jobs (
+                id TEXT PRIMARY KEY, identifier TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL, status TEXT NOT NULL, created REAL NOT NULL,
+                mode TEXT NOT NULL, pattern TEXT NOT NULL, destination TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS files (
+                id INTEGER PRIMARY KEY, job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+                name TEXT NOT NULL, size INTEGER, algorithm TEXT, digest TEXT,
+                status TEXT NOT NULL DEFAULT 'queued', downloaded INTEGER NOT NULL DEFAULT 0,
+                speed REAL NOT NULL DEFAULT 0, attempts INTEGER NOT NULL DEFAULT 0,
+                available_at REAL NOT NULL DEFAULT 0, error TEXT,
+                UNIQUE(job_id, name)
+            );
+            CREATE INDEX IF NOT EXISTS file_queue ON files(job_id, status, available_at, id);
+        """)
+        with self.lock, self.db:
+            columns = {row[1] for row in self.db.execute("PRAGMA table_info(jobs)")}
+            for name, definition in {
+                "source_url": "TEXT",
+                "finished_at": "REAL",
+            }.items():
+                if name not in columns:
+                    self.db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {definition}")
+            self.db.execute("UPDATE files SET status='queued', speed=0 WHERE status='downloading'")
+            self.db.execute("UPDATE jobs SET status='queued' WHERE status='running'")
+
+    def close(self):
+        with self.lock:
+            self.db.close()
+
+    def add(self, manifest, mode, pattern, destination, paused=False, source_url=None):
+        job_id = uuid.uuid4().hex
+        with self.lock, self.db:
+            try:
+                self.db.execute(
+                    "INSERT INTO jobs(id,identifier,title,status,created,mode,pattern,destination,"
+                    "source_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        job_id,
+                        manifest["identifier"],
+                        manifest["title"],
+                        "paused" if paused else "queued",
+                        time.time(),
+                        mode,
+                        pattern,
+                        str(destination),
+                        source_url or f"https://archive.org/details/{manifest['identifier']}",
+                    ),
+                )
+                self.db.executemany(
+                    "INSERT INTO files(job_id,name,size,algorithm,digest) VALUES (?,?,?,?,?)",
+                    [
+                        (job_id, f["name"], f["size"], f["algorithm"], f["digest"])
+                        for f in manifest["files"]
+                    ],
+                )
+            except sqlite3.IntegrityError as exc:
+                raise ValueError("Cet élément est déjà dans la liste des téléchargements.") from exc
+        return job_id
+
+    def jobs(self):
+        with self.lock:
+            return [
+                dict(row)
+                for row in self.db.execute("""
+                SELECT j.*, COUNT(f.id) AS file_count,
+                    COALESCE(SUM(f.size),0) AS total_size,
+                    COALESCE(SUM(f.downloaded),0) AS downloaded,
+                    COALESCE(SUM(CASE WHEN j.status IN ('running','queued')
+                        THEN f.speed ELSE 0 END),0) AS speed,
+                    SUM(f.status='completed') AS completed_files,
+                    SUM(f.status='downloading') AS active_files,
+                    COALESCE(SUM(CASE WHEN f.status='completed' THEN f.downloaded ELSE 0 END),0)
+                        AS completed_bytes,
+                    SUM(f.status='error') AS failed_files,
+                    SUM(f.size IS NULL) AS unknown_sizes
+                FROM jobs j JOIN files f ON f.job_id=j.id
+                GROUP BY j.id ORDER BY j.created DESC
+            """)
+            ]
+
+    def files(self, job_id, offset=0, limit=100, query="", status=""):
+        with self.lock:
+            if not self.db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
+                raise KeyError("Téléchargement introuvable.")
+            where, args = "job_id=? AND instr(lower(name), lower(?))>0", [job_id, query]
+            if status:
+                where += " AND status=?"
+                args.append(status)
+            total = self.db.execute(f"SELECT COUNT(*) FROM files WHERE {where}", args).fetchone()[0]
+            rows = self.db.execute(
+                f"SELECT * FROM files WHERE {where} ORDER BY id LIMIT ? OFFSET ?",
+                [*args, limit, offset],
+            ).fetchall()
+            return {"files": [dict(row) for row in rows], "total": total}
+
+    def action(self, job_id, action):
+        with self.lock, self.db:
+            job = self.db.execute("SELECT * FROM jobs WHERE id=?", (job_id,)).fetchone()
+            if not job:
+                raise KeyError("Téléchargement introuvable.")
+            if action == "pause":
+                if job["status"] in {"queued", "running"}:
+                    self.db.execute("UPDATE jobs SET status='paused' WHERE id=?", (job_id,))
+            elif action in {"resume", "retry"}:
+                if job["status"] != "completed":
+                    self.db.execute(
+                        "UPDATE files SET status='queued', attempts=0, available_at=0, "
+                        "error=NULL WHERE job_id=? AND status='error'",
+                        (job_id,),
+                    )
+                    self.db.execute(
+                        "UPDATE jobs SET status='queued', finished_at=NULL WHERE id=?", (job_id,)
+                    )
+            elif action == "cancel":
+                self.db.execute(
+                    "UPDATE jobs SET status='cancelled', finished_at=? WHERE id=?",
+                    (time.time(), job_id),
+                )
+            elif action == "remove":
+                if (
+                    job["status"] in {"queued", "running"}
+                    or self.db.execute(
+                        "SELECT 1 FROM files WHERE job_id=? AND status='downloading'", (job_id,)
+                    ).fetchone()
+                ):
+                    raise ValueError("Mettez la tâche en pause et attendez l’arrêt des transferts.")
+                self.db.execute("DELETE FROM jobs WHERE id=?", (job_id,))
+            else:
+                raise ValueError("Action inconnue.")
+
+    def claim(self):
+        with self.lock, self.db:
+            row = self.db.execute(
+                """
+                SELECT f.*, j.identifier, j.destination FROM jobs j JOIN files f ON j.id=f.job_id
+                WHERE j.status IN ('queued','running') AND f.status='queued' AND f.available_at<=?
+                ORDER BY j.created, f.id LIMIT 1
+            """,
+                (time.time(),),
+            ).fetchone()
+            if not row:
+                return None
+            self.db.execute(
+                "UPDATE files SET status='downloading', error=NULL WHERE id=?", (row["id"],)
+            )
+            self.db.execute("UPDATE jobs SET status='running' WHERE id=?", (row["job_id"],))
+            return dict(row)
+
+    def active(self, job_id):
+        with self.lock:
+            row = self.db.execute("SELECT status FROM jobs WHERE id=?", (job_id,)).fetchone()
+            return row and row[0] in {"queued", "running"}
+
+    def update(self, file_id, **values):
+        allowed = {"status", "downloaded", "speed", "attempts", "available_at", "error", "size"}
+        if not values.keys() <= allowed:
+            raise ValueError("Unknown file field")
+        with self.lock, self.db:
+            fields = ", ".join(f"{key}=?" for key in values)
+            self.db.execute(f"UPDATE files SET {fields} WHERE id=?", [*values.values(), file_id])
+
+    def finish_jobs(self):
+        with self.lock, self.db:
+            self.db.execute(
+                """
+                UPDATE jobs SET status=CASE WHEN EXISTS (
+                    SELECT 1 FROM files WHERE job_id=jobs.id AND status='error'
+                ) THEN 'error' ELSE 'completed' END, finished_at=?
+                WHERE status IN ('running','queued') AND NOT EXISTS (
+                    SELECT 1 FROM files WHERE job_id=jobs.id AND status IN ('queued','downloading')
+                )
+            """,
+                (time.time(),),
+            )
+
+    def tree(self, job_id, prefix="", offset=0, limit=100):
+        """Aggregate one directory level; never send an entire large item to the browser."""
+        if prefix:
+            prefix = prefix.rstrip("/") + "/"
+        groups = {}
+        with self.lock:
+            if not self.db.execute("SELECT 1 FROM jobs WHERE id=?", (job_id,)).fetchone():
+                raise KeyError("Téléchargement introuvable.")
+            rows = self.db.execute(
+                "SELECT name,size,downloaded,speed,status,error FROM files "
+                "WHERE job_id=? AND substr(name,1,?)=? ORDER BY name",
+                (job_id, len(prefix), prefix),
+            )
+            for row in rows:
+                rest = row["name"][len(prefix) :]
+                name, separator, _ = rest.partition("/")
+                key = (bool(separator), name)
+                if not separator:
+                    groups[key] = {**dict(row), "name": name, "path": row["name"], "kind": "file"}
+                else:
+                    folder = groups.setdefault(
+                        key,
+                        {
+                            "name": name,
+                            "path": prefix + name,
+                            "kind": "folder",
+                            "size": 0,
+                            "downloaded": 0,
+                            "speed": 0,
+                            "file_count": 0,
+                            "completed_files": 0,
+                            "failed_files": 0,
+                            "active_files": 0,
+                            "status": "queued",
+                        },
+                    )
+                    folder["size"] += row["size"] or 0
+                    folder["downloaded"] += row["downloaded"]
+                    folder["speed"] += row["speed"]
+                    folder["file_count"] += 1
+                    folder["completed_files"] += row["status"] == "completed"
+                    folder["failed_files"] += row["status"] == "error"
+                    folder["active_files"] += row["status"] == "downloading"
+        children = sorted(groups.values(), key=lambda r: (r["kind"] != "folder", r["name"].lower()))
+        for row in children:
+            if row["kind"] == "folder":
+                row["status"] = (
+                    "completed"
+                    if row["completed_files"] == row["file_count"]
+                    else "downloading"
+                    if row["active_files"]
+                    else "error"
+                    if row["failed_files"]
+                    else "queued"
+                )
+        return {
+            "children": children[offset : offset + limit],
+            "total": len(children),
+            "prefix": prefix,
+        }

@@ -1,0 +1,14 @@
+Archive Station application code: MIT license (see LICENSE).
+
+The Synology package includes CPython 3.12.15, distributed by the
+astral-sh/python-build-standalone project, release 20261003. The runtime and
+its bundled libraries retain their license files under python/licenses/.
+Source and build recipes: https://github.com/astral-sh/python-build-standalone
+CPython source: https://github.com/python/cpython/tree/v3.12.15
+
+Waitress 3.0.2 is distributed under the Zope Public License 2.1.
+Its license is included in vendor/waitress-3.0.2.dist-info/.
+Source: https://github.com/Pylons/waitress/tree/v3.0.2
+
+Archive Station is an independent community project. It is not affiliated
+with Internet Archive or Synology. No archive content is included in the package.

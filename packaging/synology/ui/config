@@ -1,0 +1,15 @@
+{
+  ".url": {
+    "com.archivestation.app": {
+      "type": "legacy",
+      "appWindow": "com.archivestation.app",
+      "title": "Archive Station",
+      "desc": "Internet Archive Downloader",
+      "icon": "images/archive_station_{0}.png",
+      "url": "/webman/3rdparty/ArchiveStation/web/index.html?v=@VERSION@",
+      "allUsers": false,
+      "width": 1360,
+      "height": 840
+    }
+  }
+}

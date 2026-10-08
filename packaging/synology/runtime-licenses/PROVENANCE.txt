@@ -1,0 +1,2 @@
+License texts extracted from python-build-standalone release 20261003, CPython 3.12.15 x86_64 Linux full distribution.
+Archive SHA-256: aaeeeeea4f98a41c7acd7379229a374c201aee45c1954be5788c18af83733d2b

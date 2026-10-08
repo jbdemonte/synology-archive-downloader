@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+TASK_VAR="${SYNOPKG_PKGVAR:-/var/packages/ArchiveStation/var}"
+mkdir -p "$TASK_VAR"
+chmod 700 "$TASK_VAR"

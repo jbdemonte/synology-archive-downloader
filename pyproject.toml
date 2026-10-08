@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "archive-station"
+version = "0.1.0"
+description = "A resumable Internet Archive download manager for Synology and other NAS."
+requires-python = ">=3.10"
+dependencies = ["waitress==3.0.2"]
+
+[project.scripts]
+archive-station = "archive_station.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+archive_station = ["static/*", "static/locales/*.json"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

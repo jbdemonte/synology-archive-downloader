@@ -1,0 +1,13 @@
+{
+  "name": "archive-station-ui-tests",
+  "private": true,
+  "scripts": {
+    "test:ui": "node scripts/ui_smoke.mjs && node scripts/dsm_smoke.mjs && node scripts/inspection_smoke.mjs && node scripts/locales_smoke.mjs",
+    "format": "prettier --write src/archive_station/static/*.{html,css,js} scripts/*.mjs",
+    "format:check": "prettier --check src/archive_station/static/*.{html,css,js} scripts/*.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.0",
+    "prettier": "3.6.2"
+  }
+}

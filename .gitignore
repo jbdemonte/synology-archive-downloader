@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ruff_cache/
+.env
+data/
+downloads/
+dist/
+build/
+*.sqlite3*
+.DS_Store
+node_modules/
+.local/
+SYNOLOGY-DEVELOPMENT-HOWTO.local.md

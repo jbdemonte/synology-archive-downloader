@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#087bda" />
+    <title>Archive Station</title>
+    <link rel="icon" href="icon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="i18n.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div id="login-screen" class="login-screen" hidden>
+      <form id="login-form" class="login-card">
+        <img src="icon.png" alt="" width="64" height="64" />
+        <h1>Archive Station</h1>
+        <p>Internet Archive Downloader</p>
+        <div id="local-login" hidden>
+          <label for="password"
+            ><span data-i18n="Mot de passe de l’application"
+              >Mot de passe de l’application</span
+            ></label
+          ><input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <button class="primary" type="submit">
+            <span data-i18n="Se connecter">Se connecter</span>
+          </button>
+        </div>
+        <p id="login-help" class="muted"></p>
+        <p id="login-error" class="error" role="alert"></p>
+      </form>
+    </div>
+    <div id="application" class="app" hidden>
+      <header class="app-header">
+        <div class="brand">
+          <img src="icon.png" width="34" height="34" alt="" /><span
+            >Archive Station<small>Internet Archive Downloader</small></span
+          >
+        </div>
+        <div class="header-right">
+          <button
+            id="logout"
+            hidden
+            class="icon-button"
+            title="Se déconnecter"
+            data-i18n-title="Se déconnecter"
+            aria-label="Se déconnecter"
+            data-i18n-aria-label="Se déconnecter"
+          >
+            ↪
+          </button>
+        </div>
+      </header>
+      <aside class="sidebar">
+        <div class="sidebar-label">
+          <span data-i18n="BIBLIOTHÈQUE">BIBLIOTHÈQUE</span>
+        </div>
+        <nav
+          id="filters"
+          aria-label="Filtrer les téléchargements"
+          data-i18n-aria-label="Filtrer les téléchargements"
+        >
+          <button data-filter="all" class="nav-item active">
+            <span>▤</span
+            ><span data-i18n="Tous les téléchargements"
+              >Tous les téléchargements</span
+            ><b id="count-all">0</b></button
+          ><button data-filter="active" class="nav-item">
+            <span>↓</span><span data-i18n="En cours">En cours</span
+            ><b id="count-active">0</b></button
+          ><button data-filter="paused" class="nav-item">
+            <span>Ⅱ</span><span data-i18n="En pause">En pause</span
+            ><b id="count-paused">0</b></button
+          ><button data-filter="completed" class="nav-item">
+            <span>✓</span><span data-i18n="Terminés">Terminés</span
+            ><b id="count-completed">0</b></button
+          ><button data-filter="error" class="nav-item">
+            <span>!</span><span data-i18n="À vérifier">À vérifier</span
+            ><b id="count-error">0</b>
+          </button>
+        </nav>
+        <div class="sidebar-bottom">
+          <div class="storage-card">
+            <span class="sidebar-label"
+              ><span data-i18n="DESTINATION PAR DÉFAUT"
+                >DESTINATION PAR DÉFAUT</span
+              ></span
+            ><strong id="destination-short">—</strong>
+            <div class="storage-meter"><i id="storage-fill"></i></div>
+            <small id="storage-text"
+              ><span data-i18n="Vérification du stockage…"
+                >Vérification du stockage…</span
+              ></small
+            >
+            <button
+              id="destination-edit"
+              class="destination-edit"
+              type="button"
+            >
+              <span data-i18n="Modifier">Modifier</span>
+            </button>
+          </div>
+          <small class="version"
+            >Archive Station <span id="version">0.1.0</span></small
+          >
+        </div>
+      </aside>
+      <main>
+        <section class="page-title">
+          <div>
+            <h1 id="view-title">
+              <span data-i18n="Tous les téléchargements"
+                >Tous les téléchargements</span
+              >
+            </h1>
+            <p>Internet Archive Downloader</p>
+          </div>
+          <div class="page-actions">
+            <button id="settings-open" class="settings-button" type="button">
+              <span aria-hidden="true">⚙</span
+              ><span data-i18n="Paramètres">Paramètres</span>
+            </button>
+            <button id="add-open" class="primary">
+              <span>＋</span
+              ><span data-i18n="Ajouter des URL">Ajouter des URL</span>
+            </button>
+          </div>
+        </section>
+        <p id="connection" class="connection-error" role="status" hidden></p>
+        <section
+          class="stats"
+          aria-label="Résumé"
+          data-i18n-aria-label="Résumé"
+        >
+          <div>
+            <span class="stat-icon blue">↓</span>
+            <div>
+              <small><span data-i18n="Débit total">Débit total</span></small
+              ><strong id="stat-speed"
+                ><span data-i18n="0 o/s">0 o/s</span></strong
+              >
+            </div>
+          </div>
+          <div>
+            <span class="stat-icon green">✓</span>
+            <div>
+              <small
+                ><span data-i18n="Fichiers terminés"
+                  >Fichiers terminés</span
+                ></small
+              ><strong id="stat-files">0 <em>/ 0</em></strong>
+            </div>
+          </div>
+          <div>
+            <span class="stat-icon purple">▣</span>
+            <div>
+              <small
+                ><span data-i18n="Données téléchargées"
+                  >Données téléchargées</span
+                ></small
+              ><strong id="stat-bytes"><span data-i18n="0 o">0 o</span></strong>
+            </div>
+          </div>
+        </section>
+        <section class="downloads-panel">
+          <div class="toolbar">
+            <div class="actions">
+              <button
+                id="resume"
+                disabled
+                title="Reprendre la tâche sélectionnée"
+                data-i18n-title="Reprendre la tâche sélectionnée"
+              >
+                ▶
+                <span
+                  ><span data-i18n="Reprendre">Reprendre</span></span
+                ></button
+              ><button
+                id="pause"
+                disabled
+                title="Mettre la tâche sélectionnée en pause"
+                data-i18n-title="Mettre la tâche sélectionnée en pause"
+              >
+                Ⅱ <span><span data-i18n="Pause">Pause</span></span></button
+              ><button
+                id="retry"
+                disabled
+                title="Réessayer les fichiers en erreur"
+                data-i18n-title="Réessayer les fichiers en erreur"
+              >
+                ↻
+                <span
+                  ><span data-i18n="Réessayer">Réessayer</span></span
+                ></button
+              ><button
+                id="cancel"
+                disabled
+                title="Annuler la tâche sélectionnée"
+                data-i18n-title="Annuler la tâche sélectionnée"
+              >
+                ■ <span><span data-i18n="Annuler">Annuler</span></span></button
+              ><span class="toolbar-divider"></span
+              ><button
+                id="remove"
+                disabled
+                title="Retirer la tâche de la liste"
+                data-i18n-title="Retirer la tâche de la liste"
+              >
+                ⌫ <span><span data-i18n="Retirer">Retirer</span></span>
+              </button>
+            </div>
+            <label class="search"
+              ><span>⌕</span
+              ><input
+                id="search"
+                type="search"
+                placeholder="Rechercher une URL ou un titre…"
+                data-i18n-placeholder="Rechercher une URL ou un titre…"
+                aria-label="Rechercher une tâche"
+                data-i18n-aria-label="Rechercher une tâche"
+            /></label>
+          </div>
+          <div class="table-scroll">
+            <table class="downloads">
+              <thead>
+                <tr>
+                  <th class="name-column">
+                    <span data-i18n="Nom / arborescence"
+                      >Nom / arborescence</span
+                    >
+                  </th>
+                  <th><span data-i18n="Taille">Taille</span></th>
+                  <th><span data-i18n="Progression">Progression</span></th>
+                  <th><span data-i18n="Vitesse">Vitesse</span></th>
+                  <th><span data-i18n="État">État</span></th>
+                </tr>
+              </thead>
+              <tbody id="download-rows"></tbody>
+            </table>
+            <div id="empty" class="empty">
+              <div class="empty-art">↓<span>▱</span></div>
+              <h2>
+                <span data-i18n="Votre prochaine archive commence ici"
+                  >Votre prochaine archive commence ici</span
+                >
+              </h2>
+              <p>
+                <span data-i18n="Collez une ou plusieurs URL Archive.org."
+                  >Collez une ou plusieurs URL Archive.org.</span
+                ><br /><span
+                  data-i18n="Nous créons un dossier par URL et téléchargeons ses fichiers."
+                  >Nous créons un dossier par URL et téléchargeons ses
+                  fichiers.</span
+                >
+              </p>
+              <button id="empty-add" class="secondary">
+                <span data-i18n="＋ Ajouter mes premières URL"
+                  >＋ Ajouter mes premières URL</span
+                >
+              </button>
+              <div class="empty-example">
+                <span>archive.org/download/mon-archive</span
+                ><span>↳ mon-archive / fichiers</span>
+              </div>
+            </div>
+            <div id="no-results" class="empty" hidden>
+              <h2>
+                <span data-i18n="Aucune tâche dans cette vue"
+                  >Aucune tâche dans cette vue</span
+                >
+              </h2>
+              <p>
+                <span data-i18n="Changez le filtre ou votre recherche."
+                  >Changez le filtre ou votre recherche.</span
+                >
+              </p>
+            </div>
+          </div>
+          <div class="list-footer">
+            <span id="list-count"><span data-i18n="0 tâche">0 tâche</span></span
+            ><span
+              ><span
+                data-i18n="Dépliez une tâche pour parcourir ses dossiers et ses fichiers."
+                >Dépliez une tâche pour parcourir ses dossiers et ses
+                fichiers.</span
+              ></span
+            >
+          </div>
+        </section>
+        <section id="detail" class="detail" hidden>
+          <div class="detail-title">
+            <strong id="detail-name"></strong><span id="detail-eta"></span>
+          </div>
+          <div class="detail-grid">
+            <div>
+              <small><span data-i18n="Destination">Destination</span></small
+              ><code id="detail-destination"></code>
+            </div>
+            <div>
+              <small><span data-i18n="Source">Source</span></small
+              ><a id="detail-source" target="_blank" rel="noreferrer"></a>
+            </div>
+          </div>
+          <p id="detail-errors" class="error"></p>
+        </section>
+        <footer class="page-footer">
+          <span
+            ><span
+              data-i18n="Les téléchargements continuent quand vous fermez cette page."
+              >Les téléchargements continuent quand vous fermez cette
+              page.</span
+            ></span
+          ><span id="last-update"></span>
+        </footer>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="add-dialog">
+      <form id="add-form">
+        <div class="dialog-header">
+          <div>
+            <h2>
+              <span data-i18n="Ajouter des téléchargements"
+                >Ajouter des téléchargements</span
+              >
+            </h2>
+            <p>
+              <span
+                data-i18n="Chaque URL devient un dossier et une tâche indépendante."
+                >Chaque URL devient un dossier et une tâche indépendante.</span
+              >
+            </p>
+          </div>
+          <button
+            type="button"
+            data-close="add-dialog"
+            class="close"
+            aria-label="Fermer"
+            data-i18n-aria-label="Fermer"
+          >
+            <span data-i18n="×">×</span>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <label for="urls"
+            ><span data-i18n="URL Archive.org">URL Archive.org</span
+            ><span class="muted"
+              ><span data-i18n="· une par ligne">· une par ligne</span></span
+            ></label
+          ><textarea
+            id="urls"
+            rows="4"
+            placeholder="https://archive.org/download/mon-archive&#10;https://archive.org/details/une-autre-archive"
+            required
+          ></textarea>
+          <div class="two-columns">
+            <div>
+              <label for="file-mode"
+                ><span data-i18n="Fichiers à télécharger"
+                  >Fichiers à télécharger</span
+                ></label
+              ><select id="file-mode">
+                <option value="all" data-i18n="Tous les fichiers publics">
+                  Tous les fichiers publics
+                </option>
+                <option
+                  value="original"
+                  data-i18n="Fichiers originaux uniquement"
+                >
+                  Fichiers originaux uniquement
+                </option>
+              </select>
+            </div>
+            <div>
+              <label for="file-pattern"
+                ><span data-i18n="Filtre facultatif"
+                  >Filtre facultatif</span
+                ></label
+              ><input
+                id="file-pattern"
+                placeholder="Ex. *.zip (vide = tout)"
+                data-i18n-placeholder="Ex. *.zip (vide = tout)"
+              />
+            </div>
+          </div>
+          <label for="job-destination"
+            ><span data-i18n="Dossier parent de destination"
+              >Dossier parent de destination</span
+            ></label
+          >
+          <div class="input-button">
+            <input id="job-destination" required /><button
+              type="button"
+              id="browse-job"
+            >
+              <span data-i18n="Parcourir…">Parcourir…</span>
+            </button>
+          </div>
+          <p class="field-help">
+            <span
+              data-i18n="Les sous-dossiers d’Archive.org sont conservés. Chaque tâche utilise"
+              >Les sous-dossiers d’Archive.org sont conservés. Chaque tâche
+              utilise</span
+            >
+            <code>destination / archive-id / files</code>.
+          </p>
+          <label class="checkbox"
+            ><input type="checkbox" id="start-paused" /><span
+              data-i18n="Ajouter en pause, pour démarrer plus tard"
+              >Ajouter en pause, pour démarrer plus tard</span
+            ></label
+          >
+          <div id="preview-list" class="preview-list" aria-live="polite"></div>
+          <p id="add-error" class="error" role="alert"></p>
+        </div>
+        <div class="dialog-footer add-footer">
+          <div id="inspect-status" class="inspect-status" role="status" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <div>
+              <strong id="inspect-progress"
+                ><span data-i18n="Analyse en cours…"
+                  >Analyse en cours…</span
+                ></strong
+              >
+              <small
+                ><span
+                  data-i18n="Lecture de la liste des fichiers sur Archive.org. Vous pouvez annuler l’analyse."
+                  >Lecture de la liste des fichiers sur Archive.org. Vous pouvez
+                  annuler l’analyse.</span
+                ></small
+              >
+            </div>
+          </div>
+          <button type="button" data-close="add-dialog">
+            <span data-i18n="Annuler">Annuler</span></button
+          ><button type="submit" id="inspect-button" class="secondary">
+            <span data-i18n="Analyser les URL">Analyser les URL</span></button
+          ><button type="button" id="create-button" class="primary" hidden>
+            <span data-i18n="Ajouter les téléchargements"
+              >Ajouter les téléchargements</span
+            >
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="settings-dialog" class="settings-dialog">
+      <form id="settings-form">
+        <div class="dialog-header">
+          <div>
+            <h2><span data-i18n="Paramètres">Paramètres</span></h2>
+            <p>
+              <span data-i18n="Adaptez Archive Station à votre NAS."
+                >Adaptez Archive Station à votre NAS.</span
+              >
+            </p>
+          </div>
+          <button
+            type="button"
+            data-close="settings-dialog"
+            class="close"
+            aria-label="Fermer"
+            data-i18n-aria-label="Fermer"
+          >
+            <span data-i18n="×">×</span>
+          </button>
+        </div>
+        <div class="dialog-body">
+          <label for="setting-language" data-i18n="Langue de l’interface"
+            >Langue de l’interface</label
+          >
+          <select id="setting-language"></select>
+          <p
+            class="field-help"
+            data-i18n="Par défaut, la langue de votre session DSM est utilisée."
+          >
+            Par défaut, la langue de votre session DSM est utilisée.
+          </p>
+
+          <h3>
+            <span data-i18n="Dossier de destination par défaut"
+              >Dossier de destination par défaut</span
+            >
+          </h3>
+          <label for="setting-destination"
+            ><span data-i18n="Destination">Destination</span></label
+          >
+          <div class="input-button">
+            <input id="setting-destination" required /><button
+              type="button"
+              id="browse-settings"
+            >
+              <span data-i18n="Sélectionnez…">Sélectionnez…</span>
+            </button>
+          </div>
+          <p class="field-help">
+            <span
+              data-i18n="Ce dossier sera proposé pour les nouvelles URL. Les tâches existantes gardent leur destination."
+              >Ce dossier sera proposé pour les nouvelles URL. Les tâches
+              existantes gardent leur destination.</span
+            >
+          </p>
+          <h3><span data-i18n="Transferts">Transferts</span></h3>
+          <div class="two-columns">
+            <div>
+              <label for="setting-connections"
+                ><span data-i18n="Téléchargements simultanés"
+                  >Téléchargements simultanés</span
+                ></label
+              ><input
+                id="setting-connections"
+                type="number"
+                min="1"
+                max="8"
+                required
+              />
+            </div>
+            <div>
+              <label for="setting-speed"
+                ><span data-i18n="Limite globale (Kio/s)"
+                  >Limite globale (Kio/s)</span
+                ></label
+              ><input
+                id="setting-speed"
+                type="number"
+                min="0"
+                max="1000000"
+                required
+              />
+              <p class="field-help">
+                <span data-i18n="0 = illimitée · 1 024 Kio/s ≈ 1 Mio/s"
+                  >0 = illimitée · 1 024 Kio/s ≈ 1 Mio/s</span
+                >
+              </p>
+            </div>
+          </div>
+          <label for="setting-retries"
+            ><span data-i18n="Nouvelles tentatives après une erreur"
+              >Nouvelles tentatives après une erreur</span
+            ></label
+          ><input
+            id="setting-retries"
+            type="number"
+            min="0"
+            max="10"
+            required
+          /><label class="checkbox"
+            ><input id="setting-verify" type="checkbox" /><span
+              data-i18n="Vérifier l’intégrité des fichiers (SHA-1 / MD5)"
+              >Vérifier l’intégrité des fichiers (SHA-1 / MD5)</span
+            ></label
+          >
+          <p class="field-help">
+            <span
+              data-i18n="Les paramètres de transfert s’appliquent automatiquement. Les transferts déjà actifs se terminent si vous réduisez le nombre de connexions."
+              >Les paramètres de transfert s’appliquent automatiquement. Les
+              transferts déjà actifs se terminent si vous réduisez le nombre de
+              connexions.</span
+            >
+          </p>
+          <div id="local-password-settings" hidden>
+            <h3>
+              <span data-i18n="Accès à l’application"
+                >Accès à l’application</span
+              >
+            </h3>
+            <label for="setting-password"
+              ><span data-i18n="Nouveau mot de passe (facultatif)"
+                >Nouveau mot de passe (facultatif)</span
+              ></label
+            ><input
+              id="setting-password"
+              type="password"
+              minlength="12"
+              autocomplete="new-password"
+              placeholder="Laisser vide pour le conserver"
+              data-i18n-placeholder="Laisser vide pour le conserver"
+            />
+            <p class="field-help">
+              <span
+                data-i18n="Au moins 12 caractères. Le changement déconnecte les sessions ouvertes."
+                >Au moins 12 caractères. Le changement déconnecte les sessions
+                ouvertes.</span
+              >
+            </p>
+          </div>
+          <p id="settings-error" class="error" role="alert"></p>
+        </div>
+        <div class="dialog-footer">
+          <button type="button" data-close="settings-dialog">
+            <span data-i18n="Annuler">Annuler</span></button
+          ><button class="primary" type="submit">
+            <span data-i18n="Enregistrer">Enregistrer</span>
+          </button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="folder-dialog">
+      <div class="dialog-header">
+        <div>
+          <h2>
+            <span data-i18n="Choisir un dossier">Choisir un dossier</span>
+          </h2>
+          <p>
+            <span
+              data-i18n="Parcourez les volumes et dossiers partagés de votre NAS."
+              >Parcourez les volumes et dossiers partagés de votre NAS.</span
+            >
+          </p>
+        </div>
+        <button
+          type="button"
+          data-close="folder-dialog"
+          class="close"
+          aria-label="Fermer"
+          data-i18n-aria-label="Fermer"
+        >
+          <span data-i18n="×">×</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <div class="folder-toolbar">
+          <button id="folder-up">
+            <span data-i18n="↑ Dossier parent">↑ Dossier parent</span>
+          </button>
+          <button id="folder-new" class="secondary" disabled>
+            <span data-i18n="＋ Nouveau dossier">＋ Nouveau dossier</span>
+          </button>
+        </div>
+        <code id="folder-path" class="folder-path"></code>
+        <form id="folder-create-form" class="folder-create" hidden>
+          <label for="folder-name"
+            ><span data-i18n="Nom du nouveau dossier"
+              >Nom du nouveau dossier</span
+            ></label
+          >
+          <div class="input-button">
+            <input
+              id="folder-name"
+              placeholder="Ex. Archives"
+              data-i18n-placeholder="Ex. Archives"
+              autocomplete="off"
+              maxlength="255"
+              required
+            />
+            <button id="folder-create-submit" class="primary" type="submit">
+              <span data-i18n="Créer">Créer</span>
+            </button>
+            <button id="folder-create-cancel" type="button">
+              <span data-i18n="Annuler">Annuler</span>
+            </button>
+          </div>
+        </form>
+        <div id="folder-list" class="folder-list"></div>
+        <p id="folder-error" class="error"></p>
+        <div class="folder-permissions" role="note">
+          <strong
+            ><span data-i18n="🔒 Besoin d’autoriser un dossier ?"
+              >🔒 Besoin d’autoriser un dossier ?</span
+            ></strong
+          >
+          <p>
+            <b
+              ><span data-i18n="Vert : lecture/écriture"
+                >Vert : lecture/écriture</span
+              ></b
+            >
+            ·
+            <b
+              ><span data-i18n="Bleu : lecture seule"
+                >Bleu : lecture seule</span
+              ></b
+            >
+            ·
+            <b
+              ><span data-i18n="Orange : accès insuffisant"
+                >Orange : accès insuffisant</span
+              ></b
+            >
+            <span
+              data-i18n=". Pour télécharger ou créer un dossier, la lecture et l’écriture sont nécessaires."
+              >. Pour télécharger ou créer un dossier, la lecture et l’écriture
+              sont nécessaires.</span
+            >
+          </p>
+          <p>
+            <span data-i18n="Dans DSM :">Dans DSM :</span
+            ><b
+              ><span
+                data-i18n="Panneau de configuration → Dossier partagé → sélectionnez le dossier → Modifier → Permissions → Utilisateurs internes du système"
+                >Panneau de configuration → Dossier partagé → sélectionnez le
+                dossier → Modifier → Permissions → Utilisateurs internes du
+                système</span
+              ></b
+            >.
+          </p>
+          <p>
+            <span data-i18n="Accordez">Accordez</span>
+            <b><span data-i18n="Lecture/écriture">Lecture/écriture</span></b>
+            <span data-i18n="à">à</span> <b>ArchiveStation</b>
+            <span data-i18n=", puis rouvrez ce sélecteur."
+              >, puis rouvrez ce sélecteur.</span
+            >
+          </p>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button data-close="folder-dialog">
+          <span data-i18n="Annuler">Annuler</span></button
+        ><button id="folder-select" class="primary">
+          <span data-i18n="Choisir ce dossier">Choisir ce dossier</span>
+        </button>
+      </div>
+    </dialog>
+    <dialog id="cancel-dialog">
+      <div class="dialog-header">
+        <h2>
+          <span data-i18n="Annuler ce téléchargement ?"
+            >Annuler ce téléchargement ?</span
+          >
+        </h2>
+      </div>
+      <div class="dialog-body">
+        <p>
+          <span
+            data-i18n="Tous les transferts de cette URL seront arrêtés. Les fichiers déjà reçus et les transferts partiels seront conservés."
+            >Tous les transferts de cette URL seront arrêtés. Les fichiers déjà
+            reçus et les transferts partiels seront conservés.</span
+          >
+        </p>
+        <p>
+          <span
+            data-i18n="La tâche restera visible avec l’état « Annulé ». Vous pourrez la reprendre ou la retirer de la liste."
+            >La tâche restera visible avec l’état « Annulé ». Vous pourrez la
+            reprendre ou la retirer de la liste.</span
+          >
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button data-close="cancel-dialog">
+          <span data-i18n="Garder le téléchargement"
+            >Garder le téléchargement</span
+          ></button
+        ><button id="cancel-confirm" class="danger">
+          <span data-i18n="Annuler le téléchargement"
+            >Annuler le téléchargement</span
+          >
+        </button>
+      </div>
+    </dialog>
+    <dialog id="remove-dialog">
+      <div class="dialog-header">
+        <h2>
+          <span data-i18n="Retirer cette tâche ?">Retirer cette tâche ?</span>
+        </h2>
+      </div>
+      <div class="dialog-body">
+        <p>
+          <span
+            data-i18n="La tâche sera retirée de la liste. Les fichiers téléchargés et les transferts partiels seront conservés sur le NAS."
+            >La tâche sera retirée de la liste. Les fichiers téléchargés et les
+            transferts partiels seront conservés sur le NAS.</span
+          >
+        </p>
+        <p>
+          <span
+            data-i18n="Vous pourrez ajouter son URL à nouveau. Les fichiers complets seront vérifiés puis réutilisés."
+            >Vous pourrez ajouter son URL à nouveau. Les fichiers complets
+            seront vérifiés puis réutilisés.</span
+          >
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button data-close="remove-dialog">
+          <span data-i18n="Annuler">Annuler</span></button
+        ><button id="remove-confirm" class="danger">
+          <span data-i18n="Retirer de la liste">Retirer de la liste</span>
+        </button>
+      </div>
+    </dialog>
+  </body>
+</html>
