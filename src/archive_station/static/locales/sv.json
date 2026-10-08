@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "Webbadressen måste tillhöra archive.org.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Pausa uppgiften och vänta tills överföringarna slutar.",
   "Mettre la tâche sélectionnée en pause": "Pausa vald uppgift",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Pausa nedladdningarna och vänta tills de har stannat innan du ändrar standardmappen.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Paus begärd. De mottagna byten behålls.",
   "Modifier": "Redigera",

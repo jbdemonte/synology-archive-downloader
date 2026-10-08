@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL จะต้องเป็นของ archive.org",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "หยุดงานชั่วคราวและรอให้การถ่ายโอนหยุด",
   "Mettre la tâche sélectionnée en pause": "หยุดงานที่เลือกไว้ชั่วคราว",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "หยุดดาวน์โหลดชั่วคราวและรอให้การถ่ายโอนหยุดก่อนเปลี่ยนปลายทางเริ่มต้น",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "ขอหยุดชั่วคราว ไบต์ที่ได้รับจะถูกเก็บไว้",
   "Modifier": "แก้ไข",

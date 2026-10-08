@@ -145,6 +145,7 @@ try {
     else if (url.pathname === "/api/settings")
       body = {
         download_dir: "/volume1/Download/Archives",
+        destination_locked: true,
         connections: 5,
         speed_limit_kib: 0,
         retries: 4,

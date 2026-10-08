@@ -500,6 +500,20 @@ main > * {
   border-bottom: 1px solid var(--line);
   font-size: 11px;
 }
+.destination-lock-notice {
+  margin: 9px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #eed9aa;
+  border-radius: 5px;
+  background: #fff9ed;
+  color: #785817;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#setting-destination:disabled {
+  background: #f3f5f8;
+  color: #697989;
+}
 .actions button {
   border: 0;
   font-size: 15px;

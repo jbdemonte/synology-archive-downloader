@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "The URL must belong to archive.org.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Pause the task and wait for transfers to stop.",
   "Mettre la tâche sélectionnée en pause": "Pause selected task",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Pause downloads and wait for them to stop before changing the default destination.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Pause requested. The bytes received are retained.",
   "Modifier": "Edit",

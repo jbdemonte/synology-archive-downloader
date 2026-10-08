@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL musí patřit do archive.org.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Pozastavte úlohu a počkejte, až se přenosy zastaví.",
   "Mettre la tâche sélectionnée en pause": "Pozastavit vybranou úlohu",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Před změnou výchozího cíle pozastavte stahování a počkejte, až se zastaví.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Požadována pauza. Přijaté bajty jsou zachovány.",
   "Modifier": "Upravit",

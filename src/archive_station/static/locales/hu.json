@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "Az URL-nek az archive.org-hoz kell tartoznia.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Szüneteltesse a feladatot, és várja meg, amíg az átvitel leáll.",
   "Mettre la tâche sélectionnée en pause": "A kiválasztott feladat szüneteltetése",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Az alapértelmezett célmappa módosítása előtt szüneteltesse a letöltéseket, és várja meg, amíg leállnak.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Szünet kérve. A kapott bájtok megmaradnak.",
   "Modifier": "Szerkesztés",

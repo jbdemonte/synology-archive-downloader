@@ -158,7 +158,23 @@ class WebApp:
             return response({"ok": True})
         if path == "/api/settings":
             if method == "POST":
-                return response(self.settings.update(body))
+                # Claims, task additions and resumes share this lock, so no new
+                # transfer can start between the check and saving the setting.
+                with self.store.lock:
+                    current = self.settings.get()
+                    if (
+                        "download_dir" in body
+                        and body["download_dir"] != current["download_dir"]
+                        and self.store.destination_locked()
+                    ):
+                        return response(
+                            {
+                                "error": "Mettre les téléchargements en pause "
+                                "et attendre leur arrêt pour modifier la destination par défaut."
+                            },
+                            409,
+                        )
+                    return response(self.settings.update(body))
             settings = self.settings.get()
             try:
                 disk = shutil.disk_usage(settings["download_dir"])
@@ -171,6 +187,7 @@ class WebApp:
                     "storage": storage,
                     "version": __version__,
                     "dsm_language": dsm_language() if self.dsm_auth else "",
+                    "destination_locked": self.store.destination_locked(),
                 }
             )
         if path == "/api/password" and method == "POST":

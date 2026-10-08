@@ -226,6 +226,18 @@ class Store:
             row = self.db.execute("SELECT status FROM jobs WHERE id=?", (job_id,)).fetchone()
             return row and row[0] in {"queued", "running"}
 
+    def destination_locked(self):
+        """Keep the default fixed until queued jobs and in-flight workers stop."""
+        with self.lock:
+            return (
+                self.db.execute("""
+                SELECT 1 FROM jobs j WHERE j.status IN ('queued','running') OR EXISTS (
+                    SELECT 1 FROM files f WHERE f.job_id=j.id AND f.status='downloading'
+                ) LIMIT 1
+            """).fetchone()
+                is not None
+            )
+
     def update(self, file_id, **values):
         allowed = {"status", "downloaded", "speed", "attempts", "available_at", "error", "size"}
         if not values.keys() <= allowed:

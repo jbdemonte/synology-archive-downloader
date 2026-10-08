@@ -506,6 +506,48 @@ class ApiTests(Base):
         self.assertEqual(self.request(f"/api/jobs/{job}/pause")["status"], 404)
         self.assertEqual(self.store.jobs()[0]["status"], "queued")
 
+    def test_destination_changes_are_atomic_and_blocked_for_queued_downloads(self):
+        self.app.no_auth = True
+        self.assertFalse(self.request("/api/settings")["body"]["destination_locked"])
+        # A task can start after a settings dialog was opened in another tab.
+        self.add()
+        self.assertTrue(self.request("/api/settings")["body"]["destination_locked"])
+        new = self.root / "blocked-destination"
+        result = self.request("/api/settings", {"download_dir": str(new), "connections": 5})
+        self.assertEqual(result["status"], 409)
+        self.assertFalse(new.exists())
+        self.assertEqual(self.settings.get()["download_dir"], str(self.downloads))
+        self.assertEqual(self.settings.get()["connections"], 3)
+        # Transfer limits and language remain editable, including from older UIs
+        # that submit the current (unchanged) directory with every settings form.
+        result = self.request(
+            "/api/settings",
+            {"download_dir": str(self.downloads), "connections": 5, "language": "en"},
+        )
+        self.assertEqual(result["status"], 200)
+        self.assertEqual(self.settings.get()["connections"], 5)
+        self.assertEqual(self.request("/api/settings", {"speed_limit_kib": 1024})["status"], 200)
+
+    def test_destination_unlocks_only_after_paused_workers_stop(self):
+        self.app.no_auth = True
+        job = self.add()
+        row = self.store.claim()
+        self.store.action(job, "pause")
+        self.assertTrue(self.request("/api/settings")["body"]["destination_locked"])
+        new = self.root / "next-downloads"
+        self.assertEqual(self.request("/api/settings", {"download_dir": str(new)})["status"], 409)
+        self.store.update(row["id"], status="queued", speed=0)
+        self.assertFalse(self.request("/api/settings")["body"]["destination_locked"])
+        self.assertEqual(self.request("/api/settings", {"download_dir": str(new)})["status"], 200)
+        self.assertEqual(self.settings.get()["download_dir"], str(new))
+        self.assertEqual(self.store.jobs()[0]["destination"], str(self.downloads))
+        self.store.action(job, "resume")
+        self.assertTrue(self.request("/api/settings")["body"]["destination_locked"])
+        self.engine.transfer(self.store.claim())
+        self.store.finish_jobs()
+        self.assertFalse(self.request("/api/settings")["body"]["destination_locked"])
+        self.assertEqual(self.target().read_bytes(), PAYLOAD)
+
     def test_dsm_requires_local_gateway_and_disables_password_routes(self):
         self.app.dsm_auth = True
         self.assertEqual(self.request("/api/auth")["body"]["mode"], "dsm")

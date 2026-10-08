@@ -7,6 +7,7 @@ const state = {
   filter: "all",
   search: "",
   settings: null,
+  destinationLocked: false,
   expanded: new Map(),
   fileViews: new Map(),
   openedInitially: false,
@@ -475,6 +476,12 @@ async function refresh() {
   state.polling = true;
   try {
     state.jobs = (await api("/api/jobs")).jobs;
+    setDestinationLocked(
+      state.jobs.some(
+        (job) =>
+          ["queued", "running"].includes(job.status) || job.active_files > 0,
+      ),
+    );
     if (!state.openedInitially && state.jobs.length) {
       state.openedInitially = true;
       const first =
@@ -519,6 +526,7 @@ async function loadSettings() {
     );
   }
   if (changed) render();
+  setDestinationLocked(s.destination_locked === true);
   $("destination-short").textContent = s.download_dir;
   $("destination-short").title = s.download_dir;
   $("storage-text").textContent = s.storage
@@ -787,6 +795,33 @@ $("create-button").onclick = async () => {
   }
   await refresh();
 };
+function setDestinationLocked(locked) {
+  state.destinationLocked = locked;
+  for (const id of [
+    "setting-destination",
+    "browse-settings",
+    "destination-edit",
+  ])
+    $(id).disabled = locked;
+  $("destination-lock-notice").hidden = !locked;
+  $("destination-edit").title = locked
+    ? t(
+        "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.",
+      )
+    : "";
+  if (locked) {
+    if (state.settings)
+      $("setting-destination").value = state.settings.download_dir;
+    if (
+      state.folderTarget === "setting-destination" &&
+      $("folder-dialog").open
+    ) {
+      state.folderSequence = (state.folderSequence || 0) + 1;
+      state.folder = null;
+      $("folder-dialog").close();
+    }
+  }
+}
 async function openSettings(focusDestination = false) {
   try {
     await loadSettings();
@@ -808,7 +843,8 @@ async function openSettings(focusDestination = false) {
     $("setting-password").value = "";
     $("settings-error").textContent = "";
     $("settings-dialog").showModal();
-    if (focusDestination) $("setting-destination").focus();
+    if (focusDestination && !state.destinationLocked)
+      $("setting-destination").focus();
   } catch (error) {
     toast(error.message);
   }
@@ -820,7 +856,9 @@ $("settings-form").onsubmit = async (event) => {
   $("settings-error").textContent = "";
   try {
     await api("/api/settings", {
-      download_dir: $("setting-destination").value,
+      ...(state.destinationLocked
+        ? {}
+        : { download_dir: $("setting-destination").value }),
       connections: Number($("setting-connections").value),
       speed_limit_kib: Number($("setting-speed").value),
       retries: Number($("setting-retries").value),
@@ -838,6 +876,7 @@ $("settings-form").onsubmit = async (event) => {
     }
   } catch (error) {
     $("settings-error").textContent = error.message;
+    await loadSettings().catch(() => {});
   }
 };
 function folderEntry(folder) {

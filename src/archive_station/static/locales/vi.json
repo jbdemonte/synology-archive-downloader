@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL phải thuộc về archive.org.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Tạm dừng tác vụ và đợi quá trình truyền dừng lại.",
   "Mettre la tâche sélectionnée en pause": "Tạm dừng tác vụ đã chọn",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Tạm dừng tải xuống và chờ chúng dừng hẳn trước khi thay đổi thư mục đích mặc định.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Yêu cầu tạm dừng. Các byte nhận được sẽ được giữ lại.",
   "Modifier": "Chỉnh sửa",

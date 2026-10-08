@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL-адрес должен принадлежать archive.org.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "Приостановите задачу и дождитесь остановки передачи.",
   "Mettre la tâche sélectionnée en pause": "Приостановить выбранную задачу",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "Приостановите загрузки и дождитесь их остановки, прежде чем менять папку назначения по умолчанию.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "Запрошена пауза. Полученные байты сохраняются.",
   "Modifier": "Править",

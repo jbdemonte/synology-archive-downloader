@@ -500,13 +500,24 @@
             ><span data-i18n="Destination">Destination</span></label
           >
           <div class="input-button">
-            <input id="setting-destination" required /><button
-              type="button"
-              id="browse-settings"
-            >
+            <input
+              id="setting-destination"
+              required
+              aria-describedby="destination-lock-notice"
+            /><button type="button" id="browse-settings">
               <span data-i18n="Sélectionner…">Sélectionner…</span>
             </button>
           </div>
+          <p
+            id="destination-lock-notice"
+            class="destination-lock-notice"
+            role="status"
+            hidden
+            data-i18n="Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut."
+          >
+            Mettre les téléchargements en pause et attendre leur arrêt pour
+            modifier la destination par défaut.
+          </p>
           <p class="field-help">
             <strong data-i18n="Pour les prochaines URL uniquement."
               >Pour les prochaines URL uniquement.</strong

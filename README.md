@@ -42,7 +42,7 @@ ARM packages are not available yet. Other DSM versions and models need community
 ## Install
 
 1. Build the package with `make build` (see below). Packages intended for distribution belong in [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases).
-2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-13-x86_64.spk`.
+2. Open **Package Center → Manual Install** and select `dist/ArchiveStation-0.1.0-14-x86_64.spk`.
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -80,7 +80,7 @@ Your destination/
     └── ...
 ```
 
-The item identifier determines its directory name; nested paths from Archive.org are preserved. Changing the default destination affects new tasks only, even while downloads are running. Existing tasks keep their original destination and are never moved by this setting.
+The item identifier determines its directory name; nested paths from Archive.org are preserved. The default destination is locked while tasks are running or queued. Pause all downloads and wait for active transfers to stop before changing it, or wait until they finish. This changes the destination for new tasks only; existing tasks keep their original directory. Transfer limits and language remain editable during downloads.
 
 ## Follow large archives
 
@@ -116,7 +116,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
-make build VERSION=0.1.0-13 # Override the package version
+make build VERSION=0.1.0-14 # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```

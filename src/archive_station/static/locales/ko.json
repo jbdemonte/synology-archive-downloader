@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL은 archive.org에 속해야 합니다.",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "작업을 일시 중지하고 전송이 중지될 때까지 기다립니다.",
   "Mettre la tâche sélectionnée en pause": "선택한 작업 일시중지",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "기본 저장 위치를 변경하려면 다운로드를 일시 중지하고 전송이 멈출 때까지 기다리세요.",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "일시중지를 요청했습니다. 수신된 바이트는 유지됩니다.",
   "Modifier": "편집",

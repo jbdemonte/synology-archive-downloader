@@ -119,6 +119,7 @@
   "L’URL doit appartenir à archive.org.": "URL は archive.org に属している必要があります。",
   "Mettez la tâche en pause et attendez l’arrêt des transferts.": "タスクを一時停止し、転送が停止するまで待ちます。",
   "Mettre la tâche sélectionnée en pause": "選択したタスクを一時停止します",
+  "Mettre les téléchargements en pause et attendre leur arrêt pour modifier la destination par défaut.": "既定の保存先を変更する前に、ダウンロードを一時停止し、転送が止まるまでお待ちください。",
   "Mio": "MiB",
   "Mise en pause demandée. Les octets reçus sont conservés.": "一時停止が要求されました。受信したバイトは保持されます。",
   "Modifier": "編集",
