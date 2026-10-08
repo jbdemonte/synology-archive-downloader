@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Geen compatibele openbare versie in dit kanaal.",
   "Vérification impossible. Réessayer plus tard.": "Controle niet mogelijk. Probeer het later opnieuw.",
   "Enregistrer les paramètres avant de vérifier.": "Instellingen opslaan vóór de controle.",
-  "Réessayer dans {seconds} s": "Opnieuw proberen over {seconds} s"
+  "Réessayer dans {seconds} s": "Opnieuw proberen over {seconds} s",
+  "Période": "Periode",
+  "Chargement…": "Laden…"
 }

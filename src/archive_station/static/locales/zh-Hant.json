@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "此管道暫無相容的公開版本。",
   "Vérification impossible. Réessayer plus tard.": "無法檢查，請稍後重試。",
   "Enregistrer les paramètres avant de vérifier.": "請先儲存設定再檢查。",
-  "Réessayer dans {seconds} s": "{seconds} 秒後重試"
+  "Réessayer dans {seconds} s": "{seconds} 秒後重試",
+  "Période": "時間範圍",
+  "Chargement…": "載入中…"
 }

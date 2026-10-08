@@ -9,6 +9,7 @@ const state = {
   search: "",
   settings: null,
   updates: null,
+  historyWindow: 3600,
   destinationLocked: false,
   expanded: new Map(),
   fileViews: new Map(),
@@ -19,6 +20,10 @@ const state = {
   folder: null,
   polling: false,
 };
+try {
+  const saved = Number(localStorage.getItem("archive-station-history-window"));
+  if ([3600, 21600, 43200, 86400].includes(saved)) state.historyWindow = saved;
+} catch {}
 const labels = {
   queued: "En attente",
   running: "En cours",
@@ -790,18 +795,61 @@ async function loadBranch(jobId, prefix, offset = 0) {
     if (state.expanded.get(id) === branch) branch.error = error.message;
   }
 }
+function historyOptions() {
+  $("history-window").replaceChildren(
+    ...[1, 6, 12, 24].map(
+      (hours) =>
+        new Option(
+          new Intl.NumberFormat(ArchiveI18n.locale, {
+            style: "unit",
+            unit: "hour",
+            unitDisplay: "short",
+          }).format(hours),
+          String(hours * 3600),
+        ),
+    ),
+  );
+  $("history-window").value = String(state.historyWindow);
+}
+historyOptions();
+$("history-window").onchange = () => {
+  state.historyWindow = Number($("history-window").value);
+  try {
+    localStorage.setItem(
+      "archive-station-history-window",
+      String(state.historyWindow),
+    );
+  } catch {}
+  $("history-loading").hidden = false;
+  $("history-chart").setAttribute("aria-busy", "true");
+  refresh();
+};
 function renderHistory(history) {
   const values = history?.values || Array(120).fill(0);
   const period = history?.period_seconds || 30;
   const windowSeconds = history?.window_seconds || values.length * period;
   const binWidth = 600 / values.length;
-  const time = (seconds) =>
+  const time = (seconds, tooltip = false) =>
     new Intl.NumberFormat(ArchiveI18n.locale, {
       style: "unit",
-      unit: "minute",
+      unit: windowSeconds > 3600 && !tooltip ? "hour" : "minute",
       unitDisplay: "short",
       maximumFractionDigits: 1,
-    }).format(seconds ? -seconds / 60 : 0);
+    }).format(
+      seconds ? -seconds / (windowSeconds > 3600 && !tooltip ? 3600 : 60) : 0,
+    );
+  const timestampFormat = new Intl.DateTimeFormat(ArchiveI18n.locale, {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const interval = (index) => {
+    if (windowSeconds <= 3600 || !history?.end_time)
+      return `${time((values.length - index) * period, true)} → ${time((values.length - index - 1) * period, true)}`;
+    const start = history.end_time - (values.length - index) * period;
+    return `${timestampFormat.format(new Date(start * 1000))} → ${timestampFormat.format(new Date((start + period) * 1000))}`;
+  };
   $("history-start").textContent = time(windowSeconds);
   $("history-middle").textContent = time(windowSeconds / 2);
   $("history-end").textContent = time(0);
@@ -815,19 +863,28 @@ function renderHistory(history) {
     values
       .map(
         (value, index) =>
-          `<rect x="${index * binWidth}" y="0" width="${binWidth}" height="90" fill="transparent"><title>${esc(time((values.length - index) * period))} → ${esc(time((values.length - index - 1) * period))} : ${esc(bytes(value))}/s</title></rect>`,
+          `<rect x="${index * binWidth}" y="0" width="${binWidth}" height="90" fill="transparent"><title>${esc(interval(index))} : ${esc(bytes(value))}/s</title></rect>`,
       )
       .join("");
 }
 async function refresh(initial = false) {
   if (state.polling || (!initial && $("application").hidden)) return;
   state.polling = true;
+  const historyWindow = state.historyWindow;
   try {
-    const data = await api("/api/jobs");
+    const data = await api(
+      historyWindow === 3600
+        ? "/api/jobs"
+        : `/api/jobs?history_window=${historyWindow}`,
+    );
     state.jobs = data.jobs;
     state.policy = data.policy;
     renderUpdates(data.updates);
-    renderHistory(data.history);
+    if (historyWindow === state.historyWindow) {
+      renderHistory(data.history);
+      $("history-loading").hidden = true;
+      $("history-chart").setAttribute("aria-busy", "false");
+    }
     $("schedule-notice").hidden = !data.policy?.outside;
     $("schedule-notice").textContent =
       data.policy?.allowed === false
@@ -870,6 +927,7 @@ async function refresh(initial = false) {
     $("connection").hidden = false;
   } finally {
     state.polling = false;
+    if (historyWindow !== state.historyWindow) refresh();
   }
 }
 async function loadSettings() {
@@ -884,6 +942,7 @@ async function loadSettings() {
     );
   }
   if (changed) render();
+  historyOptions();
   setDestinationLocked(s.destination_locked === true);
   $("destination-short").textContent = s.download_dir;
   $("destination-short").title = s.download_dir;

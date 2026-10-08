@@ -234,13 +234,13 @@ try {
         retries: 4,
         verify_checksums: true,
         language: "en",
-        version: "0.2.0-7",
+        version: "0.2.0-8",
         check_updates: true,
         update_prereleases: false,
         updates: {
           state: "current",
-          current_version: "0.2.0-7",
-          latest_version: "0.2.0-7",
+          current_version: "0.2.0-8",
+          latest_version: "0.2.0-8",
           checked_at: demoTime.getTime() / 1000,
           retry_after: 0,
         },
@@ -279,8 +279,12 @@ try {
             { length: 120 },
             (_, i) => (2.1 + Math.sin(i / 10) * 0.7 + i / 120) * MiB,
           ),
-          period_seconds: 30,
-          window_seconds: 3600,
+          period_seconds:
+            Number(url.searchParams.get("history_window") || 3600) / 120,
+          window_seconds: Number(
+            url.searchParams.get("history_window") || 3600,
+          ),
+          end_time: Math.floor(demoTime.getTime() / 30000) * 30,
         },
       };
     else if (url.pathname.endsWith("/report")) {
@@ -327,6 +331,8 @@ try {
     .screenshot({ path: new URL("actions.png", out).pathname });
   await page.keyboard.press("Escape");
   await page.locator("#history-panel summary").click();
+  await page.locator("#history-window").selectOption("86400");
+  await page.locator("#history-start").filter({ hasText: /-24/ }).waitFor();
   await page.screenshot({ path: new URL("history.png", out).pathname });
   await page.locator("#history-panel summary").click();
   await page.locator('[data-report-job="demo-space"]').click();

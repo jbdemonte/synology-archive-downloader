@@ -9,12 +9,12 @@ Keep its compatibility claims limited to hardware and DSM versions actually test
 
 ```sh
 make release                  # Current Makefile version
-make release VERSION=0.2.0-7  # Explicit DSM package version
+make release VERSION=0.2.0-8  # Explicit DSM package version
 ```
 
 The version format is `major.minor.patch-build`; its base must match
 `archive_station.__version__`. Bump the build for each changed package. GitHub tags
-use a `v` prefix, for example `v0.2.0-7`.
+use a `v` prefix, for example `v0.2.0-8`.
 
 The command exports committed sources into a temporary directory, runs backend tests,
 lint and browser tests there, builds the package and verifies its contents. Ignored

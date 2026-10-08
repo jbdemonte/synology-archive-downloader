@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "此渠道暂无兼容的公开版本。",
   "Vérification impossible. Réessayer plus tard.": "无法检查，请稍后重试。",
   "Enregistrer les paramètres avant de vérifier.": "请先保存设置再检查。",
-  "Réessayer dans {seconds} s": "{seconds} 秒后重试"
+  "Réessayer dans {seconds} s": "{seconds} 秒后重试",
+  "Période": "时间范围",
+  "Chargement…": "正在加载…"
 }

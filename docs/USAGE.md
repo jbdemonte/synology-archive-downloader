@@ -32,9 +32,9 @@ Check archives or select all visible rows, then use the toolbar. Global actions 
 
 ## Inspect recent throughput
 
-Expand the one-hour transfer graph and hover to inspect 30-second averages. Measurements are collected on the NAS without browser polling; this in-memory history resets when the service restarts and fills as transfers continue. Remaining-time estimates use their own five-minute average to respond to recent speed changes.
+Expand **Transfer history** and choose **1 h, 6 h, 12 h or 24 h** in **Period**. The 120 points average 30 seconds, 3 minutes, 6 minutes or 12 minutes, respectively. Hover for interval details. The browser remembers your choice. The NAS retains up to 24 hours of measurements independently of browser polling, checkpoints changed traffic every 30 seconds and saves at orderly shutdown. The graph survives package restarts and upgrades; forced termination can lose recent unsaved graph samples. Remaining-time estimates use their own five-minute average and warm up again after restarting.
 
-![One-hour transfer history](images/history.png)
+![Transfer history with a 24-hour period selector](images/history.png)
 
 ## Refresh an archive
 

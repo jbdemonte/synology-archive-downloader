@@ -1,23 +1,23 @@
-"""Bounded, in-memory transfer history; no database writes per network chunk."""
+"""Recent in-memory ETA samples, separate from the persistent global traffic history."""
 
 import math
 import threading
 import time
 from collections import deque
 
+from .history import TrafficHistory
+
 
 class Estimates:
     WINDOW = 300
-    GRAPH_WINDOW = 3600
-    GRAPH_PERIOD = 30
     WARMUP = 30
     STALLED = 60
 
-    def __init__(self, clock=time.monotonic):
+    def __init__(self, clock=time.monotonic, history_path=None, wall_clock=time.time):
         self.clock = clock
         self.lock = threading.Lock()
         self.history = {}
-        self.global_buckets = deque()
+        self.traffic = TrafficHistory(history_path, wall_clock)
 
     def start(self, job_id):
         with self.lock:
@@ -43,14 +43,8 @@ class Estimates:
     def record(self, job_id, size):
         if size <= 0:
             return
+        self.traffic.record(size)
         with self.lock:
-            now = self.clock()
-            self._prune(self.global_buckets, now, self.GRAPH_WINDOW)
-            second = math.floor(now)
-            if self.global_buckets and self.global_buckets[-1][0] == second:
-                self.global_buckets[-1][1] += size
-            else:
-                self.global_buckets.append([second, size])
             history = self.history.get(job_id)
             if history is None:
                 return  # A chunk already in flight must not undo a pause/reset.
@@ -64,23 +58,8 @@ class Estimates:
                 buckets.append([second, size])
             history["last_byte"] = now
 
-    def graph(self):
-        """One hour in 30-second bins. Pausing a job keeps global history."""
-        with self.lock:
-            now = self.clock()
-            self._prune(self.global_buckets, now, self.GRAPH_WINDOW)
-            end = math.floor(now)
-            start = end - self.GRAPH_WINDOW
-            values = [0] * (self.GRAPH_WINDOW // self.GRAPH_PERIOD)
-            for second, size in self.global_buckets:
-                index = (second - start) // self.GRAPH_PERIOD
-                if 0 <= index < len(values):
-                    values[index] += size / self.GRAPH_PERIOD
-            return {
-                "values": values,
-                "period_seconds": self.GRAPH_PERIOD,
-                "window_seconds": self.GRAPH_WINDOW,
-            }
+    def graph(self, window=3600):
+        return self.traffic.graph(window)
 
     def snapshot(self, job):
         result = {

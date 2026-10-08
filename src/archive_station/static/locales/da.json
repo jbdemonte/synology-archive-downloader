@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Ingen kompatibel offentlig version i denne kanal.",
   "Vérification impossible. Réessayer plus tard.": "Kontrol mislykkedes. Prøv igen senere.",
   "Enregistrer les paramètres avant de vérifier.": "Gem indstillingerne før kontrollen.",
-  "Réessayer dans {seconds} s": "Prøv igen om {seconds} s"
+  "Réessayer dans {seconds} s": "Prøv igen om {seconds} s",
+  "Période": "Periode",
+  "Chargement…": "Indlæser…"
 }

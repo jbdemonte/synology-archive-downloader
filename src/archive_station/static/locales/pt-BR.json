@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Nenhuma versão pública compatível neste canal.",
   "Vérification impossible. Réessayer plus tard.": "Não foi possível verificar. Tente mais tarde.",
   "Enregistrer les paramètres avant de vérifier.": "Salvar as configurações antes de verificar.",
-  "Réessayer dans {seconds} s": "Tentar novamente em {seconds} s"
+  "Réessayer dans {seconds} s": "Tentar novamente em {seconds} s",
+  "Période": "Período",
+  "Chargement…": "Carregando…"
 }

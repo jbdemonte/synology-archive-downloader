@@ -275,7 +275,7 @@ class WebApp:
                 {
                     "jobs": self.store.jobs(),
                     "policy": policy(self.settings.get()),
-                    "history": self.store.estimates.graph(),
+                    "history": self.store.estimates.graph(int(query.get("history_window", 3600))),
                     "updates": self.updates.snapshot(),
                 }
             )

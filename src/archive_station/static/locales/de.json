@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Keine kompatible öffentliche Version in diesem Kanal.",
   "Vérification impossible. Réessayer plus tard.": "Prüfung nicht möglich. Später erneut versuchen.",
   "Enregistrer les paramètres avant de vérifier.": "Einstellungen vor der Prüfung speichern.",
-  "Réessayer dans {seconds} s": "Erneut versuchen in {seconds} s"
+  "Réessayer dans {seconds} s": "Erneut versuchen in {seconds} s",
+  "Période": "Zeitraum",
+  "Chargement…": "Laden…"
 }

@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "Tidak ada rilis publik yang kompatibel di saluran ini.",
   "Vérification impossible. Réessayer plus tard.": "Tidak dapat memeriksa. Coba lagi nanti.",
   "Enregistrer les paramètres avant de vérifier.": "Simpan pengaturan sebelum memeriksa.",
-  "Réessayer dans {seconds} s": "Coba lagi dalam {seconds} dtk"
+  "Réessayer dans {seconds} s": "Coba lagi dalam {seconds} dtk",
+  "Période": "Periode",
+  "Chargement…": "Memuat…"
 }

@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Aucune version publique compatible dans ce canal.",
   "Vérification impossible. Réessayer plus tard.": "Vérification impossible. Réessayer plus tard.",
   "Enregistrer les paramètres avant de vérifier.": "Enregistrer les paramètres avant de vérifier.",
-  "Réessayer dans {seconds} s": "Réessayer dans {seconds} s"
+  "Réessayer dans {seconds} s": "Réessayer dans {seconds} s",
+  "Période": "Période",
+  "Chargement…": "Chargement…"
 }

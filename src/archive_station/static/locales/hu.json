@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "Nincs kompatibilis nyilvános kiadás ebben a csatornában.",
   "Vérification impossible. Réessayer plus tard.": "Az ellenőrzés sikertelen. Próbálja újra később.",
   "Enregistrer les paramètres avant de vérifier.": "Ellenőrzés előtt mentse a beállításokat.",
-  "Réessayer dans {seconds} s": "Újrapróbálkozás {seconds} s múlva"
+  "Réessayer dans {seconds} s": "Újrapróbálkozás {seconds} s múlva",
+  "Période": "Időszak",
+  "Chargement…": "Betöltés…"
 }

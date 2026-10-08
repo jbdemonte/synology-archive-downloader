@@ -332,5 +332,7 @@
   "Aucune version publique compatible dans ce canal.": "Nicio versiune publică compatibilă în acest canal.",
   "Vérification impossible. Réessayer plus tard.": "Verificarea nu a reușit. Încearcă mai târziu.",
   "Enregistrer les paramètres avant de vérifier.": "Salvează setările înainte de verificare.",
-  "Réessayer dans {seconds} s": "Reîncearcă peste {seconds} s"
+  "Réessayer dans {seconds} s": "Reîncearcă peste {seconds} s",
+  "Période": "Perioadă",
+  "Chargement…": "Se încarcă…"
 }

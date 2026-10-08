@@ -20,7 +20,7 @@ Archive Station downloads the public files of Internet Archive items directly to
 - **Follow large archives** — live transfers and upcoming files appear first; completed files and the folder tree have separate views.
 - **Control the queue** — pause, resume, cancel or retry from the toolbar; use each archive's **⋯** menu for priority, maintenance and reports.
 - **Plan transfers** — choose weekly time slots, alternate speed limits, live concurrency and a free-space reserve.
-- **See progress** — per-file gauges, remaining-time estimates, downloaded/total sizes and a one-hour throughput graph.
+- **See progress** — per-file gauges, remaining-time estimates, downloaded/total sizes and a persistent throughput graph with 1, 6, 12 or 24-hour views.
 - **Maintain an archive** — verify and repair files, review source updates, and select additions or changed files to retrieve.
 - **Work inside DSM** — browse writable folders, open destinations in File Station, and receive desktop notifications. Each task also links to its original Archive.org page.
 - **Resume safely** — partial files stay separate; transfers resume after restarts and upgrades, with checksum verification where available.
@@ -49,7 +49,7 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 ## Install
 
 1. Download the `.spk` from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases), or build it with `make build` (see below).
-2. Open **Package Center → Manual Install** and select `ArchiveStation-0.2.0-7-x86_64.spk` (local builds place it in `dist/`).
+2. Open **Package Center → Manual Install** and select `ArchiveStation-0.2.0-8-x86_64.spk` (local builds place it in `dist/`).
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -80,7 +80,7 @@ The folder picker marks **read/write in green**, **read-only in blue**, and **in
 1. Download the newer `.spk` and its `.spk.sha256` file from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases). To check the package download, run this command from their directory:
 
    ```sh
-   shasum -a 256 -c ArchiveStation-0.2.0-7-x86_64.spk.sha256
+   shasum -a 256 -c ArchiveStation-0.2.0-8-x86_64.spk.sha256
    ```
 
    On Linux, use `sha256sum -c` instead.
@@ -88,7 +88,7 @@ The folder picker marks **read/write in green**, **read-only in blue**, and **in
 2. In DSM, use **Package Center → Manual Install** to install the newer package over the existing installation. DSM briefly stops and restarts Archive Station.
 3. Close and reopen the application, then check that progress continues.
 
-**An in-place upgrade preserves the queue, settings, completed files, partial downloads and error history.** Running tasks resume automatically; paused and cancelled tasks remain stopped. Downloads retain their original destination. The throughput graph and remaining-time estimate rebuild their recent measurements after the restart.
+**An in-place upgrade preserves the queue, settings, completed files, partial downloads and error history.** Running tasks resume automatically; paused and cancelled tasks remain stopped. Downloads retain their original destination. The throughput graph is retained across restarts from version 0.2.0-8 onward; the remaining-time estimate rebuilds its recent measurements.
 
 Incomplete files stay in `.archive-station-parts` and resume from their actual size on disk. They only appear under their final names after transfer and the applicable integrity checks succeed. Keep **Check file integrity (SHA-1 / MD5)** enabled to compare files against the hashes supplied by Archive.org. If the server cannot resume a partial file, Archive Station downloads that file again cleanly. See [reliable downloads](#reliable-downloads-and-live-settings) for verification limits and conflict handling.
 
@@ -147,9 +147,11 @@ The menu stays open during progress updates. Use Enter to open it, arrow keys to
 
 ## Transfer history and time remaining
 
-Expand **Transfer history** to see the last **60 minutes**, displayed as **30-second average rates**. Hover over the graph for the rate and time interval. The NAS collects measurements even while the application window is closed. This history starts empty after a package restart and fills as downloads continue.
+Expand **Transfer history** and choose **1 h, 6 h, 12 h or 24 h** in **Period**. Your choice is remembered in that browser. Each view has 120 points: averages over **30 seconds, 3 minutes, 6 minutes or 12 minutes**, respectively. Hover for the rate and time interval; longer views also show the date and time. The graph updates as each 30-second sample completes.
 
-![One-hour transfer graph with live downloads, a remaining-time estimate and downloaded versus total bytes](docs/images/history.png)
+The NAS collects measurements even while the application window is closed and retains up to **24 hours** on disk. Checkpoints run every 30 seconds when traffic has changed, with a final checkpoint on orderly shutdown. Normal package restarts and upgrades retain the saved graph; a forced termination can lose the most recent unsaved samples, typically up to 30 seconds. This affects the graph only, not the retained download files. History already lost by older versions cannot be reconstructed.
+
+![Transfer graph with a 24-hour period selector, live downloads, a remaining-time estimate and downloaded versus total bytes](docs/images/history.png)
 
 The data summary shows downloaded bytes / total known size. A **+** means some file sizes are unknown. Remaining time uses actual bytes received across an archive’s concurrent transfers, with a **five-minute rolling average** and **30 seconds of initial observation**. Hover over the estimate to see the average rate. **≥** marks a minimum estimate when sizes are unknown. After a minute without data, the duration is replaced by “Waiting for data”. Pausing or restarting the package resets the observation window; retained partial files are not counted as new traffic.
 
@@ -220,7 +222,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
 make release               # Validate and prepare all GitHub release assets
-make build VERSION=0.2.0-7  # Override the package version
+make build VERSION=0.2.0-8  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
@@ -280,7 +282,7 @@ GitHub Releases supports direct `.spk` distribution for manual DSM installation.
 - **The session expires:** sign back into DSM and reopen Archive Station.
 - **The UI looks outdated after upgrading:** close and reopen the application, or refresh the DSM desktop.
 
-DSM state and rotating logs live in `/var/packages/ArchiveStation/var/` (`archive-station.sqlite3`, `settings.json`, `archive-station.log`). Stop the package before copying its state directory, or use SQLite’s backup API for a live database backup. Package upgrades preserve task state and downloaded files.
+DSM state and rotating logs live in `/var/packages/ArchiveStation/var/` (`archive-station.sqlite3`, `settings.json`, `archive-station.history.json`, `archive-station.log`). Stop the package before copying its state directory, or use SQLite’s backup API for a live database backup. Package upgrades preserve task state and downloaded files.
 
 Bug reports should include the package version, DSM version, NAS model, reproducible steps and relevant log excerpts with private data removed. Pull requests should explain the resulting behavior and tests; include screenshots for visual changes. Python follows Ruff; HTML, CSS and JavaScript use Prettier. See [architecture](docs/ARCHITECTURE.md), [DSM packaging](docs/SYNOLOGY.md), and [translations](docs/TRANSLATIONS.md).
 

@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "Bu kanalda uyumlu herkese açık sürüm yok.",
   "Vérification impossible. Réessayer plus tard.": "Denetlenemedi. Daha sonra tekrar deneyin.",
   "Enregistrer les paramètres avant de vérifier.": "Denetlemeden önce ayarları kaydedin.",
-  "Réessayer dans {seconds} s": "{seconds} sn sonra yeniden dene"
+  "Réessayer dans {seconds} s": "{seconds} sn sonra yeniden dene",
+  "Période": "Dönem",
+  "Chargement…": "Yükleniyor…"
 }

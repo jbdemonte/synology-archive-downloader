@@ -209,6 +209,17 @@
         </section>
         <details id="history-panel" class="history-panel">
           <summary data-i18n="Historique du débit">Historique du débit</summary>
+          <div class="history-controls">
+            <span
+              id="history-loading"
+              role="status"
+              hidden
+              data-i18n="Chargement…"
+              >Chargement…</span
+            >
+            <label for="history-window" data-i18n="Période">Période</label>
+            <select id="history-window"></select>
+          </div>
           <div class="history-chart">
             <span id="history-peak"></span
             ><svg

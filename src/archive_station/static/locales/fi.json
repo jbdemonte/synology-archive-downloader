@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Tässä kanavassa ei ole yhteensopivaa julkista versiota.",
   "Vérification impossible. Réessayer plus tard.": "Tarkistus epäonnistui. Yritä myöhemmin uudelleen.",
   "Enregistrer les paramètres avant de vérifier.": "Tallenna asetukset ennen tarkistusta.",
-  "Réessayer dans {seconds} s": "Yritä uudelleen {seconds} s kuluttua"
+  "Réessayer dans {seconds} s": "Yritä uudelleen {seconds} s kuluttua",
+  "Période": "Aikaväli",
+  "Chargement…": "Ladataan…"
 }

@@ -332,5 +332,7 @@
   "Aucune version publique compatible dans ce canal.": "В этом канале нет совместимых общедоступных выпусков.",
   "Vérification impossible. Réessayer plus tard.": "Не удалось проверить. Повторите позже.",
   "Enregistrer les paramètres avant de vérifier.": "Сохраните настройки перед проверкой.",
-  "Réessayer dans {seconds} s": "Повторить через {seconds} с"
+  "Réessayer dans {seconds} s": "Повторить через {seconds} с",
+  "Période": "Период",
+  "Chargement…": "Загрузка…"
 }

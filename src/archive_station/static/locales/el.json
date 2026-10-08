@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "Δεν υπάρχει συμβατή δημόσια έκδοση σε αυτό το κανάλι.",
   "Vérification impossible. Réessayer plus tard.": "Αδυναμία ελέγχου. Δοκιμάστε αργότερα.",
   "Enregistrer les paramètres avant de vérifier.": "Αποθηκεύστε τις ρυθμίσεις πριν τον έλεγχο.",
-  "Réessayer dans {seconds} s": "Νέα προσπάθεια σε {seconds} δ."
+  "Réessayer dans {seconds} s": "Νέα προσπάθεια σε {seconds} δ.",
+  "Période": "Περίοδος",
+  "Chargement…": "Φόρτωση…"
 }

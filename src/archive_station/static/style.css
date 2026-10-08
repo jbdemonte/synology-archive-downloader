@@ -1546,6 +1546,28 @@ dialog > form {
   font-size: 10px;
   color: #687c90;
 }
+.history-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 14px 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.history-controls label {
+  margin: 0;
+  font-size: inherit;
+}
+.history-controls select {
+  width: 105px;
+  margin: 0;
+  padding: 4px 28px 4px 10px;
+  font-size: inherit;
+}
+#history-chart[aria-busy="true"] {
+  opacity: 0.35;
+}
 .history-chart svg {
   width: 100%;
   height: 75px;

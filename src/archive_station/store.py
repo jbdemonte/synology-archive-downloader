@@ -13,7 +13,7 @@ class Store:
     def __init__(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.lock = threading.RLock()
-        self.estimates = Estimates()
+        self.estimates = Estimates(history_path=Path(path).with_suffix(".history.json"))
         self.db = sqlite3.connect(path, check_same_thread=False)
         self.db.row_factory = sqlite3.Row
         self.db.executescript("""

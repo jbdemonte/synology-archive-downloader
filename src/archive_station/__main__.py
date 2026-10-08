@@ -92,6 +92,7 @@ def main():
     reports.start()
     notifications.start()
     updates.start()
+    store.estimates.traffic.start()
     logging.info("Archive Station listening on http://%s:%s", args.host, args.port)
     try:
         server.run()
@@ -101,10 +102,12 @@ def main():
         notifications.stop.set()
         reports.stop.set()
         downloads_stopped = engine.shutdown()
+        history_stopped = store.estimates.traffic.shutdown()
         reports_stopped = reports.shutdown()
         notifications.shutdown()
         if (
             downloads_stopped
+            and history_stopped
             and reports_stopped
             and not (notifications.thread and notifications.thread.is_alive())
         ):

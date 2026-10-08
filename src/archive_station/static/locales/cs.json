@@ -332,5 +332,7 @@
   "Aucune version publique compatible dans ce canal.": "V tomto kanálu není kompatibilní veřejná verze.",
   "Vérification impossible. Réessayer plus tard.": "Kontrola se nezdařila. Zkuste to později.",
   "Enregistrer les paramètres avant de vérifier.": "Před kontrolou uložit nastavení.",
-  "Réessayer dans {seconds} s": "Zkusit znovu za {seconds} s"
+  "Réessayer dans {seconds} s": "Zkusit znovu za {seconds} s",
+  "Période": "Období",
+  "Chargement…": "Načítání…"
 }

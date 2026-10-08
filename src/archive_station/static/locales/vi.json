@@ -312,5 +312,7 @@
   "Aucune version publique compatible dans ce canal.": "Không có bản phát hành công khai tương thích trong kênh này.",
   "Vérification impossible. Réessayer plus tard.": "Không thể kiểm tra. Hãy thử lại sau.",
   "Enregistrer les paramètres avant de vérifier.": "Lưu cài đặt trước khi kiểm tra.",
-  "Réessayer dans {seconds} s": "Thử lại sau {seconds} giây"
+  "Réessayer dans {seconds} s": "Thử lại sau {seconds} giây",
+  "Période": "Khoảng thời gian",
+  "Chargement…": "Đang tải…"
 }

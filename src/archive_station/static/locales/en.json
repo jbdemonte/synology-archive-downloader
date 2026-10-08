@@ -327,5 +327,7 @@
   "Aucune version publique compatible dans ce canal.": "No compatible public release in this channel.",
   "Vérification impossible. Réessayer plus tard.": "Unable to check. Try again later.",
   "Enregistrer les paramètres avant de vérifier.": "Save settings before checking.",
-  "Réessayer dans {seconds} s": "Retry in {seconds} s"
+  "Réessayer dans {seconds} s": "Retry in {seconds} s",
+  "Période": "Period",
+  "Chargement…": "Loading…"
 }
