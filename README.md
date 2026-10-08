@@ -125,7 +125,7 @@ The icon turns **amber** when incidents have been recorded, including incidents 
 
 ![Report reader showing a resolved connection error and an unresolved error awaiting a retry](docs/images/report.png)
 
-Each item directory also contains `ArchiveStation-report-<task-id>.txt`, refreshed approximately every 15 seconds and on clean shutdown. This file contains the complete report and can be opened in any text editor. It includes the source URLs, dates, file counts, retained bytes, selection settings and error history. **Duration includes pauses and downtime; byte counts represent retained data, not cumulative network traffic.**
+Each item directory also contains `ArchiveStation-report-<task-id>.txt`, checked approximately every 15 seconds and on clean shutdown, and rewritten only when its state, counters or report settings change. This file contains the complete report and can be opened in any text editor. It includes the source URLs, dates, file counts, retained bytes, selection settings and error history. **Duration includes pauses and downtime; byte counts represent retained data, not cumulative network traffic.**
 
 Reports use French when the interface language is French, and English otherwise. Automatic mode remembers the last resolved DSM interface language for background reports. Incident history begins when this feature is installed: existing errors are imported when available, but incidents already cleared by older versions cannot be recovered.
 

@@ -243,11 +243,11 @@ class Reports:
                 job.get("unresolved_incidents", 0),
                 self.settings.get().get("language", "auto"),
                 self.settings.get().get("report_language", "auto"),
+                self.settings.get()["verify_checksums"],
+                job["finished_at"],
+                job["unknown_sizes"],
             )
-            if (
-                job["status"] not in {"running", "queued"}
-                and self.written.get(job["id"]) == signature
-            ):
+            if self.written.get(job["id"]) == signature:
                 continue
             try:
                 self.write(job)

@@ -139,6 +139,21 @@ Engine(store, Client(), settings).transfer(store.claim())
             reports.write(self.store.jobs()[0])
         self.assertEqual(path.read_text(), "Personal notes, do not overwrite")
 
+    def test_idle_running_report_is_unchanged_until_state_or_settings_change(self):
+        self.add()
+        row = self.store.claim()
+        reports = Reports(self.store, self.settings)
+        with patch.object(reports, "write", wraps=reports.write) as write:
+            reports.update()
+            reports.update()
+            self.assertEqual(write.call_count, 1)
+            self.store.update(row["id"], downloaded=100)
+            reports.update()
+            self.assertEqual(write.call_count, 2)
+            self.settings.update({"verify_checksums": False})
+            reports.update()
+            self.assertEqual(write.call_count, 3)
+
     def test_report_legacy_json_migration_preserves_unrelated_files(self):
         job = self.add()
         root = self.downloads / "test-item"
