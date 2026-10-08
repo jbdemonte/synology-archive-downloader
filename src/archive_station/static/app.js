@@ -417,12 +417,17 @@ function render() {
   );
   const focusedView = document.activeElement?.dataset.fileView;
   const focusedJob = document.activeElement?.dataset.viewJob;
+  const focusedReport = document.activeElement?.dataset.reportJob;
   $("download-rows").innerHTML = visible
     .map((job) => {
       const open = state.expanded.has(key(job.id, ""));
-      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button><span class="tree-icon item-icon">▣</span><div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
+      return `<tr class="job-row ${state.selected === job.id ? "selected" : ""}" data-job="${esc(job.id)}" tabindex="0" aria-selected="${state.selected === job.id}"><td><div class="tree-name"><input type="checkbox" class="job-check" data-select-job="${esc(job.id)}" ${state.checked.has(job.id) ? "checked" : ""} aria-label="${esc(t("Sélectionner {name}", { name: job.identifier }))}"/><button class="toggle" data-expand="${esc(job.id)}" data-prefix="" aria-label="${esc(t(open ? "Replier" : "Déplier"))} ${esc(job.identifier)}" aria-expanded="${open}">${open ? "⌄" : "›"}</button>${reportButton(job)}<div class="name-text"><strong title="${esc(job.identifier)}">${esc(job.identifier)}</strong><small title="${esc(job.title)}">${number(job.completed_files)} / ${number(job.file_count)} ${esc(t("fichiers"))} · ${esc(job.title)}</small></div></div></td><td>${bytes(job.total_size)}${job.unknown_sizes ? " +" : ""}</td><td>${progress(job, job.total_size)}${etaMarkup(job)}</td><td class="speed">${job.speed ? bytes(job.speed) + "/s" : "—"}</td><td>${badge(job.status)}</td></tr>${treeRows(job, "", 1)}`;
     })
     .join("");
+  if (focusedReport)
+    [...$("download-rows").querySelectorAll("[data-report-job]")]
+      .find((button) => button.dataset.reportJob === focusedReport)
+      ?.focus({ preventScroll: true });
   if (focusedView) {
     [...$("download-rows").querySelectorAll("[data-file-view]")]
       .find(
@@ -481,6 +486,7 @@ function renderDetail() {
   const selected = selectedJobs();
   $("open-folder").hidden = !embedded || !job;
   $("refresh-manifest").disabled = !job;
+  $("read-report").disabled = !job;
   $("repair").disabled =
     !job || ["queued", "running"].includes(job.status) || job.active_files > 0;
   $("pause").disabled = !selected.some((j) =>
@@ -513,6 +519,68 @@ function renderDetail() {
         ? `${number(job.failed_files)} ${t("fichiers")} · ${t("À vérifier")} → ${t("Réessayer")}`
         : "";
 }
+function reportButton(job) {
+  const count = job.incident_count || 0;
+  const label = `${t("Lire le rapport")}${count ? ` · ${t("{count} incidents consignés", { count: number(count) })}` : ""}`;
+  return `<button type="button" class="task-report ${count ? "has-incidents" : ""}" data-report-job="${esc(job.id)}" title="${esc(label)}" aria-label="${esc(label)}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 16h6"/></svg>${count ? '<span aria-hidden="true">!</span>' : ""}</button>`;
+}
+let reportView = null;
+async function loadReport(offset = 0) {
+  const view = reportView;
+  if (!view) return;
+  view.controller?.abort();
+  const controller = new AbortController();
+  view.controller = controller;
+  $("report-loading").hidden = false;
+  $("report-error").textContent = "";
+  for (const id of ["report-refresh", "report-prev", "report-next"])
+    $(id).disabled = true;
+  try {
+    const data = await api(
+      `/api/jobs/${view.jobId}/report?offset=${offset}`,
+      undefined,
+      controller.signal,
+    );
+    if (reportView !== view || view.controller !== controller) return;
+    view.offset = data.offset;
+    view.total = data.total;
+    $("report-filename").textContent = data.filename;
+    $("report-text").textContent = data.content;
+    $("report-text").parentElement.scrollTop = 0;
+    $("report-page").textContent =
+      `${number(Math.floor(data.offset / 200) + 1)} / ${number(Math.ceil(data.total / 200))}`;
+  } catch (error) {
+    if (!controller.signal.aborted && reportView === view)
+      $("report-error").textContent = error.message;
+  } finally {
+    if (reportView === view && view.controller === controller) {
+      $("report-loading").hidden = true;
+      $("report-refresh").disabled = false;
+      $("report-prev").disabled = !view.offset;
+      $("report-next").disabled =
+        !view.total || view.offset + 200 >= view.total;
+    }
+  }
+}
+function openReport(jobId) {
+  if (!jobId) return;
+  reportView?.controller?.abort();
+  reportView = { jobId, offset: 0, total: 0 };
+  $("report-text").textContent = "";
+  $("report-filename").textContent = "";
+  $("report-page").textContent = "";
+  $("report-dialog").showModal();
+  loadReport();
+}
+$("read-report").onclick = () => openReport(state.selected);
+$("report-refresh").onclick = () => loadReport();
+$("report-prev").onclick = () =>
+  loadReport(Math.max(0, reportView.offset - 200));
+$("report-next").onclick = () => loadReport(reportView.offset + 200);
+$("report-dialog").addEventListener("close", () => {
+  reportView?.controller?.abort();
+  reportView = null;
+});
 $("open-folder").onclick = async () => {
   const jobId = state.selected;
   if (!jobId) return;
@@ -735,6 +803,11 @@ $("search").oninput = () => {
   render();
 };
 $("download-rows").onclick = async (event) => {
+  const report = event.target.closest("[data-report-job]");
+  if (report) {
+    openReport(report.dataset.reportJob);
+    return;
+  }
   const check = event.target.closest("[data-select-job]");
   if (check) {
     if (check.checked) state.checked.add(check.dataset.selectJob);

@@ -47,7 +47,7 @@ def report_header(job_id):
     return f"Archive Station — Internet Archive Downloader\nTask: {job_id}\n"
 
 
-def render_report(job, settings, now):
+def render_report(job, settings, now, incidents=()):
     language = settings.get("language", "auto")
     if language == "auto":
         language = settings.get("report_language", "auto")
@@ -122,6 +122,44 @@ def render_report(job, settings, now):
             "sans compter les retransferts.",
         )
     )
+    section(tr("ERROR HISTORY", "HISTORIQUE DES ERREURS"))
+    row(tr("Incidents recorded", "Incidents consignés"), job.get("incident_count", 0))
+    row(tr("Still unresolved", "Encore non résolus"), job.get("unresolved_incidents", 0))
+    since = job.get("error_history_since")
+    row(tr("History recorded since", "Historique conservé depuis"), stamp(since, unavailable))
+    if since and since > job["created"] + 1:
+        lines.append(
+            tr(
+                "Earlier resolved errors were not retained by previous versions.",
+                "Les erreurs antérieures déjà corrigées n’étaient pas conservées "
+                "par les versions précédentes.",
+            )
+        )
+    if not incidents:
+        lines.append(tr("No incidents recorded.", "Aucun incident consigné."))
+    else:
+        lines.append(
+            tr(
+                "Identical errors are grouped per file; successful transfers resolve them.",
+                "Les erreurs identiques sont regroupées par fichier ; "
+                "un transfert réussi les marque comme résolues.",
+            )
+        )
+    for incident in incidents:
+        lines.append("")
+        row(
+            tr("Outcome", "Résultat"),
+            tr("Resolved", "Résolu") if incident["resolved_at"] else tr("Unresolved", "Non résolu"),
+        )
+        row(tr("File", "Fichier"), incident["name"] or tr("Whole task", "Tâche entière"))
+        row(tr("First error", "Première erreur"), stamp(incident["first_at"], unavailable))
+        row(tr("Latest error", "Dernière erreur"), stamp(incident["last_at"], unavailable))
+        row(tr("Occurrences", "Occurrences"), incident["occurrences"])
+        if incident["attempt"]:
+            row(tr("Last attempt number", "Dernière tentative n°"), incident["attempt"])
+        row(tr("Message", "Message"), incident["message"])
+        if incident["resolved_at"]:
+            row(tr("Resolved at", "Résolu le"), stamp(incident["resolved_at"], unavailable))
     section(tr("SELECTION AND VERIFICATION", "SÉLECTION ET VÉRIFICATION"))
     row(
         tr("Source file mode", "Mode des fichiers source"),
@@ -185,6 +223,8 @@ class Reports:
                 job["file_count"],
                 job["total_size"],
                 job.get("manifest_revision", 0),
+                job.get("incident_count", 0),
+                job.get("unresolved_incidents", 0),
                 self.settings.get().get("language", "auto"),
                 self.settings.get().get("report_language", "auto"),
             )
@@ -210,7 +250,9 @@ class Reports:
                 prefix = existing.read(len(report_header(job["id"])))
             if prefix != report_header(job["id"]):
                 raise ValueError("An unrelated file already uses the report name")
-        value = render_report(job, self.settings.get(), time.time())
+        value = render_report(
+            job, self.settings.get(), time.time(), self.store.error_history(job["id"])
+        )
         temporary = None
         try:
             with tempfile.NamedTemporaryFile(

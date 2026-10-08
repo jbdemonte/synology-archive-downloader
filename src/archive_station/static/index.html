@@ -405,6 +405,9 @@
             <button id="repair" type="button" data-i18n="Vérifier et compléter">
               Vérifier et compléter
             </button>
+            <button id="read-report" type="button" data-i18n="Lire le rapport">
+              Lire le rapport
+            </button>
           </div>
           <p id="detail-errors" class="error"></p>
         </details>
@@ -1078,6 +1081,48 @@
           data-i18n="Vérifier et compléter"
         >
           Vérifier et compléter
+        </button>
+      </div>
+    </dialog>
+    <dialog id="report-dialog" aria-labelledby="report-title">
+      <div class="dialog-header">
+        <div>
+          <h2 id="report-title" data-i18n="Rapport de téléchargement">
+            Rapport de téléchargement
+          </h2>
+          <p id="report-filename"></p>
+        </div>
+        <button
+          type="button"
+          class="close"
+          data-close="report-dialog"
+          data-i18n-aria-label="Fermer"
+          aria-label="Fermer"
+        >
+          ×
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="report-loading" role="status" hidden>
+          <span class="spinner" aria-hidden="true"></span>
+          <span data-i18n="Chargement du rapport…">Chargement du rapport…</span>
+        </p>
+        <p id="report-error" class="error" role="alert"></p>
+        <pre id="report-text" tabindex="0"></pre>
+      </div>
+      <div class="dialog-footer">
+        <button id="report-prev" type="button" data-i18n="← Précédents">
+          ← Précédents
+        </button>
+        <span id="report-page"></span>
+        <button id="report-next" type="button" data-i18n="Suivants →">
+          Suivants →
+        </button>
+        <button id="report-refresh" type="button" data-i18n="Actualiser">
+          Actualiser
+        </button>
+        <button type="button" data-close="report-dialog" data-i18n="Fermer">
+          Fermer
         </button>
       </div>
     </dialog>

@@ -17,6 +17,7 @@ from .auth import Auth
 from .config import LANGUAGES, dsm_language
 from .plans import Plans
 from .refresh import difference
+from .reports import render_report
 from .schedule import policy
 from .storage import capacity
 
@@ -284,6 +285,22 @@ class WebApp:
             )
         if len(parts) == 4 and parts[:2] == ["api", "jobs"]:
             job_id, action = parts[2:]
+            if method == "GET" and action == "report":
+                with self.store.lock:
+                    job = next((j for j in self.store.jobs() if j["id"] == job_id), None)
+                    if not job:
+                        raise KeyError("Téléchargement introuvable.")
+                    incidents = self.store.error_history(job_id)
+                lines = render_report(job, self.settings.get(), time.time(), incidents).splitlines()
+                offset = min(max(0, int(query.get("offset", 0))), (len(lines) - 1) // 200 * 200)
+                return response(
+                    {
+                        "filename": f"ArchiveStation-report-{job_id}.txt",
+                        "content": "\n".join(lines[offset : offset + 200]),
+                        "offset": offset,
+                        "total": len(lines),
+                    }
+                )
             if method == "POST" and action in {"refresh", "apply-refresh"}:
                 with self.store.lock:
                     row = self.store.db.execute(

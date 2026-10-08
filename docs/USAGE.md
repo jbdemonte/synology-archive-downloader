@@ -41,3 +41,11 @@ Fetch fresh metadata and review new or changed files before applying a selection
 Use the selected task’s shortcut to open its folder inside DSM. If the item folder has not been created yet, its parent destination opens instead.
 
 Pause and wait for active workers to stop before applying a metadata refresh or starting verification. Existing downloads and excluded files in older tasks remain intact during upgrades. For tasks created before file-selection tracking was introduced, refresh treats files absent from the saved task as new candidates.
+
+## Read the report and error history
+
+Click the document icon on an archive row, or **Read report** in its details, to read an up-to-date report inside Archive Station. The same report is written to `ArchiveStation-report-<task-id>.txt` in the archive folder. Long reports are paginated in the reader; the text file contains the entire history.
+
+The icon turns amber when incidents have been recorded, including incidents that were later resolved. The history lists the affected file, first and last occurrence, count, latest attempt number, diagnostic message and resolution date. Repeated identical errors are grouped per file. A successful transfer resolves its recorded errors; retrying, restarting or repairing does not erase them. Low-space pauses are also recorded.
+
+History starts when this feature is installed. An existing error can be imported without a known date, but errors already cleared by older versions cannot be recovered. The reader works even if the destination is temporarily unavailable; writing the disk copy still requires permission to that folder.

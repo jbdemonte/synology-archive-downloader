@@ -1624,3 +1624,67 @@ summary.detail-title::before {
 #detail-errors:empty {
   display: none;
 }
+
+.task-report {
+  position: relative;
+  flex-shrink: 0;
+  width: 28px;
+  height: 30px;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: #4988bb;
+}
+.task-report svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.task-report.has-incidents {
+  color: #986600;
+  background: #fff4d5;
+}
+.task-report span {
+  position: absolute;
+  right: -3px;
+  top: -4px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #ae7300;
+  color: white;
+  font-size: 10px;
+  line-height: 13px;
+}
+#report-dialog {
+  width: min(960px, calc(100vw - 32px));
+}
+#report-dialog .dialog-header > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#report-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.6 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  margin: 0;
+}
+#report-error:empty {
+  display: none;
+}
+#report-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#report-dialog .dialog-footer {
+  align-items: center;
+  flex-wrap: wrap;
+}

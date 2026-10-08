@@ -37,6 +37,13 @@ class Store:
                 name TEXT NOT NULL, PRIMARY KEY(job_id,name)
             );
             CREATE INDEX IF NOT EXISTS file_queue ON files(job_id, status, available_at, id);
+            CREATE TABLE IF NOT EXISTS incidents (
+                job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+                file_id INTEGER NOT NULL, name TEXT NOT NULL, message TEXT NOT NULL,
+                first_at REAL, last_at REAL, occurrences INTEGER NOT NULL DEFAULT 1,
+                attempt INTEGER NOT NULL DEFAULT 0, resolved_at REAL,
+                PRIMARY KEY(job_id,file_id,message)
+            );
         """)
         with self.lock, self.db:
             columns = {row[1] for row in self.db.execute("PRAGMA table_info(jobs)")}
@@ -47,9 +54,20 @@ class Store:
                 "manifest_revision": "INTEGER NOT NULL DEFAULT 0",
                 "priority": "INTEGER NOT NULL DEFAULT 0",
                 "queue_order": "REAL NOT NULL DEFAULT 0",
+                "error_history_since": "REAL",
             }.items():
                 if name not in columns:
                     self.db.execute(f"ALTER TABLE jobs ADD COLUMN {name} {definition}")
+            self.db.execute(
+                "UPDATE jobs SET error_history_since=? WHERE error_history_since IS NULL",
+                (time.time(),),
+            )
+            # Older versions only kept the latest error, with no timestamp.
+            self.db.execute(
+                "INSERT OR IGNORE INTO incidents(job_id,file_id,name,message,attempt) "
+                "SELECT job_id,id,name,substr(error,1,2048),attempts FROM files "
+                "WHERE error IS NOT NULL AND error<>''"
+            )
             file_columns = {row[1] for row in self.db.execute("PRAGMA table_info(files)")}
             self.db.execute("INSERT OR IGNORE INTO known_files SELECT job_id,name FROM files")
             if "reset_partial" not in file_columns:
@@ -90,7 +108,8 @@ class Store:
                     ),
                 )
                 self.db.execute(
-                    "UPDATE jobs SET queue_order=(SELECT COALESCE(MAX(queue_order),0)+1 FROM jobs) "
+                    "UPDATE jobs SET error_history_since=created, "
+                    "queue_order=(SELECT COALESCE(MAX(queue_order),0)+1 FROM jobs) "
                     "WHERE id=?",
                     (job_id,),
                 )
@@ -131,7 +150,11 @@ class Store:
                     COALESCE(SUM(CASE WHEN f.status='completed' THEN f.downloaded ELSE 0 END),0)
                         AS completed_bytes,
                     SUM(f.status='error') AS failed_files,
-                    SUM(f.size IS NULL) AS unknown_sizes
+                    SUM(f.size IS NULL) AS unknown_sizes,
+                    (SELECT COALESCE(SUM(i.occurrences),0) FROM incidents i WHERE i.job_id=j.id)
+                        AS incident_count,
+                    (SELECT COALESCE(SUM(i.occurrences),0) FROM incidents i
+                        WHERE i.job_id=j.id AND i.resolved_at IS NULL) AS unresolved_incidents
                 FROM jobs j JOIN files f ON f.job_id=j.id
                 GROUP BY j.id ORDER BY j.priority DESC,j.queue_order,j.created
             """)
@@ -139,6 +162,29 @@ class Store:
             for job in jobs:
                 job.update(self.estimates.snapshot(job))
             return jobs
+
+    def error_history(self, job_id):
+        with self.lock:
+            return [
+                dict(row)
+                for row in self.db.execute(
+                    "SELECT i.*,f.status AS file_status FROM incidents i "
+                    "LEFT JOIN files f ON f.id=i.file_id AND f.job_id=i.job_id "
+                    "WHERE i.job_id=? ORDER BY i.first_at,i.file_id,i.message",
+                    (job_id,),
+                )
+            ]
+
+    def _record_incident(self, job_id, file_id, name, message, attempt=0):
+        # Called under the store transaction; no writes on successful chunks.
+        now = time.time()
+        self.db.execute(
+            "INSERT INTO incidents(job_id,file_id,name,message,first_at,last_at,attempt) "
+            "VALUES (?,?,?,?,?,?,?) ON CONFLICT(job_id,file_id,message) DO UPDATE SET "
+            "last_at=excluded.last_at,occurrences=incidents.occurrences+1, "
+            "attempt=excluded.attempt,resolved_at=NULL",
+            (job_id, file_id, name, str(message)[:2048], now, now, attempt),
+        )
 
     def files(self, job_id, offset=0, limit=100, query="", status=""):
         with self.lock:
@@ -344,11 +390,13 @@ class Store:
 
     def pause_for_space(self, job_id):
         with self.lock, self.db:
-            self.db.execute(
+            changed = self.db.execute(
                 "UPDATE jobs SET status='paused', hold_reason='disk' WHERE id=? "
                 "AND status IN ('queued','running')",
                 (job_id,),
             )
+            if changed.rowcount:
+                self._record_incident(job_id, 0, "", "Espace disque insuffisant.")
             self.estimates.reset(job_id)
 
     def prioritize(self, job_id, priority=None, file_id=None, move=None):
@@ -442,6 +490,20 @@ class Store:
         with self.lock, self.db:
             fields = ", ".join(f"{key}=?" for key in values)
             self.db.execute(f"UPDATE files SET {fields} WHERE id=?", [*values.values(), file_id])
+            if values.get("error") or values.get("status") == "completed":
+                row = self.db.execute("SELECT * FROM files WHERE id=?", (file_id,)).fetchone()
+                if row and values.get("error"):
+                    self._record_incident(
+                        row["job_id"], file_id, row["name"], values["error"], row["attempts"]
+                    )
+                elif row:
+                    self.db.execute(
+                        "UPDATE incidents SET resolved_at=? WHERE job_id=? "
+                        "AND (file_id=? OR (file_id=0 AND EXISTS(SELECT 1 FROM jobs "
+                        "WHERE id=incidents.job_id AND hold_reason IS NULL))) "
+                        "AND resolved_at IS NULL",
+                        (time.time(), row["job_id"], file_id),
+                    )
 
     def finish_jobs(self):
         with self.lock, self.db:
