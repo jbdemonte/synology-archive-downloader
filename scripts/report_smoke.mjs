@@ -81,6 +81,22 @@ try {
     }),
     "The close icon must be centered inside a square hit target",
   );
+  await close.hover();
+  await page.waitForFunction(
+    () =>
+      getComputedStyle(document.querySelector("#report-dialog .close"))
+        .backgroundColor === "rgb(234, 242, 251)",
+  );
+  assert.ok(
+    await close.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return (
+        style.borderRadius === "50%" &&
+        style.backgroundColor !== "rgba(0, 0, 0, 0)"
+      );
+    }),
+    "Hover must draw a circular background around the centered close icon",
+  );
   // Tab still exposes a visible focus marker and reaches the close control.
   await page.keyboard.press("Tab");
   assert.ok(

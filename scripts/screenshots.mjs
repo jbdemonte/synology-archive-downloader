@@ -234,13 +234,13 @@ try {
         retries: 4,
         verify_checksums: true,
         language: "en",
-        version: "0.2.0-8",
+        version: "0.2.0-9",
         check_updates: true,
         update_prereleases: false,
         updates: {
           state: "current",
-          current_version: "0.2.0-8",
-          latest_version: "0.2.0-8",
+          current_version: "0.2.0-9",
+          latest_version: "0.2.0-9",
           checked_at: demoTime.getTime() / 1000,
           retry_after: 0,
         },
@@ -348,9 +348,11 @@ try {
       (index - 1) * parseFloat(getComputedStyle(element).lineHeight) +
       parseFloat(getComputedStyle(element.parentElement).paddingTop);
   });
-  await page
-    .locator("#report-dialog")
-    .screenshot({ path: new URL("report.png", out).pathname });
+  await page.locator("#report-dialog .close").hover();
+  await page.locator("#report-dialog").screenshot({
+    path: new URL("report.png", out).pathname,
+    animations: "disabled",
+  });
   await page.locator("#report-dialog [data-close]").first().click();
   await page.getByRole("button", { name: "Folders", exact: true }).click();
   await page

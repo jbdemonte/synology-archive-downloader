@@ -950,9 +950,17 @@ dialog > form {
   height: 28px;
   margin-inline-start: 12px;
   border: 0;
+  border-radius: 50%;
   padding: 0;
   background: transparent;
   color: #9ea8b1;
+}
+.close:hover {
+  background: #eaf2fb;
+  color: #52667a;
+}
+.close:active {
+  background: #dce9f7;
 }
 .close svg {
   width: 18px;
