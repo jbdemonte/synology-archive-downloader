@@ -97,6 +97,52 @@ try {
     .filter({ hasText: /^-24\s*h$/ })
     .waitFor();
   assert.equal(await page.locator("#history-window").inputValue(), "86400");
+  // A settings poll must leave an open period chooser's options intact.
+  // The initial labels must already match the automatically detected language.
+  const labelsFor = (locale) =>
+    [1, 6, 12, 24].map((hours) =>
+      new Intl.NumberFormat(locale, {
+        style: "unit",
+        unit: "hour",
+        unitDisplay: "short",
+      }).format(hours),
+    );
+  assert.deepEqual(
+    await page.locator("#history-window option").allTextContents(),
+    labelsFor("fr"),
+  );
+  assert.ok(
+    await page.locator("#history-window").evaluate(async (select) => {
+      select.focus();
+      const options = [...select.options];
+      await loadSettings();
+      return (
+        document.activeElement === select &&
+        select.value === "86400" &&
+        options.every((option, i) => select.options[i] === option)
+      );
+    }),
+    "Refreshing unchanged settings must preserve the period options and focus",
+  );
+  // A real language change still translates the options without resetting 24h.
+  await page.route("**/api/settings", async (route) => {
+    const response = await route.fetch();
+    const settings = await response.json();
+    await route.fulfill({ response, json: { ...settings, language: "en" } });
+  });
+  await page.evaluate(() => loadSettings());
+  assert.deepEqual(
+    await page.locator("#history-window option").allTextContents(),
+    labelsFor("en"),
+  );
+  assert.equal(await page.locator("#history-window").inputValue(), "86400");
+  await page.unroute("**/api/settings");
+  await page.evaluate(() => loadSettings());
+  assert.deepEqual(
+    await page.locator("#history-window option").allTextContents(),
+    labelsFor("fr"),
+  );
+  assert.equal(await page.locator("#history-window").inputValue(), "86400");
   // Check the real API too, independently of the illustrative browser route.
   for (const window of [3600, 21600, 43200, 86400]) {
     const response = await page.request.get(
@@ -126,7 +172,7 @@ try {
       .evaluate((el) => el.getBoundingClientRect().right <= innerWidth),
   );
   console.log(
-    "History passed: four periods, real API aggregation, stale-response protection, remembered choice, hover intervals and responsive layout.",
+    "History passed: four periods, real API aggregation, stale-response protection, stable and translated period options, remembered choice, hover intervals and responsive layout.",
   );
 } finally {
   releaseSix();

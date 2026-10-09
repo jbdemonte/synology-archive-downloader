@@ -795,7 +795,11 @@ async function loadBranch(jobId, prefix, offset = 0) {
     if (state.expanded.get(id) === branch) branch.error = error.message;
   }
 }
+let historyOptionsLocale;
 function historyOptions() {
+  // Settings polling must not replace options while the chooser is open.
+  // Track their locale separately: init() may have already translated the UI.
+  if (historyOptionsLocale === ArchiveI18n.locale) return;
   $("history-window").replaceChildren(
     ...[1, 6, 12, 24].map(
       (hours) =>
@@ -810,6 +814,7 @@ function historyOptions() {
     ),
   );
   $("history-window").value = String(state.historyWindow);
+  historyOptionsLocale = ArchiveI18n.locale;
 }
 historyOptions();
 $("history-window").onchange = () => {
