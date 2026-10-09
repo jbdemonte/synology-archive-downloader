@@ -109,7 +109,7 @@ try {
   await page.unroute("**/api/inspect");
   await page
     .locator("#urls")
-    .fill("https://archive.org/details/MAME_0.278_ROMs_non-merged_2025her un");
+    .fill("https://archive.org/details/demo-invalid identifier");
   await page.locator("#inspect-button").click();
   await page
     .locator("#add-error")
