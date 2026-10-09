@@ -265,7 +265,9 @@ The command exports the committed tree, runs backend tests, formatting checks an
 - The installable `.spk` and its SHA-256 checksum.
 - A source archive containing the same committed code, README and screenshots.
 - `RELEASE_NOTES.md`, `INSTALL.md` and `BUILD-INFO.txt` identifying the commit and completed checks.
-- `SHA256SUMS` for the bundle and `PUBLISH.md` with the exact tag and GitHub draft-release commands.
+- `SHA256SUMS` covering all six other public attachments.
+
+`PUBLISH.md` is also generated as a **local maintainer guide** with the exact tag and GitHub draft-release commands. It is excluded from uploads and checksums. Use its explicit attachment list instead of uploading the entire directory.
 
 The source archive contains committed files only; ignored local files, downloads and the private development how-to are excluded. The command prepares local artifacts; publishing is a separate step.
 

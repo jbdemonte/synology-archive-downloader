@@ -1,4 +1,6 @@
 import io
+import shlex
+import shutil
 import subprocess
 import tarfile
 import tempfile
@@ -10,6 +12,7 @@ from scripts.release import (
     git,
     preflight,
     publication_guide,
+    release_assets,
     validate_package,
     verify_bundle,
     write_checksums,
@@ -97,22 +100,80 @@ class ReleaseTests(unittest.TestCase):
                 b"// Committed application\n",
             )
 
-    def test_bundle_checksums_detect_corruption_extra_files_and_unsafe_names(self):
+    def bundle(self):
         directory = self.root / "dist"
-        self.write("dist/application.spk", "package")
-        self.write("dist/BUILD-INFO.txt", "build")
-        write_checksums(directory)
-        verify_bundle(directory)
-        self.write("dist/application.spk", "corrupted")
+        for name in release_assets(self.version):
+            if name != "SHA256SUMS":
+                self.write(f"dist/{name}", name)
+        self.write("dist/PUBLISH.md", publication_guide(self.version, "a" * 40))
+        write_checksums(directory, self.version)
+        return directory
+
+    def test_bundle_checksums_detect_corruption_extra_files_and_unsafe_names(self):
+        directory = self.bundle()
+        verify_bundle(directory, self.version)
+        spk = f"ArchiveStation-{self.version}-x86_64.spk"
+        self.write(f"dist/{spk}", "corrupted")
         with self.assertRaisesRegex(ValueError, "checksum mismatch"):
-            verify_bundle(directory)
-        self.write("dist/application.spk", "package")
+            verify_bundle(directory, self.version)
+        self.write(f"dist/{spk}", spk)
         self.write("dist/unexpected.txt", "unexpected")
         with self.assertRaisesRegex(ValueError, "unexpected files"):
-            verify_bundle(directory)
+            verify_bundle(directory, self.version)
         self.write("dist/SHA256SUMS", "0" * 64 + "  ../outside\n")
         with self.assertRaisesRegex(ValueError, "Invalid release"):
-            verify_bundle(directory)
+            verify_bundle(directory, self.version)
+
+    def test_downloaded_assets_verify_without_the_local_publication_guide(self):
+        directory = self.bundle()
+        guide = (directory / "PUBLISH.md").read_text()
+        shell = guide.split("```sh\n", 1)[1].split("```", 1)[0]
+        command = "gh release create " + shell.split("gh release create ", 1)[1]
+        arguments = shlex.split(command.replace("\\\n", ""))
+        paths = [argument for argument in arguments if argument.startswith("dist/releases/")]
+        names = {Path(path).name for path in paths}
+        self.assertEqual(
+            names,
+            {
+                "ArchiveStation-0.2.0-6-x86_64.spk",
+                "ArchiveStation-0.2.0-6-x86_64.spk.sha256",
+                "ArchiveStation-0.2.0-6-source.tar.gz",
+                "SHA256SUMS",
+                "BUILD-INFO.txt",
+                "INSTALL.md",
+                "RELEASE_NOTES.md",
+            },
+        )
+        downloaded = self.root / "downloaded"
+        downloaded.mkdir()
+        for name in names:
+            shutil.copyfile(directory / name, downloaded / name)
+        verify_bundle(downloaded, self.version)
+        manifest = (downloaded / "SHA256SUMS").read_text()
+        self.assertNotIn("PUBLISH.md", manifest)
+        self.assertEqual(
+            {line.split("  ", 1)[1] for line in manifest.splitlines()}, names - {"SHA256SUMS"}
+        )
+        # Maintainer notes can be edited without changing any public checksum.
+        self.write("dist/PUBLISH.md", "Local publication checklist\n")
+        verify_bundle(directory, self.version)
+
+    def test_manifest_must_cover_all_public_assets_exactly_once(self):
+        directory = self.bundle()
+        lines = (directory / "SHA256SUMS").read_text().splitlines(keepends=True)
+        # A missing asset must not be accepted even when its manifest entry is removed too.
+        missing = lines[0].split("  ", 1)[1].strip()
+        (directory / missing).unlink()
+        self.write("dist/SHA256SUMS", "".join(lines[1:]))
+        with self.assertRaisesRegex(ValueError, "missing or unexpected"):
+            verify_bundle(directory, self.version)
+        self.write(f"dist/{missing}", missing)
+        self.write("dist/SHA256SUMS", "".join(lines + lines[:1]))
+        with self.assertRaisesRegex(ValueError, "Invalid release"):
+            verify_bundle(directory, self.version)
+        self.write("dist/SHA256SUMS", "".join(lines) + "0" * 64 + "  PUBLISH.md\n")
+        with self.assertRaisesRegex(ValueError, "Invalid release"):
+            verify_bundle(directory, self.version)
 
     def package(
         self, version="0.2.0-6", script=b"// Committed application\n", app_version="0.2.0-6"
@@ -145,7 +206,7 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "update-check version"):
             validate_package(self.package(app_version="0.2.0"), self.version, self.root)
 
-    def test_publication_instructions_pin_the_tag_and_attach_every_asset(self):
+    def test_publication_instructions_pin_the_tag_and_attach_public_assets(self):
         text = publication_guide(self.version, "a" * 40)
         self.assertIn("git tag -a v0.2.0-6 " + "a" * 40, text)
         self.assertIn("--verify-tag --draft --prerelease", text)

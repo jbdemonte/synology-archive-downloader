@@ -25,7 +25,8 @@ are cached in `build/cache` and verified against the committed lock file.
 An existing Chromium installation can be selected with `CHROMIUM_PATH`. On macOS,
 the command also finds previously installed Playwright Chromium builds automatically.
 
-Successful output is placed in `dist/releases/<version>/`:
+Successful output is placed in `dist/releases/<version>/`. The public release
+contains these seven attachments:
 
 | File | Purpose |
 | --- | --- |
@@ -35,8 +36,13 @@ Successful output is placed in `dist/releases/<version>/`:
 | `RELEASE_NOTES.md` | GitHub release description |
 | `INSTALL.md` | Installation and upgrade instructions |
 | `BUILD-INFO.txt` | Commit, version, runtime hashes and completed checks |
-| `SHA256SUMS` | Checksums of every other bundle file |
-| `PUBLISH.md` | Commands to push the tag and create a GitHub draft |
+| `SHA256SUMS` | Checksums of the six other public attachments |
+
+The same directory also contains `PUBLISH.md`, a **local maintainer guide** with
+commands to push the tag and create a GitHub draft. It is excluded from the upload
+command and from `SHA256SUMS`. Use the explicit attachment list in that command,
+not a wildcard over the directory. Users can verify all downloaded attachments
+without obtaining maintainer-only files.
 
 A failed check leaves no final bundle. Repeating the command validates and reuses an
 existing bundle from the same commit; it refuses a different commit or damaged assets.

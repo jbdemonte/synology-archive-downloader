@@ -62,25 +62,53 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def write_checksums(directory):
-    files = sorted(path for path in directory.iterdir() if path.name != "SHA256SUMS")
+def release_assets(version):
+    """Explicit public attachments; the maintainer's PUBLISH.md stays local."""
+    spk = f"ArchiveStation-{version}-x86_64.spk"
+    return [
+        spk,
+        spk + ".sha256",
+        f"ArchiveStation-{version}-source.tar.gz",
+        "SHA256SUMS",
+        "BUILD-INFO.txt",
+        "INSTALL.md",
+        "RELEASE_NOTES.md",
+    ]
+
+
+def write_checksums(directory, version):
+    files = [directory / name for name in sorted(release_assets(version)) if name != "SHA256SUMS"]
     (directory / "SHA256SUMS").write_text(
         "".join(f"{digest(path)}  {path.name}\n" for path in files)
     )
 
 
-def verify_bundle(directory):
+def verify_bundle(directory, version):
+    public = set(release_assets(version))
     expected = set()
     for line in (directory / "SHA256SUMS").read_text().splitlines():
+        if "  " not in line:
+            raise ValueError("Invalid release checksum manifest.")
         checksum, name = line.split("  ", 1)
-        if Path(name).name != name or not re.fullmatch(r"[a-f0-9]{64}", checksum):
+        if (
+            name not in public - {"SHA256SUMS"}
+            or name in expected
+            or not re.fullmatch(r"[a-f0-9]{64}", checksum)
+        ):
             raise ValueError("Invalid release checksum manifest.")
         path = directory / name
         if path.is_symlink() or not path.is_file() or digest(path) != checksum:
             raise ValueError(f"Release checksum mismatch: {name}")
         expected.add(name)
-    if not expected or expected != {p.name for p in directory.iterdir()} - {"SHA256SUMS"}:
+    if expected != public - {"SHA256SUMS"}:
         raise ValueError("Release bundle contains missing or unexpected files.")
+    local_files = {p.name for p in directory.iterdir()}
+    if local_files - {"PUBLISH.md"} != public:
+        raise ValueError("Release bundle contains missing or unexpected files.")
+    for name in local_files:
+        path = directory / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"Invalid release file: {name}")
 
 
 def validate_package(path, version, source):
@@ -136,14 +164,13 @@ def browser_environment(root):
 
 def publication_guide(version, commit):
     directory = f"dist/releases/{version}"
-    spk = f"ArchiveStation-{version}-x86_64.spk"
-    assets = [spk, spk + ".sha256", f"ArchiveStation-{version}-source.tar.gz", "SHA256SUMS"]
-    assets += ["BUILD-INFO.txt", "INSTALL.md", "RELEASE_NOTES.md", "PUBLISH.md"]
-    uploads = " \\\n  ".join(f"{directory}/{name}" for name in assets)
+    uploads = " \\\n  ".join(f"{directory}/{name}" for name in release_assets(version))
     return f"""# Publish Archive Station {version}
 
 This bundle was prepared locally. These commands perform the GitHub publication steps.
 Run them from the repository root after reviewing the release notes and assets.
+Keep this maintainer guide local: do not attach PUBLISH.md to the release.
+The command below uploads only public assets; SHA256SUMS covers those assets only.
 
 The repository must be public for the community to download the release. Review the
 repository and its Git history before changing visibility in GitHub repository Settings.
@@ -180,7 +207,7 @@ def prepare(root, version):
     commit = preflight(root, version)
     destination = root / "dist/releases" / version
     if destination.exists():
-        verify_bundle(destination)
+        verify_bundle(destination, version)
         if f"Commit: {commit}\n" not in (destination / "BUILD-INFO.txt").read_text():
             raise ValueError(
                 "A bundle for another commit already uses this version. Use a new version."
@@ -238,8 +265,8 @@ def prepare(root, version):
             "Checks passed: make check; make test-ui; make build; package content validation\n"
             "Hardware validation is separate; see RELEASE_NOTES.md.\n"
         )
-        write_checksums(bundle)
-        verify_bundle(bundle)
+        write_checksums(bundle, version)
+        verify_bundle(bundle, version)
         if preflight(root, version) != commit:
             raise ValueError(
                 "The repository changed during release preparation; rerun make release."
