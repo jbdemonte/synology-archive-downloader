@@ -9,7 +9,15 @@ const root = new URL("../", import.meta.url);
 const config = JSON.parse(
   await readFile(new URL("packaging/synology/ui/config", root)),
 );
-const appURL = config[".url"]["com.archivestation.app"].url;
+const packageId = process.argv[2] || "ArchiveStation";
+assert.ok(["ArchiveStation", "archivestation"].includes(packageId));
+const community = packageId === "archivestation";
+const dsmBase = `/webman/3rdparty/${packageId}`;
+const account = community ? "sc-archivestation" : "ArchiveStation";
+const appURL = config[".url"]["com.archivestation.app"].url.replace(
+  "/ArchiveStation/",
+  `/${packageId}/`,
+);
 const browser = await chromium.launch({
   headless: true,
   executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -19,14 +27,18 @@ const errors = [];
 let expired = false;
 let authenticatedCalls = 0;
 let serviceUnavailable = false;
+let initialSettings;
 page.on("pageerror", (error) => errors.push(error.message));
 try {
+  initialSettings = await (
+    await page.request.get(base + "/api/settings")
+  ).json();
   await page.route(`${base}/desktop-test`, (route) =>
     route.fulfill({
       contentType: "text/html",
       body: `<!doctype html><html><head>
       <style>body { margin: 8px; font: 19px serif; } button { padding: 2px; border-radius: 0; }</style>
-      <link rel="stylesheet" href="/webman/3rdparty/ArchiveStation/style.css">
+      <link rel="stylesheet" href="${dsmBase}/style.css">
       <script>window.SYNO={SDS:{Session:{SynoToken:"test-dsm-token",lang:"fre"}}};</script>
       <script>
       window.fileStationLaunches = [];
@@ -54,125 +66,135 @@ try {
       </body></html>`,
     }),
   );
-  await page.route(
-    `${base}/webman/3rdparty/ArchiveStation/**`,
-    async (route) => {
-      const url = new URL(route.request().url());
-      if (url.pathname.endsWith("/gateway.cgi")) {
-        assert.equal(
-          route.request().headers()["x-syno-token"],
-          "test-dsm-token",
-        );
-        const api = url.searchParams.get("route");
-        assert.ok(api.startsWith("/api/"));
-        assert.ok(
-          !["/api/login", "/api/password", "/api/logout"].includes(api),
-        );
-        if (expired) {
-          await route.fulfill({
-            status: 401,
-            json: { mode: "dsm", error: "Session DSM expirée." },
-          });
-        } else if (api === "/api/auth") {
-          await route.fulfill({
-            json: { mode: "dsm", authenticated: true, configured: true },
-          });
-        } else if (api.endsWith("/location")) {
-          await route.fulfill({
-            json: { file_station_path: "/Download/Jeux & collections/été" },
-          });
-        } else if (api === "/api/jobs" && serviceUnavailable) {
-          await route.fulfill({
-            json: { _http_status: 503, error: "Le service est indisponible." },
-          });
-        } else if (
-          api.startsWith("/api/folders") &&
-          route.request().method() === "GET"
-        ) {
-          if (
-            new URL(base + api).searchParams.get("path") === "/test-read-only"
-          ) {
-            await route.fulfill({
-              json: {
-                path: "/test-read-only",
-                parent: "",
-                writable: false,
-                folders: [],
-              },
-            });
-            return;
-          }
-          if (
-            new URL(base + api).searchParams.get("path") ===
-            "/test-permission-denied"
-          ) {
-            await route.fulfill({
-              json: {
-                _http_status: 403,
-                error: "Accès au dossier refusé. Vérifiez les permissions DSM.",
-              },
-            });
-            return;
-          }
-          const listing = await (await route.fetch({ url: base + api })).json();
-          listing.folders.push({
-            name: "Download (sans droits)",
-            path: "/volume1/Download",
-            readable: false,
-            writable: false,
-          });
-          listing.folders.push({
-            name: "Roms (lecture seule)",
-            path: "/test-read-only",
-            readable: true,
-            writable: false,
-          });
-          listing.folders.push({
-            name: "Droits retirés pendant la navigation",
-            path: "/test-permission-denied",
-            readable: true,
-            writable: true,
-          });
-          await route.fulfill({ json: listing });
-        } else {
-          authenticatedCalls++;
-          await route.fulfill({
-            response: await route.fetch({ url: base + api }),
-          });
-        }
-        return;
-      }
-      if (url.pathname.includes("/locales/")) {
+  await page.route(`${base}${dsmBase}/**`, async (route) => {
+    const url = new URL(route.request().url());
+    if (url.pathname.endsWith("/gateway.cgi")) {
+      assert.equal(route.request().headers()["x-syno-token"], "test-dsm-token");
+      const api = url.searchParams.get("route");
+      assert.ok(api.startsWith("/api/"));
+      assert.ok(!["/api/login", "/api/password", "/api/logout"].includes(api));
+      if (expired) {
         await route.fulfill({
-          contentType: "application/json",
-          body: await readFile(
-            new URL(
-              "src/archive_station/static/locales/" +
-                url.pathname.split("/").pop(),
-              root,
-            ),
-          ),
+          status: 401,
+          json: { mode: "dsm", error: "Session DSM expirée." },
         });
-        return;
+      } else if (api === "/api/auth") {
+        await route.fulfill({
+          json: { mode: "dsm", authenticated: true, configured: true },
+        });
+      } else if (api.endsWith("/location")) {
+        await route.fulfill({
+          json: { file_station_path: "/Download/Jeux & collections/été" },
+        });
+      } else if (api === "/api/jobs" && serviceUnavailable) {
+        await route.fulfill({
+          json: { _http_status: 503, error: "Le service est indisponible." },
+        });
+      } else if (
+        api.startsWith("/api/folders") &&
+        route.request().method() === "GET"
+      ) {
+        if (
+          new URL(base + api).searchParams.get("path") === "/test-read-only"
+        ) {
+          await route.fulfill({
+            json: {
+              path: "/test-read-only",
+              parent: "",
+              writable: false,
+              folders: [],
+            },
+          });
+          return;
+        }
+        if (
+          new URL(base + api).searchParams.get("path") ===
+          "/test-permission-denied"
+        ) {
+          await route.fulfill({
+            json: {
+              _http_status: 403,
+              error: "Accès au dossier refusé. Vérifiez les permissions DSM.",
+            },
+          });
+          return;
+        }
+        const listing = await (await route.fetch({ url: base + api })).json();
+        listing.folders.push({
+          name: "Download (sans droits)",
+          path: "/volume1/Download",
+          readable: false,
+          writable: false,
+        });
+        listing.folders.push({
+          name: "Roms (lecture seule)",
+          path: "/test-read-only",
+          readable: true,
+          writable: false,
+        });
+        listing.folders.push({
+          name: "Droits retirés pendant la navigation",
+          path: "/test-permission-denied",
+          readable: true,
+          writable: true,
+        });
+        await route.fulfill({ json: listing });
+      } else {
+        authenticatedCalls++;
+        const response = await route.fetch({ url: base + api });
+        if (
+          route.request().method() === "GET" &&
+          ["/api/settings", "/api/jobs"].includes(api.split("?")[0])
+        ) {
+          const body = await response.json();
+          if (api === "/api/settings")
+            body.distribution = {
+              service_user: account,
+              update_checks: !community,
+            };
+          // Even a stale standalone result must not advertise incompatible updates.
+          if (community)
+            body.updates = {
+              state: "available",
+              latest_version: "99.0.0-1",
+              release_url:
+                "https://github.com/jbdemonte/synology-archive-downloader/releases/tag/v99.0.0-1",
+            };
+          await route.fulfill({ json: body });
+        } else await route.fulfill({ response });
       }
-      const name = url.pathname.split("/").pop();
-      const types = {
-        "index.html": "text/html",
-        "style.css": "text/css",
-        "app.js": "application/javascript",
-        "i18n.js": "application/javascript",
-        "icon.png": "image/png",
-      };
-      assert.ok(name in types);
-      const path = url.pathname.includes("/web/")
-        ? `src/archive_station/static/${name}`
-        : "packaging/synology/ui/style.css";
+      return;
+    }
+    if (url.pathname.includes("/locales/")) {
       await route.fulfill({
-        contentType: types[name],
-        body: await readFile(new URL(path, root)),
+        contentType: "application/json",
+        body: await readFile(
+          new URL(
+            "src/archive_station/static/locales/" +
+              url.pathname.split("/").pop(),
+            root,
+          ),
+        ),
       });
-    },
-  );
+      return;
+    }
+    const name = url.pathname.split("/").pop();
+    const types = {
+      "index.html": "text/html",
+      "style.css": "text/css",
+      "app.js": "application/javascript",
+      "i18n.js": "application/javascript",
+      "icon.png": "image/png",
+    };
+    assert.ok(name in types);
+    const path = url.pathname.includes("/web/")
+      ? `src/archive_station/static/${name}`
+      : "packaging/synology/ui/style.css";
+    await route.fulfill({
+      contentType: types[name],
+      body: await readFile(new URL(path, root)),
+    });
+  });
   if (!(await (await page.request.get(base + "/api/jobs")).json()).jobs.length)
     await page.request.post(base + "/api/jobs", {
       data: { url: "demo-one", paused: true },
@@ -180,6 +202,18 @@ try {
   await page.goto(base + "/desktop-test");
   const app = page.frameLocator('iframe[title="Archive Station"]');
   await app.getByRole("heading", { name: "Transferts" }).waitFor();
+  assert.equal(await app.locator("#service-user").textContent(), account);
+  assert.equal(
+    await app.locator("#update-settings").getAttribute("hidden"),
+    community ? "" : null,
+  );
+  if (community) {
+    assert.equal(
+      await app.locator("#update-available").getAttribute("href"),
+      null,
+    );
+    assert.ok(await app.locator("#update-check").isDisabled());
+  }
   await app.locator("[data-menu-job]").first().click();
   await app.locator("#open-folder").click();
   await page.waitForFunction(() => fileStationLaunches.length === 1);
@@ -384,9 +418,12 @@ try {
   const parentPath = await destination.inputValue();
   await app.locator(`#folder-list [data-folder="${parentPath}"]`).click();
   await app.locator("#folder-new").click();
-  await app.getByLabel("Nom du nouveau dossier").fill("Mes archives");
+  const folderName = community
+    ? "Mes archives SynoCommunity"
+    : "Mes archives GitHub";
+  await app.getByLabel("Nom du nouveau dossier").fill(folderName);
   await app.locator("#folder-create-submit").click();
-  const newDestination = parentPath + "/Mes archives";
+  const newDestination = parentPath + "/" + folderName;
   await app
     .locator("#folder-path")
     .filter({ hasText: newDestination })
@@ -460,8 +497,16 @@ try {
   );
   assert.deepEqual(errors, []);
   console.log(
-    "DSM UI: settings accessible at four window sizes, destination saved, session reuse and desktop CSS isolation passed.",
+    `DSM UI (${packageId}): settings accessible at four window sizes, destination saved, session reuse and desktop CSS isolation passed.`,
   );
 } finally {
+  if (initialSettings)
+    await page.request.post(base + "/api/settings", {
+      data: {
+        download_dir: initialSettings.download_dir,
+        language: initialSettings.language,
+        report_language: initialSettings.report_language,
+      },
+    });
   await browser.close();
 }

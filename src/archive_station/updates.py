@@ -77,8 +77,15 @@ def fetch_releases():
 
 class Updates:
     def __init__(
-        self, settings, data_dir, current=__package_version__, fetch=fetch_releases, clock=time.time
+        self,
+        settings,
+        data_dir,
+        current=__package_version__,
+        fetch=fetch_releases,
+        clock=time.time,
+        enabled=True,
     ):
+        self.enabled = enabled
         self.settings, self.current, self.fetch, self.clock = settings, current, fetch, clock
         self.path = Path(data_dir) / "updates.json"
         self.lock = threading.RLock()
@@ -130,6 +137,16 @@ class Updates:
         self.wake.set()
 
     def snapshot(self):
+        if not self.enabled:
+            return {
+                "state": "disabled",
+                "current_version": self.current,
+                "latest_version": None,
+                "release_url": None,
+                "checked_at": None,
+                "prerelease": False,
+                "retry_after": 0,
+            }
         with self.lock:
             result = dict(self.result)
             release = result.pop("release")
@@ -155,6 +172,8 @@ class Updates:
             return result
 
     def request(self):
+        if not self.enabled:
+            return self.snapshot()
         with self.lock:
             if self.stop.is_set() or (self.worker and self.worker.is_alive()):
                 return self.snapshot()
@@ -200,6 +219,9 @@ class Updates:
                 self.request()
 
     def start(self):
+        if not self.enabled:
+            return
+
         def run():
             while not self.stop.is_set():
                 self.wake.clear()

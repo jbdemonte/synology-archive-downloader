@@ -12,8 +12,9 @@ COMMAND = "/usr/syno/bin/synodsmnotify"
 
 
 class Notifications:
-    def __init__(self, store, settings, enabled=False, send=None):
+    def __init__(self, store, settings, enabled=False, send=None, package_id="ArchiveStation"):
         self.store, self.settings = store, settings
+        self.package_id = package_id
         self.enabled = enabled and Path(COMMAND).exists() if send is None else True
         self.send = send or self.deliver
         self.stop = threading.Event()
@@ -22,8 +23,7 @@ class Notifications:
         with store.lock, store.db:
             store.db.execute("CREATE TABLE IF NOT EXISTS notifications (event TEXT PRIMARY KEY)")
 
-    @staticmethod
-    def deliver(kind, key):
+    def deliver(self, kind, key):
         subprocess.run(
             [
                 COMMAND,
@@ -32,8 +32,8 @@ class Notifications:
                 "-t",
                 key,
                 "@administrators",
-                "ArchiveStation:notifications:title",
-                f"ArchiveStation:notifications:{kind}",
+                f"{self.package_id}:notifications:title",
+                f"{self.package_id}:notifications:{kind}",
             ],
             check=True,
             timeout=10,

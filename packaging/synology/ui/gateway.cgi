@@ -1,4 +1,4 @@
-#!/var/packages/ArchiveStation/target/python/bin/python3
+#!@PYTHON@
 """Authenticate with DSM before proxying to the loopback-only application."""
 
 import grp

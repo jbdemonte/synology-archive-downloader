@@ -15,6 +15,7 @@ from . import __package_version__
 from .archive import parse_identifier
 from .auth import Auth
 from .config import LANGUAGES, dsm_language
+from .distribution import Distribution
 from .plans import Plans
 from .refresh import difference
 from .reports import render_report
@@ -28,14 +29,25 @@ STATIC = Path(__file__).parent / "static"
 
 class WebApp:
     def __init__(
-        self, store, client, settings, data_dir, no_auth=False, dsm_auth=False, updates=None
+        self,
+        store,
+        client,
+        settings,
+        data_dir,
+        no_auth=False,
+        dsm_auth=False,
+        updates=None,
+        distribution=None,
     ):
         self.store, self.client, self.settings = store, client, settings
         self.auth = Auth(data_dir)
         self.no_auth = no_auth
         self.dsm_auth = dsm_auth
         self.plans = Plans()
-        self.updates = updates or Updates(settings, data_dir)
+        self.distribution = distribution or Distribution.from_env()
+        self.updates = updates or Updates(
+            settings, data_dir, enabled=self.distribution.update_checks
+        )
 
     def __call__(self, env, start_response):
         headers = []
@@ -50,7 +62,8 @@ class WebApp:
                 403,
                 {
                     "error": "Accès au dossier refusé. Vérifiez les "
-                    "permissions de l’utilisateur système ArchiveStation dans DSM."
+                    "permissions de l’utilisateur système {account} dans DSM.",
+                    "error_values": {"account": self.distribution.service_user},
                 },
                 "application/json",
             )
@@ -200,6 +213,10 @@ class WebApp:
                     "storage": storage,
                     "version": __package_version__,
                     "updates": self.updates.snapshot(),
+                    "distribution": {
+                        "service_user": self.distribution.service_user,
+                        "update_checks": self.distribution.update_checks,
+                    },
                     "dsm_language": dsm_language() if self.dsm_auth else "",
                     "destination_locked": self.store.destination_locked(),
                     "timezone": time.strftime("%Z"),

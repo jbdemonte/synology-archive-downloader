@@ -219,6 +219,8 @@ Checks use GitHub's public API without credentials or download information. Only
 
 ## Build and develop
 
+For alternative DSM packages, see [distribution configuration and payload staging](docs/DISTRIBUTIONS.md).
+
 Build requirements: **Python 3.12+**, `make`, and network access for the first dependency download. macOS and Linux can build the package without executing the bundled Linux runtime.
 
 ```sh

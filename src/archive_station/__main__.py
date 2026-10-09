@@ -13,6 +13,7 @@ from pathlib import Path
 from .archive import ArchiveClient
 from .auth import Auth
 from .config import Settings
+from .distribution import Distribution
 from .engine import Engine
 from .notifications import Notifications
 from .reports import Reports
@@ -33,6 +34,10 @@ def main():
     access.add_argument("--no-auth", action="store_true", help="Local development on loopback only")
     access.add_argument("--dsm-auth", action="store_true", help="Require the local DSM gateway")
     args = parser.parse_args()
+    try:
+        distribution = Distribution.from_env()
+    except ValueError as exc:
+        parser.error(str(exc))
     data = Path(args.data_dir).resolve()
     data.mkdir(parents=True, exist_ok=True)
     if args.set_password_stdin:
@@ -67,10 +72,19 @@ def main():
     client = ArchiveClient()
     engine = Engine(store, client, settings)
     reports = Reports(store, settings)
-    notifications = Notifications(store, settings, enabled=args.dsm_auth)
-    updates = Updates(settings, data)
+    notifications = Notifications(
+        store, settings, enabled=args.dsm_auth, package_id=distribution.package_id
+    )
+    updates = Updates(settings, data, enabled=distribution.update_checks)
     app = WebApp(
-        store, client, settings, data, no_auth=args.no_auth, dsm_auth=args.dsm_auth, updates=updates
+        store,
+        client,
+        settings,
+        data,
+        no_auth=args.no_auth,
+        dsm_auth=args.dsm_auth,
+        updates=updates,
+        distribution=distribution,
     )
     from waitress import create_server
 

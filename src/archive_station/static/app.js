@@ -1,5 +1,9 @@
 "use strict";
-const { t } = ArchiveI18n;
+const t = (message, values = {}) =>
+  ArchiveI18n.t(message, {
+    account: state.settings?.distribution?.service_user || "ArchiveStation",
+    ...values,
+  });
 const $ = (id) => document.getElementById(id);
 const state = {
   jobs: [],
@@ -119,9 +123,10 @@ function etaMarkup(job) {
     ? `<div class="remaining-time" title="${esc(etaHint(job))}">${esc(label)}</div>`
     : "";
 }
-const embedded = location.pathname.startsWith(
-  "/webman/3rdparty/ArchiveStation/",
-);
+const dsmBase = /^\/webman\/3rdparty\/[A-Za-z][A-Za-z0-9_-]{0,63}\//.exec(
+  location.pathname,
+)?.[0];
+const embedded = Boolean(dsmBase);
 let authMode = embedded ? "dsm" : "password";
 let initializing = false;
 let startupController = null;
@@ -175,7 +180,7 @@ function dsmToken() {
 }
 async function api(path, body, signal) {
   const endpoint = embedded
-    ? `/webman/3rdparty/ArchiveStation/gateway.cgi?route=${encodeURIComponent(path)}`
+    ? `${dsmBase}gateway.cgi?route=${encodeURIComponent(path)}`
     : path;
   const headers =
     body === undefined ? {} : { "Content-Type": "application/json" };
@@ -211,7 +216,7 @@ async function api(path, body, signal) {
       if (response.status === 403)
         throw new Error(
           t(
-            "Accès refusé par DSM. Vérifiez les permissions du dossier pour ArchiveStation.",
+            "Accès refusé par DSM. Vérifiez les permissions du dossier pour {account}.",
           ),
         );
       throw new Error(
@@ -225,9 +230,12 @@ async function api(path, body, signal) {
       : response.status;
     if (status >= 400) {
       if (status === 401 && path !== "/api/login") showLogin();
-      throw Object.assign(new Error(t(result.error) || `HTTP ${status}`), {
-        status,
-      });
+      throw Object.assign(
+        new Error(t(result.error, result.error_values) || `HTTP ${status}`),
+        {
+          status,
+        },
+      );
     }
     return result;
   } catch (error) {
@@ -938,6 +946,8 @@ async function refresh(initial = false) {
 async function loadSettings() {
   state.settings = await api("/api/settings");
   const s = state.settings;
+  $("service-user").textContent =
+    s.distribution?.service_user || "ArchiveStation";
   const changed = await ArchiveI18n.apply(s.language || "auto", s.dsm_language);
   // Reports are generated even with the browser closed. Remember the language
   // resolved from the DSM session when the UI preference is automatic.
@@ -967,7 +977,9 @@ function renderUpdates(update = state.updates) {
     /^https:\/\/github\.com\/jbdemonte\/synology-archive-downloader\/releases\/tag\/v?\d+\.\d+\.\d+(?:-\d+)?$/.test(
       update.release_url || "",
     );
-  const available = update.state === "available" && safeLink;
+  const supported = state.settings?.distribution?.update_checks !== false;
+  $("update-settings").hidden = !supported;
+  const available = supported && update.state === "available" && safeLink;
   $("update-available").hidden = !available;
   $("app-subtitle").hidden = available;
   $("update-available").textContent = t("Version {version} disponible", {
@@ -1006,7 +1018,10 @@ function renderUpdates(update = state.updates) {
     String(update.state === "checking"),
   );
   $("update-check").disabled =
-    pending || update.state === "checking" || update.retry_after > 0;
+    !supported ||
+    pending ||
+    update.state === "checking" ||
+    update.retry_after > 0;
   $("update-check").textContent =
     update.retry_after > 0 && update.state !== "checking"
       ? t("Réessayer dans {seconds} s", { seconds: update.retry_after })
@@ -1022,6 +1037,7 @@ function renderUpdates(update = state.updates) {
 $("setting-check-updates").onchange = () => renderUpdates();
 $("setting-update-prereleases").onchange = () => renderUpdates();
 $("update-check").onclick = async () => {
+  if (state.settings?.distribution?.update_checks === false) return;
   renderUpdates({ ...state.updates, state: "checking" });
   try {
     renderUpdates(await api("/api/updates/check", {}));
