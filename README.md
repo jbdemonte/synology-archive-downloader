@@ -42,6 +42,8 @@ See the [usage guide](docs/USAGE.md) for scheduling, priorities, disk reserves, 
 
 ARM packages are not available yet. Other DSM versions and models need community testing. Archive Station does not recursively crawl collections, authenticate to restricted Archive.org files, or extract ZIP archives.
 
+The published **1.0.0-1** package was freshly installed and tested on a DS918+ running DSM 7.1.1 on October 9, 2026. Checks covered a real Archive.org download with a matching SHA-1, pause/resume, automatic recovery after stopping the package mid-transfer, live transfer settings and a plain-text report. The installed 0.2.0-9 version also successfully detected this public release before replacement.
+
 ## Trust boundary
 
 DSM access is restricted to administrator sessions. The internal API listens on loopback and trusts a gateway marker header; local NAS users and services can forge that marker. This version therefore assumes trusted local accounts and workloads. It does not provide isolation from untrusted users or containers sharing the NAS network stack.
