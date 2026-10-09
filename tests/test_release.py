@@ -209,7 +209,9 @@ class ReleaseTests(unittest.TestCase):
     def test_publication_instructions_pin_the_tag_and_attach_public_assets(self):
         text = publication_guide(self.version, "a" * 40)
         self.assertIn("git tag -a v0.2.0-6 " + "a" * 40, text)
-        self.assertIn("--verify-tag --draft --prerelease", text)
+        self.assertIn("--verify-tag --draft", text)
+        self.assertNotIn("--prerelease", text)
+        self.assertIn('--title "Archive Station 0.2.0"', text)
         self.assertIn("--notes-file dist/releases/0.2.0-6/RELEASE_NOTES.md", text)
         self.assertIn("dist/releases/0.2.0-6/ArchiveStation-0.2.0-6-x86_64.spk", text)
         self.assertNotIn("\n+", text)

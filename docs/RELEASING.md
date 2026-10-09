@@ -9,12 +9,14 @@ Keep its compatibility claims limited to hardware and DSM versions actually test
 
 ```sh
 make release                  # Current Makefile version
-make release VERSION=0.2.0-9  # Explicit DSM package version
+make release VERSION=1.0.0-1  # Explicit DSM package version
 ```
 
 The version format is `major.minor.patch-build`; its base must match
 `archive_station.__version__`. Bump the build for each changed package. GitHub tags
-use a `v` prefix, for example `v0.2.0-9`.
+use a `v` prefix, for example `v1.0.0-1`. The GitHub release title uses the application
+version (`Archive Station 1.0.0`); the tag and package filename retain the DSM build
+number (`1.0.0-1`).
 
 The command exports committed sources into a temporary directory, runs backend tests,
 lint and browser tests there, builds the package and verifies its contents. Ignored
@@ -59,8 +61,9 @@ create a draft with the release notes and assets. `--verify-tag` binds the relea
 the pushed tag; `--draft` allows reviewing the attachments before publishing.
 These options are documented in the [GitHub CLI manual](https://cli.github.com/manual/gh_release_create).
 
-For the first community version, use **Pre-release** while collecting feedback from
-other DSM models and versions. A public release needs a public repository; review
+The generated draft is a regular release. Select **Pre-release** in GitHub for
+experimental builds. State the tested models and DSM versions in either case.
+A public release needs a public repository; review
 the full Git history before changing repository visibility. A private repository's
 releases remain private. Review the draft and click **Publish release** when ready.
 See [GitHub's release workflow](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository).
@@ -75,8 +78,8 @@ Always increment the build when distributing changed code; do not replace a publ
 package or move its tag.
 
 Drafts and private releases cannot be discovered. A release marked **Pre-release** is
-shown only to users who enable **Include prereleases** in Settings. Consequently, the
-first preview will not appear in the stable channel. Automatic checks are opt-in and
+shown only to users who enable **Include prereleases** in Settings. Regular releases
+are eligible for the stable channel. Automatic checks are opt-in and
 run daily; manual checks remain available. The checker links to the release page and
 does not install packages or send DSM credentials or task data to GitHub.
 

@@ -24,7 +24,7 @@ def git(root, *args):
 
 def preflight(root, version):
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+-[1-9][0-9]*", version):
-        raise ValueError("Use a DSM package version such as 0.2.0-6 (without the v prefix).")
+        raise ValueError("Use a DSM package version such as 1.0.0-1 (without the v prefix).")
     if git(root, "status", "--porcelain", "--untracked-files=all"):
         raise ValueError("Commit or stash changes and untracked files before making a release.")
     commit = git(root, "rev-parse", "HEAD")
@@ -164,6 +164,7 @@ def browser_environment(root):
 
 def publication_guide(version, commit):
     directory = f"dist/releases/{version}"
+    release_version = version.split("-")[0]
     uploads = " \\\n  ".join(f"{directory}/{name}" for name in release_assets(version))
     return f"""# Publish Archive Station {version}
 
@@ -185,15 +186,16 @@ git push origin main
 git tag -a v{version} {commit} -m "Archive Station {version}"
 git push origin refs/tags/v{version}
 gh release create v{version} \\
-  --repo {REPOSITORY} --verify-tag --draft --prerelease \\
-  --title "Archive Station {version} (community preview)" \\
+  --repo {REPOSITORY} --verify-tag --draft \\
+  --title "Archive Station {release_version}" \\
   --notes-file {directory}/RELEASE_NOTES.md \\
   {uploads}
 ```
 
 If the tag already exists at the recorded commit, reuse it. Never force-update a published tag.
-Review the draft in GitHub Releases, then click **Publish release**. The initial release
-is a community preview: only DS918+ with DSM 7.1.1 has been tested on hardware.
+The draft is prepared as a regular release. For an experimental build, select
+**Pre-release** in GitHub before publishing. Review the draft, then click
+**Publish release**. State the tested hardware and DSM versions in the release notes.
 
 ## SynoCommunity
 

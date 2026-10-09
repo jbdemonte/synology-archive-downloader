@@ -49,7 +49,7 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 ## Install
 
 1. Download the `.spk` from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases), or build it with `make build` (see below).
-2. Open **Package Center → Manual Install** and select `ArchiveStation-0.2.0-9-x86_64.spk` (local builds place it in `dist/`).
+2. Open **Package Center → Manual Install** and select `ArchiveStation-1.0.0-1-x86_64.spk` (local builds place it in `dist/`).
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -80,7 +80,7 @@ The folder picker marks **read/write in green**, **read-only in blue**, and **in
 1. Download the newer `.spk` and its `.spk.sha256` file from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases). To check the package download, run this command from their directory:
 
    ```sh
-   shasum -a 256 -c ArchiveStation-0.2.0-9-x86_64.spk.sha256
+   shasum -a 256 -c ArchiveStation-1.0.0-1-x86_64.spk.sha256
    ```
 
    On Linux, use `sha256sum -c` instead.
@@ -222,7 +222,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
 make release               # Validate and prepare all GitHub release assets
-make build VERSION=0.2.0-9  # Override the package version
+make build VERSION=1.0.0-1  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
@@ -271,7 +271,7 @@ The command exports the committed tree, runs backend tests, formatting checks an
 
 The source archive contains committed files only; ignored local files, downloads and the private development how-to are excluded. The command prepares local artifacts; publishing is a separate step.
 
-Follow `PUBLISH.md` to push the source and tag and create a **draft release** with its attachments. Review the draft, make the repository public when ready, then select **Publish release**. Making the repository public alone does not publish a draft. Keep the first release marked **Pre-release** while gathering feedback on other NAS models; users must enable **Include prereleases** to discover it through the in-app checker.
+Follow `PUBLISH.md` to push the source and tag and create a **draft release** with its attachments. Review the draft, make the repository public when ready, then select **Publish release**. Making the repository public alone does not publish a draft. The generated draft is a regular release; mark experimental builds **Pre-release** when appropriate. Users must enable **Include prereleases** to discover those builds through the in-app checker.
 
 GitHub Releases supports direct `.spk` distribution for manual DSM installation. SynoCommunity inclusion is a separate contribution to `SynoCommunity/spksrc`, requiring a package recipe and maintainer review; uploading a GitHub release does not add the application to their catalog. See [release and community distribution](docs/RELEASING.md) for the full workflow and upstream references.
 
