@@ -37,9 +37,18 @@ button:disabled {
   opacity: 0.4;
 }
 button:focus-visible,
-a:focus-visible {
-  outline: 3px solid #8cc8fa;
+a:focus-visible,
+summary:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
+}
+:is(button, a, summary, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}
+summary:focus-visible,
+.job-row:focus-visible {
+  outline-offset: -2px;
 }
 input,
 textarea,
@@ -894,6 +903,11 @@ dialog {
   max-height: 90vh;
   color: inherit;
 }
+/* Dialog containers and reading anchors are not keyboard controls. */
+dialog:focus,
+.dialog-header [tabindex="-1"]:focus {
+  outline: none;
+}
 dialog::backdrop {
   background: #26344755;
   backdrop-filter: blur(2px);
@@ -929,11 +943,24 @@ dialog > form {
   margin: 0;
 }
 .close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-inline-start: 12px;
   border: 0;
-  font-size: 26px;
-  padding: 0 0 0 12px;
+  padding: 0;
+  background: transparent;
   color: #9ea8b1;
-  line-height: 22px;
+}
+.close svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 .dialog-body {
   padding: 24px 26px;

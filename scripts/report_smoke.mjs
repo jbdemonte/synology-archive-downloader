@@ -57,6 +57,40 @@ try {
   await icon.click();
   await page.locator("#report-loading").waitFor({ state: "visible" });
   assert.ok(await page.locator("#report-refresh").isDisabled());
+  // Reading starts at the title, without highlighting the close button.
+  assert.equal(
+    await page.evaluate(() => document.activeElement.id),
+    "report-title",
+  );
+  assert.equal(
+    await page
+      .locator("#report-title")
+      .evaluate((el) => getComputedStyle(el).outlineStyle),
+    "none",
+  );
+  const close = page.locator("#report-dialog .close");
+  assert.ok(
+    await close.evaluate((el) => {
+      const button = el.getBoundingClientRect();
+      const icon = el.querySelector("svg").getBoundingClientRect();
+      return (
+        button.width === button.height &&
+        Math.abs(icon.x + icon.width / 2 - button.x - button.width / 2) < 0.5 &&
+        Math.abs(icon.y + icon.height / 2 - button.y - button.height / 2) < 0.5
+      );
+    }),
+    "The close icon must be centered inside a square hit target",
+  );
+  // Tab still exposes a visible focus marker and reaches the close control.
+  await page.keyboard.press("Tab");
+  assert.ok(
+    await close.evaluate(
+      (el) =>
+        document.activeElement === el &&
+        el.matches(":focus-visible") &&
+        getComputedStyle(el).outlineStyle === "solid",
+    ),
+  );
   release();
   await page.getByText("Connection reset", { exact: false }).waitFor();
   assert.equal(await page.locator("#report-text img").count(), 0);
@@ -98,6 +132,33 @@ try {
       .evaluate((el) => el.getBoundingClientRect().right <= innerWidth),
   );
   await page.locator("#report-dialog [data-close]").first().click();
+  // Keyboard opening and dismissal must remain available too.
+  await icon.focus();
+  await page.keyboard.press("Enter");
+  await page.locator("#report-dialog").waitFor();
+  assert.equal(
+    await page.evaluate(() => document.activeElement.id),
+    "report-title",
+  );
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await page.locator("#report-dialog").waitFor({ state: "hidden" });
+  // Clicking expandable sections must not leave the browser's native outline.
+  const summary = page.locator("#history-panel summary");
+  await summary.click();
+  assert.equal(
+    await summary.evaluate((el) => getComputedStyle(el).outlineStyle),
+    "none",
+  );
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  assert.ok(
+    await summary.evaluate(
+      (el) =>
+        document.activeElement === el &&
+        getComputedStyle(el).outlineStyle === "solid",
+    ),
+  );
   await page.setViewportSize({ width: 1100, height: 650 });
   await page.locator(`[data-menu-job="${id}"]`).click();
   await page.locator("#read-report").click();
@@ -110,7 +171,7 @@ try {
   assert.deepEqual(errors, []);
   await page.request.post(base + `/api/jobs/${id}/remove`, { data: {} });
   console.log(
-    "Report reader passed: incident icon, loading, plain text, pagination, retry, compact window and DSM-style modal.",
+    "Report reader passed: incident icon, loading, plain text, pagination, retry, compact window, centered close icon and mouse/keyboard focus.",
   );
 } finally {
   await browser.close();
