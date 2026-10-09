@@ -3,6 +3,7 @@
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -20,6 +21,14 @@ class PackageTests(unittest.TestCase):
     def setUpClass(cls):
         with tarfile.open(os.environ["ARCHIVE_STATION_SPK"]) as archive:
             cls.package = {p.name: archive.extractfile(p).read() for p in archive if p.isfile()}
+        version = re.search(
+            r'^version="([0-9]+\.[0-9]+\.[0-9]+-[1-9][0-9]*)"$',
+            cls.package["INFO"].decode(),
+            re.MULTILINE,
+        )
+        if version is None:
+            raise AssertionError("INFO must declare a valid DSM package version")
+        cls.version = version.group(1)
         with tarfile.open(fileobj=io.BytesIO(cls.package["package.tgz"])) as archive:
             cls.payload = {
                 p.name.removeprefix("./"): archive.extractfile(p).read()
@@ -29,6 +38,10 @@ class PackageTests(unittest.TestCase):
             cls.modes = {p.name.removeprefix("./"): p.mode for p in archive}
 
     def test_package_identity_dependency_and_conflict(self):
+        self.assertTrue(
+            Path(os.environ["ARCHIVE_STATION_SPK"]).name.endswith(f"_{self.version}.spk"),
+            "The artifact filename and INFO version must match",
+        )
         info = self.package["INFO"].decode()
         for value in (
             'package="archivestation"',
@@ -49,7 +62,14 @@ class PackageTests(unittest.TestCase):
     def test_dsm_gateway_and_styles_are_scoped(self):
         config = json.loads(self.payload["ui/config"])[".url"]["com.archivestation.app"]
         self.assertFalse(config["allUsers"])
-        self.assertIn("/3rdparty/archivestation/web/index.html?v=1.0.1-2", config["url"])
+        self.assertEqual(
+            config["url"],
+            f"/webman/3rdparty/archivestation/web/index.html?v={self.version}",
+        )
+        self.assertEqual(self.payload["app/archive_station/VERSION"].decode().strip(), self.version)
+        html = self.payload["ui/web/index.html"].decode()
+        for asset in ("app.js", "i18n.js", "style.css", "icon.png"):
+            self.assertIn(f'"{asset}?v={self.version}"', html)
         gateway = self.payload["ui/gateway.cgi"].decode()
         self.assertTrue(
             gateway.startswith("#!/var/packages/archivestation/target/env/bin/python3\n")

@@ -16,6 +16,8 @@ python3 scripts/stage_synology.py \
 
 The interpreter path is relative to `/var/packages/<package-id>/target/`. The standalone builder uses this same tool with `ArchiveStation` and `python/bin/python3`. Supply the actual DSM package version, including the package revision, for cache invalidation and the displayed version.
 
+For an incremental build, run staging again with the final package version before creating the SPK, and regenerate its `INFO` metadata. A cached dependency build can retain an older package revision. Staging can be repeated in the same destination; it recreates the launcher and asset URLs from the original templates and preserves unrelated files such as the dependency wheelhouse.
+
 DSM's outer `ui/style.css` must remain empty of application styles: DSM loads it into the desktop. Application styles belong in `ui/web/`, inside the iframe. The gateway's `@PYTHON@` template is rendered during staging and must not be installed directly.
 
 ## Service configuration
@@ -44,3 +46,5 @@ ARCHIVE_STATION_SPK=/path/to/archivestation_noarch-dsm7_1.0.1-2.spk \
 ```
 
 Test a fresh installation and an upgrade during a transfer on DSM. Keep a stopped-service backup for manual migration between package identities, and grant the new account access to existing destinations. Never run both editions against the same files simultaneously.
+
+The artifact checks derive the version from `INFO` and compare it with the SPK filename, application version, launcher URL and asset URLs. When changing a recipe revision, also build without cleaning the previous working directory and run these checks to detect stale metadata.
