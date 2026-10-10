@@ -51,7 +51,7 @@ DSM access is restricted to administrator sessions. The internal API listens on 
 ## Install
 
 1. Download the `.spk` from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases), or build it with `make build` (see below).
-2. Open **Package Center → Manual Install** and select `ArchiveStation-1.0.0-1-x86_64.spk` (local builds place it in `dist/`).
+2. Open **Package Center → Manual Install** and select `ArchiveStation-1.0.2-2-x86_64.spk` (local builds place it in `dist/`).
 3. Launch **Archive Station** from the DSM main menu.
 4. Open **Settings** to choose a destination and transfer limits.
 
@@ -82,7 +82,7 @@ The folder picker marks **read/write in green**, **read-only in blue**, and **in
 1. Download the newer `.spk` and its `.spk.sha256` file from [GitHub Releases](https://github.com/jbdemonte/synology-archive-downloader/releases). To check the package download, run this command from their directory:
 
    ```sh
-   shasum -a 256 -c ArchiveStation-1.0.0-1-x86_64.spk.sha256
+   shasum -a 256 -c ArchiveStation-1.0.2-2-x86_64.spk.sha256
    ```
 
    On Linux, use `sha256sum -c` instead.
@@ -228,7 +228,7 @@ Build requirements: **Python 3.12+**, `make`, and network access for the first d
 ```sh
 make build                 # Build the x86_64 .spk and SHA-256 checksum
 make release               # Validate and prepare all GitHub release assets
-make build VERSION=1.0.0-1  # Override the package version
+make build VERSION=1.0.2-2  # Override the package version
 make deps                  # Create the virtual environment and install Waitress
 make run                   # Start locally at http://127.0.0.1:8274
 ```
