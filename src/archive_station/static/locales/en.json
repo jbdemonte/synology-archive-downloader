@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Save settings before checking.",
   "Réessayer dans {seconds} s": "Retry in {seconds} s",
   "Période": "Period",
-  "Chargement…": "Loading…"
+  "Chargement…": "Loading…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "DSM session verification is unavailable. Please try again shortly."
 }

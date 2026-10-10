@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Lưu cài đặt trước khi kiểm tra.",
   "Réessayer dans {seconds} s": "Thử lại sau {seconds} giây",
   "Période": "Khoảng thời gian",
-  "Chargement…": "Đang tải…"
+  "Chargement…": "Đang tải…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Không thể xác minh phiên DSM. Vui lòng thử lại sau giây lát."
 }

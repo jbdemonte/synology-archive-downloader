@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Einstellungen vor der Prüfung speichern.",
   "Réessayer dans {seconds} s": "Erneut versuchen in {seconds} s",
   "Période": "Zeitraum",
-  "Chargement…": "Laden…"
+  "Chargement…": "Laden…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Die Überprüfung der DSM-Sitzung ist nicht verfügbar. Bitte versuchen Sie es in Kürze erneut."
 }

@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Αποθηκεύστε τις ρυθμίσεις πριν τον έλεγχο.",
   "Réessayer dans {seconds} s": "Νέα προσπάθεια σε {seconds} δ.",
   "Période": "Περίοδος",
-  "Chargement…": "Φόρτωση…"
+  "Chargement…": "Φόρτωση…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Η επαλήθευση της συνεδρίας DSM δεν είναι διαθέσιμη. Δοκιμάστε ξανά σε λίγο."
 }

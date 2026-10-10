@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Gem indstillingerne før kontrollen.",
   "Réessayer dans {seconds} s": "Prøv igen om {seconds} s",
   "Période": "Periode",
-  "Chargement…": "Indlæser…"
+  "Chargement…": "Indlæser…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Bekræftelse af DSM-sessionen er ikke tilgængelig. Prøv igen om et øjeblik."
 }

@@ -169,13 +169,79 @@ function restoreWindowLayout() {
     // An unsupported DSM window API must never prevent using the application.
   }
 }
+let cachedDsmToken = "";
+let lastDesktopToken = "";
+let dsmTokenRequest = null;
+function validDsmToken(value) {
+  return typeof value === "string" && /^[\x21-\x7e]{1,1024}$/.test(value)
+    ? value
+    : "";
+}
 function dsmToken() {
   // DSM's own Ajax client uses this session token. Read it only from our
   // same-origin desktop parent and send it only to the DSM gateway.
   try {
-    return window.parent.SYNO?.SDS?.Session?.SynoToken || "";
+    const token = validDsmToken(window.parent.SYNO?.SDS?.Session?.SynoToken);
+    // A refreshed token takes precedence over an unchanged, stale desktop
+    // token. Pick up subsequent desktop session changes without a page reload.
+    if (token && token !== lastDesktopToken) {
+      lastDesktopToken = token;
+      cachedDsmToken = token;
+    }
   } catch {
-    return "";
+    // Some DSM desktops do not expose their session to an embedded window.
+  }
+  return cachedDsmToken;
+}
+async function refreshDsmToken(previousToken, signal) {
+  signal.throwIfAborted();
+  const current = dsmToken();
+  if (current && current !== previousToken) return current;
+  if (!dsmTokenRequest) {
+    dsmTokenRequest = (async () => {
+      const controller = new AbortController();
+      const deadline = setTimeout(() => controller.abort(), 5000);
+      try {
+        // Ask DSM from the browser using its existing cookie. Never obtain a
+        // token server-side on behalf of a caller: that would bypass CSRF.
+        const response = await fetch("/webman/login.cgi", {
+          credentials: "same-origin",
+          mode: "same-origin",
+          cache: "no-store",
+          redirect: "error",
+          signal: controller.signal,
+        });
+        if (!response.ok) return "";
+        const session = await response.json();
+        return session?.success === true
+          ? validDsmToken(session.SynoToken)
+          : "";
+      } catch {
+        return "";
+      } finally {
+        clearTimeout(deadline);
+        dsmTokenRequest = null;
+      }
+    })();
+  }
+  // Concurrent requests share the refresh, but each retains its own deadline
+  // and cancellation. Tokens stay in memory, never in URLs or local storage.
+  let abort;
+  try {
+    const token = await Promise.race([
+      dsmTokenRequest,
+      new Promise((_, reject) => {
+        abort = () => reject(signal.reason);
+        signal.addEventListener("abort", abort, { once: true });
+      }),
+    ]);
+    signal.throwIfAborted();
+    const latest = dsmToken();
+    if (latest && latest !== previousToken) return latest;
+    if (token) cachedDsmToken = token;
+    return token;
+  } finally {
+    signal.removeEventListener("abort", abort);
   }
 }
 async function api(path, body, signal) {
@@ -184,7 +250,7 @@ async function api(path, body, signal) {
     : path;
   const headers =
     body === undefined ? {} : { "Content-Type": "application/json" };
-  const token = embedded ? dsmToken() : "";
+  let token = embedded ? dsmToken() : "";
   if (token) headers["X-SYNO-TOKEN"] = token;
   const controller = new AbortController();
   const parentSignal = signal || startupController?.signal;
@@ -202,13 +268,27 @@ async function api(path, body, signal) {
     body === undefined ? 20000 : 100000,
   );
   try {
-    const response = await fetch(endpoint, {
-      method: body === undefined ? "GET" : "POST",
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      credentials: "same-origin",
-      signal: controller.signal,
-    });
+    const request = () =>
+      fetch(endpoint, {
+        method: body === undefined ? "GET" : "POST",
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+        credentials: "same-origin",
+        ...(embedded ? { mode: "same-origin", redirect: "error" } : {}),
+        signal: controller.signal,
+      });
+    let response = await request();
+    // The gateway rejects unauthenticated calls before forwarding anything.
+    // Retry only this explicit rejection, never a failed/ambiguous mutation.
+    if (embedded && response.status === 401) {
+      const refreshed = await refreshDsmToken(token, controller.signal);
+      if (refreshed && refreshed !== token) {
+        await response.body?.cancel();
+        token = refreshed;
+        headers["X-SYNO-TOKEN"] = token;
+        response = await request();
+      }
+    }
     let result;
     try {
       result = await response.json();

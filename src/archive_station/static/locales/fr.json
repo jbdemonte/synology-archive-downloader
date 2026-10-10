@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Enregistrer les paramètres avant de vérifier.",
   "Réessayer dans {seconds} s": "Réessayer dans {seconds} s",
   "Période": "Période",
-  "Chargement…": "Chargement…"
+  "Chargement…": "Chargement…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "La vérification de la session DSM est indisponible. Réessayez dans quelques instants."
 }

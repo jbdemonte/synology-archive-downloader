@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Salvar as configurações antes de verificar.",
   "Réessayer dans {seconds} s": "Tentar novamente em {seconds} s",
   "Période": "Período",
-  "Chargement…": "Carregando…"
+  "Chargement…": "Carregando…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "A verificação da sessão do DSM está indisponível. Tente novamente em instantes."
 }

@@ -334,5 +334,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Před kontrolou uložit nastavení.",
   "Réessayer dans {seconds} s": "Zkusit znovu za {seconds} s",
   "Période": "Období",
-  "Chargement…": "Načítání…"
+  "Chargement…": "Načítání…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Ověření relace DSM není dostupné. Zkuste to znovu za chvíli."
 }

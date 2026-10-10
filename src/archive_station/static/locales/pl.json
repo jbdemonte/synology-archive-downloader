@@ -334,5 +334,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Zapisz ustawienia przed sprawdzeniem.",
   "Réessayer dans {seconds} s": "Spróbuj ponownie za {seconds} s",
   "Période": "Okres",
-  "Chargement…": "Ładowanie…"
+  "Chargement…": "Ładowanie…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Weryfikacja sesji DSM jest niedostępna. Spróbuj ponownie za chwilę."
 }

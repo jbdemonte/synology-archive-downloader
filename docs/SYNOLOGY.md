@@ -21,6 +21,10 @@ Le runtime est verrouillé dans `runtime-lock.json`. Les textes de licence dans 
 
 Aucun mot de passe propre au paquet n’est demandé. À chaque appel API, `gateway.cgi` exécute le programme officiel `/usr/syno/synoman/webman/modules/authenticate.cgi` avec l’environnement CGI original. Seuls les utilisateurs authentifiés du groupe `administrators` ont accès, conformément au lanceur `allUsers: false`. Une session absente ou expirée reçoit une réponse 401 ; un compte sans autorisation reçoit une erreur logique 403.
 
+Le navigateur transmet le jeton du bureau dans `X-SYNO-TOKEN`. Après un refus 401, il interroge `/webman/login.cgi` sur la même origine, avec le cookie DSM existant, puis réessaie une seule fois si un nouveau jeton valide est obtenu. Cette récupération est limitée à cinq secondes, partagée entre les requêtes simultanées et ne suit aucune redirection. Le jeton reste uniquement en mémoire ; il n’est jamais ajouté à l’URL. Il ne faut pas récupérer ce jeton côté serveur à la place du navigateur : cela contournerait la protection CSRF.
+
+Si le chemin documenté de `authenticate.cgi` n’existe pas, la passerelle essaie le binaire `/usr/syno/synoman/webman/authenticate.cgi`, cible du lien sur le NAS DSM 7.1.1 testé. Aucun second exécutable n’est essayé après un refus d’authentification. Un programme absent, non exécutable ou trop lent produit une erreur logique 503 avec le code `dsm_auth_unavailable`, sans être présenté comme une session expirée et sans accéder au backend.
+
 DSM remplace les réponses HTTP 403, 404 et certaines erreurs serveur par une page HTML. Pour conserver les messages de l’API, la passerelle transporte ces erreurs en HTTP 200 avec leur code dans `_http_status` ; le frontend les traite toujours comme des échecs. Les contrôles d’authentification et de permissions restent obligatoires. Aucun réglage Nginx n’est modifié.
 
 Le lanceur et les ressources statiques portent la version du paquet dans leur URL pour renouveler le cache après une mise à jour. La fenêtre s’ouvre par défaut en 1360 × 840. Une migration unique des anciennes proportions trop verticales ajuste seulement la fenêtre Archive Station aux dimensions du bureau, sans toucher aux fenêtres maximisées ni aux redimensionnements ultérieurs ; la mise en page s’adapte également aux fenêtres plus petites, avec défilement à l’intérieur de la liste de fichiers.
@@ -43,3 +47,4 @@ La désinstallation arrête le service. Le partage et les téléchargements ne s
 - [Stockage persistant DSM](https://help.synology.com/developer-guide/integrate_dsm/fhs.html)
 
 - [Authentification des applications DSM](https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html)
+- [Jeton de session DSM, guide Calendar API](https://global.download.synology.com/download/Document/Software/DeveloperGuide/Package/Calendar/All/enu/Calendar_API_Guide_enu.pdf)

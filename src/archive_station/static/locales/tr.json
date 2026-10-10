@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Denetlemeden önce ayarları kaydedin.",
   "Réessayer dans {seconds} s": "{seconds} sn sonra yeniden dene",
   "Période": "Dönem",
-  "Chargement…": "Yükleniyor…"
+  "Chargement…": "Yükleniyor…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "DSM oturumu doğrulaması kullanılamıyor. Lütfen biraz sonra tekrar deneyin."
 }

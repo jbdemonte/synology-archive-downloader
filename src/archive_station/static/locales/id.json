@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Simpan pengaturan sebelum memeriksa.",
   "Réessayer dans {seconds} s": "Coba lagi dalam {seconds} dtk",
   "Période": "Periode",
-  "Chargement…": "Memuat…"
+  "Chargement…": "Memuat…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Verifikasi sesi DSM tidak tersedia. Coba lagi sebentar lagi."
 }

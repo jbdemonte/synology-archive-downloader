@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "请先保存设置再检查。",
   "Réessayer dans {seconds} s": "{seconds} 秒后重试",
   "Période": "时间范围",
-  "Chargement…": "正在加载…"
+  "Chargement…": "正在加载…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "暂时无法验证 DSM 会话。请稍后重试。"
 }

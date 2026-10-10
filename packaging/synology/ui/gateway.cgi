@@ -12,6 +12,11 @@ from urllib.parse import parse_qs, urlsplit
 from urllib.request import Request, urlopen
 
 AUTHENTICATE = "/usr/syno/synoman/webman/modules/authenticate.cgi"
+AUTHENTICATE_FALLBACK = "/usr/syno/synoman/webman/authenticate.cgi"
+
+
+class DSMAuthenticationUnavailable(Exception):
+    """DSM's authenticator could not run; this is not an expired session."""
 
 
 def reply(status, value):
@@ -32,21 +37,31 @@ def dsm_user():
     # Retain the original CGI environment: DSM validates its session cookie,
     # client address and (when enabled) the X-SYNO-TOKEN header itself.
     try:
-        result = subprocess.run(
-            [AUTHENTICATE],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            timeout=5,
-            check=False,
-        )
+        for executable in (AUTHENTICATE, AUTHENTICATE_FALLBACK):
+            try:
+                result = subprocess.run(
+                    [executable],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    timeout=5,
+                    check=False,
+                )
+                break
+            except FileNotFoundError:
+                # If the modules/ alias is absent, try the canonical binary.
+                # Never retry an authentication denial.
+                if executable == AUTHENTICATE_FALLBACK:
+                    raise
         user = result.stdout.decode("utf-8").strip()
         if result.returncode or not user or len(user) > 256:
             return None
         if any(ord(char) < 32 for char in user):
             return None
         return user
-    except (OSError, UnicodeError, subprocess.TimeoutExpired):
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise DSMAuthenticationUnavailable from error
+    except UnicodeError:
         return None
 
 
@@ -79,7 +94,19 @@ def main():
     if method not in {"GET", "POST"}:
         reply(405, {"error": "Méthode non autorisée."})
         return
-    user = dsm_user()
+    try:
+        user = dsm_user()
+    except DSMAuthenticationUnavailable:
+        reply(
+            503,
+            {
+                "error": "La vérification de la session DSM est indisponible. "
+                "Réessayez dans quelques instants.",
+                "code": "dsm_auth_unavailable",
+                "mode": "dsm",
+            },
+        )
+        return
     if not user:
         reply(
             401,

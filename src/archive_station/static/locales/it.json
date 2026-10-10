@@ -323,5 +323,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Salvare le impostazioni prima della verifica.",
   "Réessayer dans {seconds} s": "Riprovare tra {seconds} s",
   "Période": "Periodo",
-  "Chargement…": "Caricamento…"
+  "Chargement…": "Caricamento…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "La verifica della sessione DSM non è disponibile. Riprova tra qualche istante."
 }

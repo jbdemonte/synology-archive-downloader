@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "บันทึกการตั้งค่าก่อนตรวจสอบ",
   "Réessayer dans {seconds} s": "ลองอีกครั้งใน {seconds} วินาที",
   "Période": "ช่วงเวลา",
-  "Chargement…": "กำลังโหลด…"
+  "Chargement…": "กำลังโหลด…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "ไม่สามารถตรวจสอบเซสชัน DSM ได้ในขณะนี้ โปรดลองอีกครั้งในอีกสักครู่"
 }

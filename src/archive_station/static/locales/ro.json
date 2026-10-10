@@ -334,5 +334,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Salvează setările înainte de verificare.",
   "Réessayer dans {seconds} s": "Reîncearcă peste {seconds} s",
   "Période": "Perioadă",
-  "Chargement…": "Se încarcă…"
+  "Chargement…": "Se încarcă…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Verificarea sesiunii DSM nu este disponibilă. Încercați din nou peste câteva momente."
 }

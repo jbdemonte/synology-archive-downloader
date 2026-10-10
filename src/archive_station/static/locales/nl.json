@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Instellingen opslaan vóór de controle.",
   "Réessayer dans {seconds} s": "Opnieuw proberen over {seconds} s",
   "Période": "Periode",
-  "Chargement…": "Laden…"
+  "Chargement…": "Laden…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Verificatie van de DSM-sessie is niet beschikbaar. Probeer het over enkele ogenblikken opnieuw."
 }

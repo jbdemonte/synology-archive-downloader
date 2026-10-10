@@ -187,6 +187,8 @@ Incident history begins when this feature is installed: existing errors are impo
 
 On opening, a loading screen remains visible until the DSM session, settings and task list are ready. If the service cannot be reached, a message and **Retry** button appear. An empty download list is only displayed once the initial request succeeds. An expired DSM session can be retried in the same window after signing in again. Background refreshes stop while the browser tab is hidden and resume when it becomes visible.
 
+DSM sign-in is reused automatically; Archive Station does not ask for another password. If the desktop's session token is missing or stale, the app requests a fresh token from DSM using the existing session cookie and retries once. An unavailable DSM authentication service is reported separately from a rejected session.
+
 <details>
 <summary>See the startup loading screen</summary>
 
@@ -285,7 +287,7 @@ GitHub Releases supports direct `.spk` distribution for manual DSM installation.
 - **A file needs authorization:** restricted Archive.org files are not supported. Public files continue independently.
 - **Downloads stop on one file:** open its task report or the **Needs attention** view, correct the cause and select Retry.
 - **The startup screen reports a connection error:** check that the package is running, then select Retry.
-- **The session expires:** sign back into DSM and reopen Archive Station.
+- **DSM sign-in is refused:** open Archive Station from an administrator's DSM desktop, using the same address. The app automatically attempts session recovery. If DSM has actually signed you out, sign in again and click **Retry**. If your DSM session is still active, report your DSM version and connection method (local address, reverse proxy or QuickConnect); never share cookies or session tokens.
 - **The UI looks outdated after upgrading:** close and reopen the application, or refresh the DSM desktop.
 
 DSM state and rotating logs live in `/var/packages/ArchiveStation/var/` (`archive-station.sqlite3`, `settings.json`, `archive-station.history.json`, `archive-station.log`). Stop the package before copying its state directory, or use SQLite’s backup API for a live database backup. Package upgrades preserve task state and downloaded files.

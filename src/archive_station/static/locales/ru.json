@@ -334,5 +334,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Сохраните настройки перед проверкой.",
   "Réessayer dans {seconds} s": "Повторить через {seconds} с",
   "Période": "Период",
-  "Chargement…": "Загрузка…"
+  "Chargement…": "Загрузка…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Проверка сеанса DSM недоступна. Повторите попытку через несколько секунд."
 }

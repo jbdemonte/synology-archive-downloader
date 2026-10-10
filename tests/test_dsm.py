@@ -30,6 +30,7 @@ class GatewayTests(unittest.TestCase):
         body=None,
         response_status=200,
         response_body=b'{"ok":true}',
+        auth_error=None,
         **extra,
     ):
         raw = json.dumps(body).encode() if body is not None else b""
@@ -47,7 +48,7 @@ class GatewayTests(unittest.TestCase):
         response.status = response_status
         with (
             patch.dict(os.environ, env, clear=True),
-            patch.object(gateway, "dsm_user", return_value=user),
+            patch.object(gateway, "dsm_user", return_value=user, side_effect=auth_error),
             patch.object(gateway, "is_administrator", return_value=admin),
             patch.object(gateway.sys, "stdin", SimpleNamespace(buffer=io.BytesIO(raw))),
             patch.object(gateway.sys, "stdout", SimpleNamespace(buffer=output)),
@@ -88,6 +89,13 @@ class GatewayTests(unittest.TestCase):
     def test_non_administrator_never_reaches_backend(self):
         status, _, proxy = self.request(user="guest", admin=False)
         self.assertEqual(status, 403)
+        proxy.assert_not_called()
+
+    def test_unavailable_authenticator_is_not_reported_as_expired_session(self):
+        status, data, proxy = self.request(auth_error=gateway.DSMAuthenticationUnavailable())
+        self.assertEqual(status, 503)
+        self.assertEqual(self.transport_status, 200)
+        self.assertEqual(data["code"], "dsm_auth_unavailable")
         proxy.assert_not_called()
 
     def test_authenticated_admin_proxies_without_dsm_credentials(self):
@@ -133,9 +141,14 @@ class GatewayTests(unittest.TestCase):
         ]:
             with patch.object(gateway.subprocess, "run", return_value=result):
                 self.assertIsNone(gateway.dsm_user())
-        for error in [FileNotFoundError(), subprocess.TimeoutExpired("authenticate.cgi", 5)]:
+        for error in [
+            FileNotFoundError(),
+            PermissionError(),
+            subprocess.TimeoutExpired("authenticate.cgi", 5),
+        ]:
             with patch.object(gateway.subprocess, "run", side_effect=error):
-                self.assertIsNone(gateway.dsm_user())
+                with self.assertRaises(gateway.DSMAuthenticationUnavailable):
+                    gateway.dsm_user()
         with patch.object(
             gateway.subprocess,
             "run",
@@ -144,6 +157,32 @@ class GatewayTests(unittest.TestCase):
             self.assertEqual(gateway.dsm_user(), "administrator")
             self.assertEqual(auth.call_args.args[0], [gateway.AUTHENTICATE])
             self.assertNotIn("env", auth.call_args.kwargs)  # Preserve original CGI environment.
+
+    def test_authenticator_fallback_only_when_documented_path_is_missing(self):
+        with patch.object(
+            gateway.subprocess,
+            "run",
+            side_effect=[
+                FileNotFoundError(),
+                SimpleNamespace(returncode=0, stdout=b"administrator\n"),
+            ],
+        ) as auth:
+            self.assertEqual(gateway.dsm_user(), "administrator")
+            self.assertEqual(
+                [call.args[0] for call in auth.call_args_list],
+                [[gateway.AUTHENTICATE], [gateway.AUTHENTICATE_FALLBACK]],
+            )
+        for result in [
+            SimpleNamespace(returncode=0, stdout=b""),
+            SimpleNamespace(returncode=1, stdout=b"administrator"),
+        ]:
+            with patch.object(gateway.subprocess, "run", return_value=result) as auth:
+                self.assertIsNone(gateway.dsm_user())
+                auth.assert_called_once()
+        with patch.object(gateway.subprocess, "run", side_effect=PermissionError()) as auth:
+            with self.assertRaises(gateway.DSMAuthenticationUnavailable):
+                gateway.dsm_user()
+            auth.assert_called_once()
 
     def test_administrator_group_required(self):
         with (

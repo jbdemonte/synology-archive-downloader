@@ -314,5 +314,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Ellenőrzés előtt mentse a beállításokat.",
   "Réessayer dans {seconds} s": "Újrapróbálkozás {seconds} s múlva",
   "Période": "Időszak",
-  "Chargement…": "Betöltés…"
+  "Chargement…": "Betöltés…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "A DSM-munkamenet ellenőrzése nem érhető el. Próbálja újra néhány pillanat múlva."
 }

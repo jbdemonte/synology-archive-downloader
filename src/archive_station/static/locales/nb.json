@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Lagre innstillingene før kontrollen.",
   "Réessayer dans {seconds} s": "Prøv igjen om {seconds} s",
   "Période": "Periode",
-  "Chargement…": "Laster…"
+  "Chargement…": "Laster…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "Verifisering av DSM-økten er utilgjengelig. Prøv igjen om et øyeblikk."
 }

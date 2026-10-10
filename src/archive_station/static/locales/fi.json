@@ -329,5 +329,6 @@
   "Enregistrer les paramètres avant de vérifier.": "Tallenna asetukset ennen tarkistusta.",
   "Réessayer dans {seconds} s": "Yritä uudelleen {seconds} s kuluttua",
   "Période": "Aikaväli",
-  "Chargement…": "Ladataan…"
+  "Chargement…": "Ladataan…",
+  "La vérification de la session DSM est indisponible. Réessayez dans quelques instants.": "DSM-istunnon vahvistus ei ole käytettävissä. Yritä hetken kuluttua uudelleen."
 }
